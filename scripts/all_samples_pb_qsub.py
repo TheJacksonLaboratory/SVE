@@ -129,7 +129,7 @@ if not os.path.exists(pbs_dir): os.makedirs(pbs_dir)
 software_path = os.path.dirname(os.path.abspath(__file__))+'/../../'
 PBS = []
 python = software_path+'/anaconda/bin/python'
-pb     = software_path+'/SVE/tests/prepare_bam.py'
+pb     = software_path+'/SVE/scripts/prepare_bam.py'
 ml = 'module load '
 modules = [ml+'perl/5.16.3',ml+'gcc/4.9.2',ml+'Root/v5.34.18',ml+'samtools/1.2'] #everything that you need here...
 for sample in S:

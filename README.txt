@@ -4,7 +4,7 @@ Structural Variation Engine
 current requirements: python 2.7.10+, subprocess32, paramiko, scp, HTSeq, mysql.connector
 future requirements: python 2.7.10+, subprocess32
 
-An script based engine for SV calling that abstracts seperate SV calling pipelines into a stage.
+A script based execution engine for SV calling that abstracts seperate SV calling pipelines into a stage.
 Each stage has a set of configurations for runtime which is stored as a JSON format parameter map.
 Each SV caller stage has access to a set of standard inputs as well as reference specific and SV caller
 specific and ecosystems that are needed for execution.  Additional metadata files directories are

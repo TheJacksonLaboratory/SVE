@@ -119,12 +119,12 @@ if not os.path.exists(pbs_dir): os.makedirs(pbs_dir)
     
 #write out the .pbs scripts
 software_path = os.path.dirname(os.path.abspath(__file__))+'/../../'
+python = software_path+'/anaconda/bin/python'
+vp     = software_path+'/SVE/scripts/variant_processor.py'
 PBS = []
 if args.all_at_once:
     print('doing all samples at once...')
     bams = ','.join([samples[k] for k in samples])
-    python = software_path+'/anaconda/bin/python'
-    vp     = software_path+'/SVE/tests/variant_processor.py'
     group_pbs = pbs_dir+'/'+'all_at_once_'+'-'.join(stages)+'.pbs' #name of pbs script for the group
     sub_dir = out_dir+'/'+'all_at_once_'+'/'
     PBS += [group_pbs]
@@ -146,8 +146,6 @@ else:
     if len(tar_list)<1 and set(tar_samples).issubset(set(samples)):
         print('not using targeting files..')
         for k in tar_samples: #need these keys to match
-            python = '/data/ch-lee-lab/software/anaconda/bin/python'
-            vp     = '/data/ch-lee-lab/software/SVE/tests/variant_processor.py'
             sample_pbs = pbs_dir+'/'+k+'-'.join(stages)+'.pbs' #name of pbs script for sample k
             sub_dir = out_dir+'/'+k+'/'
             PBS += [sample_pbs]
@@ -166,8 +164,6 @@ else:
     elif set(tar_samples).issubset(set(samples)):
         print('using targeting files..')
         for k in tar_samples: #need these keys to match
-            python = software_path+'/anaconda/bin/python'
-            vp     = software_path+'/SVE/tests/variant_processor.py'
             sample_pbs = pbs_dir+'/'+k+'-'.join(stages)+'.pbs' #name of pbs script for sample k
             sub_dir = out_dir+'/'+k+'/'
             PBS += [sample_pbs]
@@ -186,8 +182,6 @@ else:
     elif set(samples).issubset(set(tar_samples)):
         print('using targeting files..')
         for k in samples: #need these keys to match
-            python = software_path+'/anaconda/bin/python'
-            vp     = software_path+'/SVE/tests/variant_processor.py'
             sample_pbs = pbs_dir+'/'+k+'-'.join(stages)+'.pbs' #name of pbs script for sample k
             sub_dir = out_dir+'/'+k+'/'
             PBS += [sample_pbs]
