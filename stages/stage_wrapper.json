@@ -1,0 +1,10 @@
+{
+    "stage_id”:-1,
+    "type":"internal",
+    "name":"base class",
+    "version":"0.0",
+    "wrapper":"stage_wrapper",
+    "in_ext":"",
+    "out_ext":"",
+    "param_map":{}
+}

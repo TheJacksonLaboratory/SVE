@@ -1,0 +1,10 @@
+{
+    "stage_id":32,
+    "type":"utility",
+    "name":"bam2cram",
+    "version":"1.2 using htslib 1.2.1",
+    "wrapper":"bam2cram",
+    "in_ext":".fa,.bam",
+    "out_ext":".cram",
+    "param_map":{}
+}

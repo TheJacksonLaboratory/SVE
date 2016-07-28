@@ -1,0 +1,10 @@
+{
+    "stage_id":43,
+    "type":"utility",
+    "name":"picard_mark_duplicates",
+    "version":"2.1.1",
+    "wrapper":"picard_mark_duplicates",
+    "in_ext":".bam",
+    "out_ext":".dedup.bam",
+    "param_map":{}
+}

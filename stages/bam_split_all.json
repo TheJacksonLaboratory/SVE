@@ -1,0 +1,10 @@
+{
+    "stage_id":1,
+    "type":"utility",
+    "name":"bam_split_all",
+    "version":"1.0 using htslib 1.0, pysam 0.8.3",
+    "wrapper":"bam_split_all",
+    "in_ext":".bam",
+    "out_ext":".bam,bam.bai",
+    "param_map":{"p":  {"type":"int","min":1,"max":100,"steps":20}}
+}

@@ -1,0 +1,10 @@
+{
+    "stage_id":31,
+    "type":"variant call filter",
+    "name":"vcftools_filter",
+    "version":"1.0 using htslib 1.0",
+    "wrapper":"vcftools_filter",
+    "in_ext":".vcf",
+    "out_ext":".vcf",
+    "param_map":{"-D":{"type":"int","min":100,"max":500,"steps":25}}
+}

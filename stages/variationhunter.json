@@ -1,0 +1,10 @@
+{
+    "stage_id":30,
+    "type":"variant caller",
+    "name":"variationhunter",
+    "version":"0.4",
+    "wrapper":"variationhunter",
+    "in_ext":".fa,L.fq,R.fq",
+    "out_ext":".calls",
+    "param_map":{}             
+}

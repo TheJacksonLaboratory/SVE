@@ -1,0 +1,10 @@
+{
+    "stage_id":16,
+    "type":"variant caller",
+    "name":"hydra",
+    "version":"0.5.5",
+    "wrapper":"hydra",
+    "in_ext":".bam",
+    "out_ext":".calls,.vcf",
+    "param_map":{"-m":{"type":"int","min":4,"max":80,"steps":20}}             
+}

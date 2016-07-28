@@ -1,0 +1,10 @@
+{
+    "stage_id":15,
+    "type":"utility",
+    "name":"genome_strip_prepare_ref",
+    "version":"2.00.1547",
+    "wrapper":"genome_strip_prepare_ref",
+    "in_ext":".fa",
+    "out_ext":".fa,.fa.svmask.fasta,.dict,.ploidymap.txt,.rdmask.bed",
+    "param_map":{"rd_len":{"type":"int","min":100,"max":10000,"steps":10}}             
+}

@@ -1,0 +1,11 @@
+{
+    "stage_id":35,
+    "type":"variant caller",
+    "name":"breakseq",
+    "version":"2.2",
+    "wrapper":"breakseq",
+    "in_ext":".fa,.gff,.bam",
+    "out_ext":".vcf",
+    "param_map":{"window":{"type":"int","min":100,"max":1000,"steps":10},
+                 "junction":{"type":"int","min":100,"max":5000,"steps":50}}
+}

@@ -1,0 +1,15 @@
+{
+    "stage_id":0,
+    "type":"simulator",
+    "name":"art_illumina",
+    "version":"2.18",
+    "wrapper":"art_illumina",
+    "in_ext":".fa",
+    "out_ext":"L.fq,R.fq,L.aln,R.aln,.sam",
+    "param_map":{"-p":{"type":"bool","min":true,"max":false,"steps":1},
+                 "-sam":{"type":"bool","min":true,"max":false,"steps":1},
+                 "-l":{"type":"int","min":50,"max":100,"steps":5},   
+                 "-f":{"type":"int","min":20,"max":40,"steps":5},
+                 "-m":{"type":"int","min":200,"max":400,"steps":5},
+                 "-s":{"type":"int","min":10,"max":10,"steps":5}}
+}

@@ -1,0 +1,10 @@
+{
+    "stage_id":3,
+    "type":"quality analysis",
+    "name":"bam_stats",
+    "version":"samtools 1.0,bamtools31",
+    "wrapper":"bam_stats",
+    "in_ext":".bam",
+    "out_ext":".stats",
+    "param_map":{}       
+}

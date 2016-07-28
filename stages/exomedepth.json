@@ -1,0 +1,10 @@
+{
+    "stage_id":12,
+    "type":"variant caller",
+    "name":"exomedepth",
+    "version":"1.10.1",
+    "wrapper":"exomedepth",
+    "in_ext":".fa,.bam",
+    "out_ext":".vcf",
+    "param_map":{}          
+}

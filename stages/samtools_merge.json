@@ -1,0 +1,10 @@
+{
+    "stage_id":45,
+    "type":"utility",
+    "name":"samtools_merge",
+    "version":"1.2",
+    "wrapper":"samtools_merge",
+    "in_ext":".bam",
+    "out_ext":".merged.bam",
+    "param_map":{"-b":{"type":"bool","min":true,"max":false,"steps":1}}
+}

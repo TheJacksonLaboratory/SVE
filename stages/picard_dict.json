@@ -1,0 +1,10 @@
+{
+    "stage_id":21,
+    "type":"utility",
+    "name":"picard_dict",
+    "version":"1.126",
+    "wrapper":"picard_dict",
+    "in_ext":".fa",
+    "out_ext":".dict",
+    "param_map":{}
+}

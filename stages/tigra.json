@@ -1,0 +1,16 @@
+{
+    "stage_id":38,
+    "type":"targeted assembler",
+    "name":"tigra",
+    "version":"0.4.2",
+    "wrapper":"tigra",
+    "in_ext":".fa,.bam,.calls,.vcf",
+    "out_ext":".fa,.bed,.vcf",
+    "param_map":{"p":  {"type":"int","min":1,"max":100,"steps":20},
+                 "F":  {"type":"int","min":0,"max":1000,"steps":1001},
+                 "L":  {"type":"int","min":0,"max":1000,"steps":1001},
+                 "A":  {"type":"int","min":0,"max":1000,"steps":1001},
+                 "Q":  {"type":"int","min":0,"max":1000,"steps":1001},
+                 "P":  {"type":"int","min":0,"max":1000,"steps":1001},
+                 "H":  {"type":"int","min":0,"max":1000,"steps":1001}}
+}

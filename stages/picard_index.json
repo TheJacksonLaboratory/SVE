@@ -1,0 +1,10 @@
+{
+    "stage_id":22,
+    "type":"utility",
+    "name":"picard_index",
+    "version":"1.126",
+    "wrapper":"picard_index",
+    "in_ext":".bam",
+    "out_ext":".bam.bai",
+    "param_map":{}
+}

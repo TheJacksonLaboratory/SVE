@@ -1,0 +1,10 @@
+{
+    "stage_id":25,
+    "type":"utility",
+    "name":"samtools_fasta_index",
+    "version":"1.0 using htslib 1.0",
+    "wrapper":"samtools_fasta_index",
+    "in_ext":".fa",
+    "out_ext":".fa.fai",
+    "param_map":{}
+}

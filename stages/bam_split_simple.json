@@ -1,0 +1,10 @@
+{
+    "stage_id":2,
+    "type":"utility",
+    "name":"bam_split_simple",
+    "version":"1.0 using htslib 1.0",
+    "wrapper":"bam_split_simple",
+    "in_ext":".bam",
+    "out_ext":".bam,bam.bai",
+    "param_map":{}
+}

@@ -1,0 +1,10 @@
+{
+    "stage_id":41,
+    "type":"data tool",
+    "name":"fusor",
+    "version":"0.1",
+    "wrapper":"fusor",
+    "in_ext":".fa,.vcf",
+    "out_ext":".bed,.calls,.vcf,.tsv,.pickle",
+    "param_map":{"p":  {"type":"int","min":1,"max":100,"steps":20}}
+}

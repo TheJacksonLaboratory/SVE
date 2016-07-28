@@ -1,0 +1,10 @@
+{
+    "stage_id":23,
+    "type":"utility",
+    "name":"picard_replace_rg",
+    "version":"2.2.1",
+    "wrapper":"picard_replace_rg",
+    "in_ext":".bam",
+    "out_ext":".bam",
+    "param_map":{}
+}

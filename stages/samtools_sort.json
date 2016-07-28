@@ -1,0 +1,11 @@
+{
+    "stage_id":28,
+    "type":"utility",
+    "name":"samtools_sort",
+    "version":"1.2 using htslib 1.2",
+    "wrapper":"samtools_sort",
+    "in_ext":".bam",
+    "out_ext":".bam",
+    "param_map":{"-l":{"type":"int","min":-1,"max":9,"steps":10},
+                 "-@":{"type":"int","min":12,"max":24,"steps":12}}
+}

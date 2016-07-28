@@ -1,0 +1,10 @@
+{
+    "stage_id":39,
+    "type":"reference utility",
+    "name":"fa_to_2bit",
+    "version":"1.0",
+    "wrapper":"fa_to_2bit",
+    "in_ext":".fa",
+    "out_ext":".2bit",
+    "param_map":{}
+}

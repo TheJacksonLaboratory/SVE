@@ -1,0 +1,11 @@
+{
+    "stage_id":11,
+    "type":"variant caller",
+    "name":"delly",
+    "version":"0.6.7",
+    "wrapper":"delly",
+    "in_ext":".fa,,.bam",
+    "out_ext":".vcf",
+    "param_map":{"q":{"type":"int","min":1,"max":20,"steps":20},
+                 "s":{"type":"int","min":5,"max":20,"steps":15}}             
+}

@@ -1,0 +1,10 @@
+{
+    "stage_id":24,
+    "type":"utility",
+    "name":"picard_sam_convert",
+    "version":"1.126",
+    "wrapper":"picard_sam_convert",
+    "in_ext":".sam",
+    "out_ext":"noRG.bam",
+    "param_map":{}
+}

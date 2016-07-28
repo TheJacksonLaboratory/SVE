@@ -1,0 +1,10 @@
+{
+    "stage_id":40,
+    "type":"utility",
+    "name":"fq_to_bam_piped",
+    "version":"bwa-0.7.13,picardtools-2.1.1",
+    "wrapper":"fq_to_bam_piped",
+    "in_ext":".fa,.fq",
+    "out_ext":".bam,.bam.bai",
+    "param_map":{"-t":{"type":"int","min":1,"max":32,"steps":32}}
+}

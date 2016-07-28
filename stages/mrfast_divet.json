@@ -1,0 +1,11 @@
+{
+    "stage_id":19,
+    "type":"utility",
+    "name":"mrfast_divet",
+    "version":"2.6.1.0",
+    "wrapper":"mrfast_divet",
+    "in_ext":".fa,L.fq,R.fq",
+    "out_ext":".DIVET.vh,",
+    "param_map":{"--min":{"type":"int","min":50,"max":400,"steps":10},
+                 "--max":{"type":"int","min":75,"max":600,"steps":10}}             
+}

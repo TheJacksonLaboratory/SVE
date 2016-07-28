@@ -1,0 +1,12 @@
+{
+    "stage_id":27,
+    "type":"variant caller",
+    "name":"samtools_snp",
+    "version":"1.0 using htslib 1.0",
+    "wrapper":"samtools_snp",
+    "in_ext":".fa,.bam",
+    "out_ext":".vcf",
+    "param_map":{"-u":{"type":"bool","min":true,"max":false,"steps":1},
+                 "-6":{"type":"bool","min":true,"max":false,"steps":1},
+                 "-d":{"type":"int","min":250,"max":500,"steps":25}}
+}

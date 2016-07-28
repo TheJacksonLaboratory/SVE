@@ -1,0 +1,10 @@
+{
+    "stage_id":44,
+    "type":"utility",
+    "name":"picard_merge",
+    "version":"2.1.1",
+    "wrapper":"picard_merge",
+    "in_ext":".bam",
+    "out_ext":".merged.bam",
+    "param_map":{"-b":{"type":"bool","min":true,"max":false,"steps":1}}
+}

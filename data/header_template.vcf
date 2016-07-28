@@ -1,0 +1,29 @@
+##fileformat=VCFv4.2
+//auto generate this date-time stamp in python
+##fileDate=
+//load the reference name here
+##reference=
+//standar filter and info fields
+##FILTER=<ID=LowQual,Description="Low Quality">
+##FILTER=<ID=PASS,Description="All filters passed">
+##ALT=<ID=INS,Description="Insertion of novel sequence">
+##ALT=<ID=DEL,Description="Deletion">
+##ALT=<ID=DUP,Description="Duplication">
+##ALT=<ID=CNV,Description="Copy number variable region">
+##ALT=<ID=INV,Description="Inversion">
+//all the info tags you need including the expectation of the callers that agree
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the variant described in this record">
+##INFO=<ID=IMPRECISE,Number=0,Type=Flag,Description="Imprecise structural variation">
+##INFO=<ID=SVLEN,Number=.,Type=Integer,Description="Difference in length between REF and ALT alleles">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##INFO=<ID=CHR2,Number=1,Type=String,Description="Chromosome for END coordinate in case of a translocation">
+##INFO=<ID=SVEX,Number=1,Type=Float,Description="Expected Value of the Group SV call given the Prior Targeted Metric Pool">
+//should add INFO tags for read tech such as
+##INFO=<ID=SEQ_TECH,Number=.,Type=String,Description="Sequencing Technology Used">
+##INFO=<ID=TARGET,Number=1,Type=Integer,Description="1 if the call overlaps a target call, 0 otherwise">
+//add this dynamically via the vcf converter tool
+//##INFO=<ID=SVMETHOD,Number=.,Type=String,Description="">
+//do all the contigs from the reference here
+//embed the original the command lines for generating
+//then the row detail
+//#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO (FORMAT SAMPLE)

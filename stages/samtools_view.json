@@ -1,0 +1,15 @@
+{
+    "stage_id":29,
+    "type":"utility",
+    "name":"samtools_view",
+    "version":"1.0 using htslib 1.0",
+    "wrapper":"samtools_view",
+    "in_ext":".sam",
+    "out_ext":".bam",
+    "param_map":{"-b":{"type":"bool","min":true,"max":false,"steps":1},
+                 "-h":{"type":"bool","min":false,"max":true,"steps":1},
+                 "-H":{"type":"bool","min":false,"max":true,"steps":1},
+                 "-c":{"type":"bool","min":false,"max":true,"steps":1},
+                 "-S":{"type":"bool","min":true,"max":false,"steps":1},
+                 "-@":{"type":"int","min":12,"max":24,"steps":12}}
+}

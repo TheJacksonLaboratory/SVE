@@ -1,0 +1,10 @@
+{
+    "stage_id":10,
+    "type":"variant caller",
+    "name":"cnvnator",
+    "version":"0.2.5",
+    "wrapper":"cnvnator",
+    "in_ext":".fa,.bam",
+    "out_ext":".root,.calls,.vcf",
+    "param_map":{"window":{"type":"int","min":500,"max":10000,"steps":10}}             
+}

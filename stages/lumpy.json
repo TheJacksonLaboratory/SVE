@@ -1,0 +1,11 @@
+{
+    "stage_id":18,
+    "type":"variant caller",
+    "name":"lumpy",
+    "version":"0.2.11",
+    "wrapper":"lumpy",
+    "in_ext":".bam",
+    "out_ext":".calls,.vcf",
+    "param_map":{"-m":{"type":"int","min":4,"max":80,"steps":20},
+                 "-r":{"type":"float","min":0.0,"max":1.0,"steps":20}}             
+}
