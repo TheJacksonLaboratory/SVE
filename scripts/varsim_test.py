@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 /home/tbecker/software/varsim/varsim.py \
 --vc_in_vcf /data/tbecker/varsim_data/All.vcf.gz \
 --sv_insert_seq /data/tbecker/varsim_data/insert_seq.txt \

@@ -1,16 +1,19 @@
+#!/usr/bin/env python
 import argparse
 import os
+import glob
 import sys
 import csv
 import datetime
 import subprocess32 as subprocess #to call qsub a bunch of times
 
 des = """
-script that auto generates PBS scripts for simple cram to bam conversion and submits them via qsub"""
+script that auto generates PBS scripts for simple bam splitting and submits them via qsub"""
 parser = argparse.ArgumentParser(description=des)
 parser.add_argument('-r', '--ref_path',type=str, help='reference fasta')
-parser.add_argument('-c', '--cram_list',type=str, help='csv cram file list')
-parser.add_argument('-o', '--output_dir',type=str, help='outputdirectory to save ...bam/ into')
+parser.add_argument('-b', '--bam_dir',type=str, help='bam file or directory')
+parser.add_argument('-o', '--output_dir',type=str, help='outputdirectory to save ...cram/ into')
+parser.add_argument('-t', '--wall_time',type=str,help='wall time requested from cluster')
 parser.add_argument('-m', '--email_address',type=str,help='cluster email results to this email address')
 args = parser.parse_args()
 
@@ -21,12 +24,23 @@ else:
     print('reference fasta not found')
     raise IOError
 
-if args.cram_list is not None:
-    cram_list = args.cram_list.split(',')
-    samples = {}
-    samples = {i.rsplit('/')[-1]:i for i in cram_list}
+if args.wall_time is not None:
+    walltime = args.wall_time
 else:
-    print('bam csv list not formed correctly')
+    walltime = '04:00:00'
+
+if args.bam_dir is not None:
+    if args.bam_dir.endswith('.bam'):
+        bam_list = [args.bam_dir]
+    else:
+        bam_list = glob.glob(args.bam_dir+'/*.bam')
+    if len(bam_list)<1:
+        print('bam files were not found')
+        raise IOError
+    samples = {}
+    samples = {i.rsplit('/')[-1]:i for i in bam_list} #file name from path
+else:
+    print('bam file or directory not found')
     raise IOError
 
 if args.output_dir is not None:
@@ -53,16 +67,16 @@ for k in samples:
     varp   = '/home/tbecker/software/SVE/tests/variant_processor.py'
     sample_pbs = pbs_dir+'/'+k+'.pbs' #name of pbs script for sample k
     PBS += [sample_pbs]
-    if not os.path.exists(out_dir+k): os.makedirs(out_dir+k)
+#    if not os.path.exists(out_dir+k): os.makedirs(out_dir+k)
     with open(sample_pbs,'w') as pbs:
-        bam = [python, varp, '-d','jax','-r',ref_path,'-b',samples[k],'-s','cram2bam','-o',out_dir]
-        pbs.write('#!/bin/bash\n'+' '.join(bam))
+        cram = [python, varp, '-d','jax','-r',ref_path,'-b',samples[k],'-s','bam2cram','-o',out_dir]
+        pbs.write('#!/bin/bash\n'+' '.join(cram))
 #execute qsub with the scripts, getting the jids back (can display these)
 output,err = '',{}
 for pbs in PBS:
     print('processing %s'%pbs)
     try:
-        command = ['qsub','-l','walltime=24:00:00,mem=12gb','-m','e','-M',email,'-o','cram.log','-j oe',pbs]
+        command = ['qsub','-l','walltime=%s'%walltime+',mem=12gb','-m','e','-M',email,'-o','cram.log','-j oe',pbs]
         print(' '.join(command)) #don't run it yet!
         output += subprocess.check_output(' '.join(command),stderr=subprocess.STDOUT,shell=True)
     #catch all errors that arise under normal call behavior

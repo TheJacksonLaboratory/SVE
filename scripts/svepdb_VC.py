@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #get the staged runs for a given run id and extract the VC
 #svcpdb_test.py
 import os

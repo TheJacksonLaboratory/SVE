@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #prepare_ref.py v 0.5, 5/23/2015
 #Timothy Becker, UCONN/SOE/CSE Phd Candidate
 #preprocessing of reference sequences as well as random sequence generation

@@ -1,10 +1,10 @@
+#!/usr/bin/env python
 #svedb_test.py
 import os
 import sys
 import socket
 import subprocess32 as subprocess
 import time
-import HTSeq as ht
 relink = os.path.dirname(os.path.abspath(__file__))+'/../'
 sys.path.append(relink) #go up one in the modules
 import generate_variants as gv

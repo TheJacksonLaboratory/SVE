@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #BAM input metacalling SV pipeline
 #given a reference directory (same name as the refrence) that already contains all of the
 #preprossesing steps such as indexing, masking, chrom spliting, etc...

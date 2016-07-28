@@ -1,27 +1,18 @@
+#!/usr/bin/env python
 import argparse
 import os
 import glob
-import sys
-import csv
-import datetime
 import subprocess32 as subprocess #to call qsub a bunch of times
 
 des = """
-script that auto generates PBS scripts for simple bam splitting and submits them via qsub"""
+script that auto generates PBS scripts for runing a single caller on a folder of bams via qsub
+saving the results to a single root directory with sample-name subfolders for configuration/intermediate files"""
 parser = argparse.ArgumentParser(description=des)
-parser.add_argument('-r', '--ref_path',type=str, help='reference fasta')
 parser.add_argument('-b', '--bam_dir',type=str, help='bam file or directory')
-parser.add_argument('-o', '--output_dir',type=str, help='outputdirectory to save ...cram/ into')
+parser.add_argument('-o', '--output_dir',type=str, help='outputdirectory to save ...bam.bai/ into')
 parser.add_argument('-t', '--wall_time',type=str,help='wall time requested from cluster')
 parser.add_argument('-m', '--email_address',type=str,help='cluster email results to this email address')
 args = parser.parse_args()
-
-#check ftp file list and make it a dict sample_name:ftp-URL 
-if args.ref_path is not None:
-    ref_path = args.ref_path
-else:
-    print('reference fasta not found')
-    raise IOError
 
 if args.wall_time is not None:
     walltime = args.wall_time
@@ -47,13 +38,15 @@ if args.output_dir is not None:
     if not os.path.exists(out_dir): os.makedirs(out_dir)
 else:
     print('out put directory not specified')
-    raise IOError
+    out_dir = args.bam_dir+'/'
+    pass
 
 if args.email_address is not None:
     email = args.email_address
 else:
-    print('email not valid')
-    raise AttributeError
+    print('email not specified')
+    email = 'timothy.becker@jax.org' #default here
+    
     
 #make a temp directory for pbs scripts
 pbs_dir = out_dir+'PBS'
@@ -62,20 +55,19 @@ if not os.path.exists(pbs_dir): os.makedirs(pbs_dir)
 #write out the .pbs scripts
 PBS = []
 for k in samples:
-    python = '/home/tbecker/software/anaconda/bin/python'
-    varp   = '/home/tbecker/software/SVE/tests/variant_processor.py'
+    samtools = '/home/tbecker/software/samtools-1.2/samtools'
     sample_pbs = pbs_dir+'/'+k+'.pbs' #name of pbs script for sample k
     PBS += [sample_pbs]
 #    if not os.path.exists(out_dir+k): os.makedirs(out_dir+k)
     with open(sample_pbs,'w') as pbs:
-        cram = [python, varp, '-d','jax','-r',ref_path,'-b',samples[k],'-s','bam2cram','-o',out_dir]
-        pbs.write('#!/bin/bash\n'+' '.join(cram))
+        index = [samtools, 'index', samples[k]]
+        pbs.write('#!/bin/bash\n'+' '.join(index))
 #execute qsub with the scripts, getting the jids back (can display these)
 output,err = '',{}
 for pbs in PBS:
     print('processing %s'%pbs)
     try:
-        command = ['qsub','-l','walltime=%s'%walltime+',mem=12gb','-m','e','-M',email,'-o','cram.log','-j oe',pbs]
+        command = ['qsub','-l','walltime=%s'%walltime+',mem=16gb','-m','e','-M',email,'-o','index.log','-j oe',pbs]
         print(' '.join(command)) #don't run it yet!
         output += subprocess.check_output(' '.join(command),stderr=subprocess.STDOUT,shell=True)
     #catch all errors that arise under normal call behavior
