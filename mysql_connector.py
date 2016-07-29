@@ -36,11 +36,11 @@ class MYSQL:
         #close up the connection
         try: self.conn.close()
         except RuntimeError:
-            print('ER5.ODBC')
-            self.errors += 'ER5.ODBC' + '\n'
+            print('__exit__():ER1.ODBC')
+            self.errors += '__exit__():ER1.ODBC' + '\n'
         except Exception as err:
-            print('ER. Unknown Error: {}'.format(err))
-            self.errors += 'unkown error type encountered, will investigate\n'
+            print('__exit__():ER2.Unknown_Error: {}'.format(err))
+            self.errors += '__exit__():ER2. Unknown Error: {}'.format(err)+'\n'
             pass
             
     def start(self):
@@ -52,14 +52,14 @@ class MYSQL:
         try:#connection start
             conn = msc.connect(host=self.srv,database=self.db,user=self.uid,password=self.pwd)
         except RuntimeError:
-            print('ER1.ODBC')
-            self.errors += 'ER1.ODBC' + '\n'
+            print('start():ER3.ODBC')
+            self.errors += 'start():ER3.ODBC' + '\n'
         except msc.errors.ProgrammingError:
-            print('ER2.Connection')
-            self.errors += 'ER6.Connection' + '\n'
+            print('start():ER4.Connection')
+            self.errors += 'start():ER4.Connection' + '\n'
         except Exception as err:
-            print('ER3.Unknown_Error: {}'.format(err))
-            self.errors += 'ER3.Unknown_Error: {}'.format(err)+'\n'
+            print('start():ER5.Unknown_Error: {}'.format(err))
+            self.errors += 'start():ER5.Unknown_Error: {}'.format(err)+'\n'
             pass
         return conn
         
@@ -78,26 +78,26 @@ class MYSQL:
                 cursor.close()
             self.conn.commit()
         except msc.errors.ProgrammingError as err:
-            print('ER4.SQL_Malformed Error: {}'.format(err))
+            print('query():ER6.SQL_Malformed Error: {}'.format(err))
             #print('SQL GIVEN: '+sql+str(v))
-            self.errors += 'ER4.SQL_Malformed\n' +sql+str(v)+ '\n'
+            self.errors += 'query():ER6.SQL_Malformed\n' +sql+str(v)+ '\n'
         except msc.errors.DataError:
-            print('ER5.Data_Not_Matching_Template')
-            self.errors += 'ER5.Data_Not_Matching_Template' + '\n'
+            print('query():ER7.Data_Not_Matching_Template')
+            self.errors += 'query():ER7.Data_Not_Matching_Template' + '\n'
             print('SQL code:\n'+sql+'\nValue List:\n')
             self.errors += ('SQL code:\n'+sql+'\nValue List:\n')
             self.errors += str(v) + '\n'
         except msc.errors.IntegrityError:
-            print('ER6.SQL_Constraint_Violation')
-            self.errors += 'ER6.SQL_Constraint_Violation' + '\n'
+            print('query():ER8.SQL_Constraint_Violation')
+            self.errors += 'query():ER8.SQL_Constraint_Violation' + '\n'
             #print('SQL code:\n'+sql+'\nValue List:\n')
             self.errors += ('SQL code:\n'+sql+str(v)+'\nValue List:\n')
             self.errors += str(v) + '\n'
         except UnicodeDecodeError:
-           print('ER7.Unicode_Decoding_Error')
-           self.errors += 'ER7.unicode decoding issues\n'
+           print('query():ER9.Unicode_Decoding_Error')
+           self.errors += 'query():ER9.unicode decoding issues\n'
         except Exception as err:
-           print('ER8.Unknown_Error: {}'.format(err))
-           self.errors += 'ER8.Unknown_Error: {}'.format(err)+'\n'
+           print('query():ER10.Unknown_Error: {}'.format(err))
+           self.errors += 'query():ER10.Unknown_Error: {}'.format(err)+'\n'
            pass
         return res

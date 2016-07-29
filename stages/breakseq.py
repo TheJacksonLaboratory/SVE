@@ -53,8 +53,8 @@ class breakseq(stage_wrapper.Stage_Wrapper):
         call      = [python,breakseq,'--bwa',bwa,'--samtools',samtools,
                      '--reference',in_names['.fa'],'--bplib_gff',in_names['.gff'],
                      '--work',sub_dir,'--bams']+in_names['.bam']+\
-                    ['--nthreads',str(4),'--min_span',str(2),'--window',w,
-                     '--min_overlap',str(2),'--junction_length',j] #junctio =2x lead length
+                    ['--nthreads',str(4),'--min_span',str(2),'--window',max(100,w),
+                     '--min_overlap',str(2),'--junction_length',max(200,j)] #junctio =2x lead length
         #decompress the .vcf.gz
         decomp    = ['gzip','-d',sub_dir+'breakseq.vcf.gz']
         #copy up to ../
