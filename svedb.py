@@ -52,12 +52,14 @@ class SVEDB:
     #query the max run_id and ++ to genearte a new one
     def new_run(self,platform_id,node_id,ref_id,calibrating=False,
                 mut_mag=0,mut_len=0,mut_type='',mut_true_vc='',mut_ens_vc='',
-                stage_id_list='',stage_depth=0,curr_stage_id=-1):
-        run_id = self.get_max_key('runs')+1 #0 will be an empty table
+                stage_id_list='',stage_depth=0,curr_stage_id=-1,debug=False):
+        run_id = self.get_max_key('runs') #0 will be an empty table
+        if run_id is not None: run_id += 1 #normal behavior here
+        else: run_id = -1                  #None type means DB failure
         v = {'run_id':run_id,'platform_id':platform_id,'node_id':node_id,'ref_id':ref_id,
              'calibrating':calibrating,'mut_mag':mut_mag,'mut_len':mut_len,'mut_type':mut_type,
              'mut_true_vc':mut_true_vc,'mut_ens_vc':mut_ens_vc,'stage_id_list':stage_id_list,
-             'stage_depth':stage_depth,'curr_stage_id':curr_stage_id,
+             'stage_depth':stage_depth,'curr_stage_id':curr_stage_id,'debug':debug,
              'start':self.time()} #stop left off until curr_stage == -1 => finsihed
         return (self.insert('runs',v),run_id) #True if things work, False otherwise...
         
@@ -296,6 +298,7 @@ class SVEDB:
             stage_id_list blob,
             stage_depth int,
             curr_stage_id int,
+            debug bit(1),
             start datetime,
             stop datetime
             """
@@ -334,6 +337,7 @@ class SVEDB:
             in_files varchar(255) not null,
             in_files_size varchar(255),
             params blob,
+            command text,
             results longblob,
             errors text,
             start datetime,

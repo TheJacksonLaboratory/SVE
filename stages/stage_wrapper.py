@@ -181,6 +181,11 @@ class Stage_Wrapper(object):
     #this is the stop of a stagged_run which should load results and errors and update the done flag    
     def db_stop(self,run_id,results,errors,done):
         with svedb.SVEDB(self.srv, self.db, self.uid, self.pwd) as dbo:
+            try:
+                debug = dbo.get_run_info(run_id)['debug']
+            except Exception:
+                debug = False
+            if not debug: results = {} #can turn off results now
             dbo.update_staged_run(run_id,self.stage_id,self.in_files,results,errors,done)
             return True
         return False

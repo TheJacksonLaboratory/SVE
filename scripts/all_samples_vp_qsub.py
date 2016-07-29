@@ -20,6 +20,7 @@ parser.add_argument('-a', '--all_at_once',action='store_true', help='run all bam
 parser.add_argument('-w', '--wall_time',type=str,help='wall time requested from cluster')
 parser.add_argument('-m', '--memory',type=str,help='radom access memory needed')
 parser.add_argument('-p', '--processors',type=int,help='processors needed')
+parser.add_argument('-d', '--debug',action='store_true', help='save results/errors to db')
 parser.add_argument('-e', '--email_address',type=str,help='cluster email results to this email address')
 args = parser.parse_args()
 
@@ -132,10 +133,13 @@ if args.all_at_once:
     print('using the automatic RD and RL estimation step: samtools stats step added')
     with open(group_pbs,'w') as pbs:
         if auto_RD_RL:
-            call = [python,vp,'-d','jax','-r',ref_path,'-b',bams,'-s',','.join(stages),'-o',sub_dir]
+            call = [python,vp,'-d','jax','-r',ref_path,'-b',bams,'-s',','.join(stages),
+                    '-o',sub_dir]
+            if args.debug: call += ['--debug']
         else:
             call = [python,vp,'-d','jax','-r',ref_path,'-b',bams,'-s',','.join(stages),
                     '-D',str(RD),'-L',str(RL),'-o',sub_dir]
+            if args.debug: call += ['--debug']
         ml = 'module load '
         modules = [ml+'perl/5.16.3',ml+'gcc/4.9.2',ml+'R/3.2.1',
                    ml+'Root/v5.34.18',ml+'samtools/1.2',ml+'pbs-drmaa/1.0.17'] #everything that you need here...
@@ -154,9 +158,11 @@ else:
                 if auto_RD_RL:
                     call = [python,vp,'-d','jax','-r',ref_path,'-b',samples[k],
                         '-s',','.join(stages),'-o',sub_dir]
+                    if args.debug: call += ['--debug']
                 else:
                     call = [python,vp,'-d','jax','-r',ref_path,'-b',samples[k],
-                        '-s',','.join(stages),'-D',str(RD),'-L',str(RL),'-o',sub_dir]
+                        '-s',','.join(stages),'-D',str(RD),'-L',str(RL)]
+                    if args.debug: call += ['--debug']
                 ml = 'module load ' #everything that you need below...
                 modules = [ml+'perl/5.16.3',ml+'gcc/4.9.2',ml+'R/3.2.1',
                            ml+'Root/v5.34.18',ml+'samtools/1.2',ml+'pbs-drmaa/1.0.17'] 
@@ -172,9 +178,11 @@ else:
                 if auto_RD_RL:
                     call = [python,vp,'-d','jax','-r',ref_path,'-b',samples[k],'-t',tar_samples[k],
                             '-s',','.join(stages),'-o',sub_dir]
+                    if args.debug: call += ['--debug']
                 else:
                     call = [python,vp,'-d','jax','-r',ref_path,'-b',samples[k],'-t',tar_samples[k],
                             '-s',','.join(stages),'-D',str(RD),'-L',str(RL),'-o',sub_dir]
+                    if args.debug: call += ['--debug']
                 ml = 'module load ' #everything that you need below...
                 modules = [ml+'perl/5.16.3',ml+'gcc/4.9.2',ml+'R/3.2.1',
                            ml+'Root/v5.34.18',ml+'samtools/1.2',ml+'pbs-drmaa/1.0.17']  
@@ -190,9 +198,11 @@ else:
                 if auto_RD_RL:
                     call = [python,vp,'-d','jax','-r',ref_path,'-b',samples[k],'-t',tar_samples[k],
                             '-s',','.join(stages),'-o',sub_dir]
+                    if args.debug: call += ['--debug']
                 else:
                     call = [python,vp,'-d','jax','-r',ref_path,'-b',samples[k],'-t',tar_samples[k],
                             '-s',','.join(stages),'-D',str(RD),'-L',str(RL),'-o',sub_dir]
+                    if args.debug: call += ['--debug']
                 ml = 'module load ' #everything that you need below...
                 modules = [ml+'perl/5.16.3',ml+'gcc/4.9.2',ml+'R/3.2.1',
                            ml+'Root/v5.34.18',ml+'samtools/1.2',ml+'pbs-drmaa/1.0.17'] 

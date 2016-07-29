@@ -34,11 +34,30 @@ parser.add_argument('-t', '--targets',type=str, help='target region files for in
 parser.add_argument('-s','--stages',type=str, help='stage name list')
 parser.add_argument('-c','--chroms',type=str, help='chrom name list')
 parser.add_argument('-p','--partitions',type=int, help='number of partitions or ||L')
+parser.add_argument('--debug',action='store_true',help='save result/error data to db')
 parser.add_argument('-d','--database',type=str, help='UCONN,JAX')
 parser.add_argument('-e','--erase_db',action='store_true',help='reset and clear the schema bound db')
 #
 parser.add_argument('-v','--verbose',action='store_true',help='be verbose with caller stdout/stderr')
 args = parser.parse_args()
+
+dbc = {'srv':'','db':'','uid':'','pwd':''}
+if args.database is not None:
+    dbc['db']  = 'svX' #testing run without DB
+    dbc['uid'] = 'sv_calibrator'
+    dbc['pwd'] = 'sv_calibrator'
+    if args.database.upper() == 'UCONN':
+        dbc['srv'] = 'arc-gis.ad.engr.uconn.edu'
+    elif args.database.upper() == 'JAX':
+        dbc['srv'] = 'ldg-jgm003.jax.org'
+    #add els for SQLite3 here...
+else:
+    print('invalid database configuration')
+    raise KeyError
+
+#db clearing option
+with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
+    if args.erase_db: dbo.new()  # reset db if needed
 
 #[2] apply and bind args to variables
 host = socket.gethostname()
@@ -73,26 +92,11 @@ if args.targets is not None:
     targets = args.targets.split(',') #CSL returns a list of 1+
 else:
     targets = None
-    print('no targets')  
-
-dbc = {'srv':'','db':'','uid':'','pwd':''}
-if args.database is not None:
-    dbc['db']  = 'sve'
-    dbc['uid'] = 'sv_calibrator'
-    dbc['pwd'] = 'sv_calibrator'
-    if args.database.upper() == 'UCONN':
-        dbc['srv'] = 'arc-gis.ad.engr.uconn.edu'
-    elif args.database.upper() == 'JAX':
-        dbc['srv'] = 'ldg-jgm003.jax.org'
-    #add els for SQLite3 here...
-else:
-    print('invalid database configuration')
-    raise KeyError
+    print('no targets')
      
 if args.stages is not None:
     sids = []
     with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
-        if args.erase_db: dbo.new() #reset db if needed
         dbo.embed_schema()
         stage_meta = su.get_stage_meta()
         sids = su.get_stage_name_id(stage_meta)
@@ -102,7 +106,8 @@ if args.stages is not None:
         staging = {c:sids[c] for c in args.stages.split(',')}
         print('processing with : %s'%(sorted(staging.keys()),))
     except Exception:
-        print('unknown processor name used as input argument')
+        print('unknown processor name used as input argument: %s'%args.stages)
+        print('availble stages are %s'%sids)
         raise KeyError    
 else:
     print('missing value for caller stage_id list')
@@ -157,7 +162,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
     except IndexError:
         print('unkown reference: run starting with -1')
     print('using ref_id=%s'%str(ref_id))
-    dbo.new_run('illumina',host,ref_id)
+    dbo.new_run('illumina',host,ref_id,debug=args.debug)
     run_id = dbo.get_max_key('runs')
     print('starting run_id = %s'%run_id)
     
