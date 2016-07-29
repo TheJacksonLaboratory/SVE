@@ -25,8 +25,9 @@ class cnvnator(stage_wrapper.Stage_Wrapper):
         #workflow is to run through the stage correctly and then check for error handles
     
         #[1a]get input names and output names setup
+        in_names = {'.fa': inputs['.fa'], '.bam': inputs['.bam']}
         if self.db_get_ref_name(run_id): ref_name = self.ref_name        
-        in_names = {'.fa':inputs['.fa'],'.bam':inputs['.bam']}
+        else: ref_name = in_names['.fa'][0].rsplit('/')[-1].rsplit('.')[0]
         
         out_exts = self.split_out_exts()
         if inputs.has_key('out_dir'):

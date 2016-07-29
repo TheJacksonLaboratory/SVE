@@ -23,7 +23,12 @@ class Stage_Wrapper(object):
         self.uid = dbc['uid'] #user id  this is tied to the sve user
         self.pwd = dbc['pwd'] #password this is tied to the sve user
         if retrieve:
-            self.db_get_stage_info(wrapper) #use the db to gather info (one workflow)
+            try:
+                self.db_get_stage_info(wrapper) #use the db to gather info (one workflow)
+            except IndexError:
+                print('stage_information not availble via SVEDB, trying local configuration')
+                #try the json instead
+                self.json_get_stage_info(upload)
         else:
             self.json_get_stage_info(upload) #read meta data from JSON and upload          
             
@@ -132,9 +137,14 @@ class Stage_Wrapper(object):
     
     def db_get_ref_name(self,run_id):
         with svedb.SVEDB(self.srv, self.db, self.uid, self.pwd) as dbo:
-            self.ref_name = dbo.get_ref_name(run_id)
-            return True
-        return False
+            try:
+                self.ref_name = dbo.get_ref_name(run_id)
+                return True
+            except IndexError:
+                self.ref_name = 'unkown_genome'
+                print('reference name not avaible from SVEDB using unkown_genome')
+                return False
+
 
     #get from the svedb given the unique stage_id allowing auto-retrieval
     #of all fields including the param_map to explore param optimizations
