@@ -179,7 +179,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                         ['-configFile',conf,'-tempDir',SV_TMPDIR,'-R',ref,
                          '-runDirectory',rd,'-md',md,'-jobLogDir',logs,
                          '-genomeMaskFile', gmask, '-genderMapFile', gender_map,
-                         '-I',bams,
+                         '-ploidyMapFile',ploidy,'-I',bams,
                          '-tilingWindowSize',str(5000),'-tilingWindowOverlap',str(2500), 
                          '-maximumReferenceGapLength',str(25000),'-boundaryPrecision',str(200),
                          '-minimumRefinedLength',str(2500)]+\

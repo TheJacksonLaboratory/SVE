@@ -41,7 +41,7 @@ class gatk_haplo(stage_wrapper.Stage_Wrapper):
         
         #[2a]build command args
         java = self.software_path+'/jre1.8.0_25/bin/java'
-        gatk = self.software_path+'/GATK_3.3/GenomeAnalysisTK.jar'
+        gatk = self.software_path+'/GATK_3.6/GenomeAnalysisTK.jar'
         command = [java,'-Xmx12g','-jar',gatk,'-T','HaplotypeCaller',
                    '-R',in_names['.fa'],'-I'] + in_names['.bam']
         #add this param function
