@@ -4,7 +4,7 @@
     "name":"genome_strip",
     "version":"2.00.1547",
     "wrapper":"genome_strip",
-    "in_ext":".fa,.fa.svmask.fasta,.ploidymap.txt,.rdmask.bed,.bam",
+    "in_ext":".fa,.fa.svmask.fasta,.gcmask.fasta,.ploidymap.txt,.rdmask.bed,.bam",
     "out_ext":".del.vcf,.del.genotype.vcf,.cnv.vcf",
     "param_map":{"window":{"type":"int","min":500,"max":10000,"steps":10},
                  "torque":{"type":"boolean","min":true,"max":false,"steps":1}}             

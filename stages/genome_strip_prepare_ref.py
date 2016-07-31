@@ -78,6 +78,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         seq_n = sr.get_fasta_seq_names(in_names['.fa']) #assume last two are sex chroms
         seq_l = sr.get_fasta_seq_lens(in_names['.fa'])  #get the lens here
         ploidy_name = out_names['.ploidymap.txt']
+
 # could try this default human ploidy mapping.......
 #        X  2699521  154931043  F  2
 #        X  2699521  154931043  M  1
