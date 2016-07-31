@@ -43,8 +43,8 @@ class delly(stage_wrapper.Stage_Wrapper):
         
         #add load libs parameters for OPEN_MP to do || processing        
         #will have to make some connection changes here
-        delly = self.software_path+'/delly_MP_0.7.2' #updated binary
-        excl  = self.software_path+'/delly-0.6.7/excludeTemplates/human.hg19.excl.tsv'
+        delly = self.software_path+'/delly-0.7.2/delly_MP_0.7.2' #updated binary
+        excl  = self.software_path+'/delly-0.7.2/excludeTemplates/human.hg19.excl.tsv'#need to match reference
         vcfs  = {'del':sub_dir+'del.vcf','dup':sub_dir+'dup.vcf',
                  'inv':sub_dir+'inv.vcf','tra':sub_dir+'tra.vcf',
                  'ins': sub_dir + 'ins.vcf'}
@@ -72,7 +72,7 @@ class delly(stage_wrapper.Stage_Wrapper):
                                               stderr=subprocess.STDOUT,shell=True)+'\n' 
             output += subprocess.check_output(' '.join(tra_call),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
-            output += subprocess.check_output(' '.join(tra_call),
+            output += subprocess.check_output(' '.join(ins_call),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
             #new version has ins_call too, will add
         #catch all errors that arise under normal call behavior
