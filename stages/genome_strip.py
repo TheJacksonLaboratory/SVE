@@ -56,6 +56,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         if not os.path.exists(SV_TMPDIR): os.makedirs(SV_TMPDIR)
         PATH = soft+'jre1.8.0_51/bin:'+ \
                soft+'svtoolkit/bwa:'+ \
+               soft+'samtools-0.1.19/:'+ \
                '/opt/compsci/R/3.2.1/bin:'+ \
                '/opt/compsci/pbs-drmaa/1.0.17/bin:'+ \
                os.environ['PATH']
@@ -70,12 +71,12 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         print('checking environment variable = SV_TMPDIR:\n%s'%SV_TMPDIR)
 
         #PBS cluster specfic tunning
-        CLUSTER = False  #dispatched jobs or not
+        CLUSTER = True   #dispatched jobs or not
         RAM = 32         #in gigabytes
         CPU = 1          #tasks
         JOBS = 4         #max concurrent jobs
-        TIME = '2:00:00' #5 days, fail quickly
-        QUEUE= 'batch'
+        TIME = '4:00:00' #5 days, fail quickly
+        QUEUE= 'test'
 
         #reused paths and files...
         sv = self.software_path+'/svtoolkit'
@@ -133,12 +134,12 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                
         #[0] Preprocess The Bam Data and Generate MetaData
         pp   = sv+'/qscript/SVPreprocess.q'
-        preprocess = [java,'-cp',classpath,qcmd,'-S',pp,'-S',qs,'-gatk',gatk,'-cp',classpath]+\
-                     job+\
+        preprocess = [java,'-cp',classpath,qcmd,'-S',pp,'-S',qs,'-gatk',gatk]+\
+                     job+['-cp',classpath]+\
                       ['-configFile',conf,'-tempDir',SV_TMPDIR,'-R',ref,
                       '-runDirectory',rd,'-md',md,'-jobLogDir',logs,
-                      '-genomeMaskFile',gmask,'-copyNumberMaskFile',cnmask,#'-readDepthMaskFile',rdmask,
-                      '-ploidyMapFile',ploidy,'-genderMapFile',gender_map,#try this
+                      '-genomeMaskFile',gmask,'-copyNumberMaskFile',cnmask,'-readDepthMaskFile',rdmask,
+                      '-ploidyMapFile',ploidy,'-genderMapFile',gender_map,
                       '-useMultiStep','-reduceInsertSizeDistributions true',
                       '-bamFilesAreDisjoint true','-computeGCProfiles true','-computeReadCounts true',
                       '-I',bams]+\
@@ -148,8 +149,8 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
 
         #[1] Initial Pooled Deletion Discovery
         dd = sv+'/qscript/SVDiscovery.q'        
-        del_discovery = [java, '-cp',classpath,qcmd,'-S',dd,'-S',qs,'-gatk',gatk,'-cp',classpath]+\
-                        job+\
+        del_discovery = [java,'-cp',classpath,qcmd,'-S',dd,'-S',qs,'-gatk',gatk]+\
+                        job+['-cp',classpath]+\
                         ['-configFile',conf,'-tempDir',SV_TMPDIR,'-R',ref,
                          '-runDirectory',rd,'-md',md,'-jobLogDir',logs,
                          '-minimumSize',str(100),'-maximumSize',str(1000000),
@@ -162,8 +163,8 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
 
         #[2] Genotype Individual Deleteions (this needs the GS_DEL_VCF_splitter.py)
         dg = sv+'/qscript/SVGenotyper.q'
-        del_genotyping = [java, '-cp',classpath,qcmd,'-S',dg,'-S',qs,'-gatk',gatk,'-cp',classpath]+\
-                         job+\
+        del_genotyping = [java,'-cp',classpath,qcmd,'-S',dg,'-S',qs,'-gatk',gatk]+\
+                         job+['-cp',classpath]+\
                          ['-configFile',conf,'-tempDir',SV_TMPDIR,'-R',ref,
                           '-runDirectory',rd,'-md',md,'-jobLogDir',logs,
                           '-genomeMaskFile', gmask, '-genderMapFile', gender_map,
@@ -174,8 +175,8 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
 
         #[3] GenomeSTRiP2.0 CNV algorithm (this needs the gs_slpit_merge.py)
         cnv = sv+'/qscript/discovery/cnv/CNVDiscoveryPipeline.q'
-        cnv_discovery = [java, '-cp',classpath,qcmd,'-S',cnv,'-S',qs,'-gatk',gatk,'-cp',classpath]+\
-                        job+\
+        cnv_discovery = [java,'-cp',classpath,qcmd,'-S',cnv,'-S',qs,'-gatk',gatk]+\
+                        job+['-cp',classpath]+\
                         ['-configFile',conf,'-tempDir',SV_TMPDIR,'-R',ref,
                          '-runDirectory',rd,'-md',md,'-jobLogDir',logs,
                          '-genomeMaskFile', gmask, '-genderMapFile', gender_map,

@@ -31,8 +31,9 @@ python ./setup.py build
 sudo python ./setup.py install
 cd /
 
-pip install --noinput numpy
-pip install --noinput scipy
-pip install --noinput paramiko
-pip install --noinput HTSeq
+pip install -I numpy
+pip install -I scipy
+pip install -I paramiko
+pip install -I subprocess32
+pip install -I HTSeq
 
