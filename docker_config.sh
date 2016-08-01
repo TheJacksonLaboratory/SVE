@@ -35,5 +35,8 @@ pip install -I numpy
 pip install -I scipy
 pip install -I paramiko
 pip install -I subprocess32
+pip install -I pysam
 pip install -I HTSeq
+echo "checking SVE executables"
+/software/SVE/scripts/variant_processor.py -h
 
