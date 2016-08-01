@@ -1,5 +1,5 @@
 #!/bin/bash
-apt-get update && apt-get-install -y \
+apt-get update && apt-get install -y \
 ant \
 build-essential \
 cmake \
