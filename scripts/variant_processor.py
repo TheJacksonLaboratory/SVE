@@ -35,22 +35,21 @@ parser.add_argument('-s','--stages',type=str, help='stage name list')
 parser.add_argument('-c','--chroms',type=str, help='chrom name list')
 parser.add_argument('-p','--partitions',type=int, help='number of partitions or ||L')
 parser.add_argument('--debug',action='store_true',help='save result/error data to db')
-parser.add_argument('-d','--database',type=str, help='UCONN,JAX')
+parser.add_argument('-d','--database',type=str, help='database configuration file')
 parser.add_argument('-e','--erase_db',action='store_true',help='reset and clear the schema bound db')
 #
 parser.add_argument('-v','--verbose',action='store_true',help='be verbose with caller stdout/stderr')
 args = parser.parse_args()
 
+#read the database configuration file
 dbc = {'srv':'','db':'','uid':'','pwd':''}
 if args.database is not None:
+    with open(args.database, 'r') as f:
+        params = f.read().split('\n') #newline seperated configuration file
     dbc['db']  = 'sve' #testing run without DB
     dbc['uid'] = 'sv_calibrator'
     dbc['pwd'] = 'sv_calibrator'
-    if args.database.upper() == 'UCONN':
-        dbc['srv'] = 'arc-gis.ad.engr.uconn.edu'
-    elif args.database.upper() == 'JAX':
-        dbc['srv'] = 'ldg-jgm003.jax.org'
-    #add els for SQLite3 here...
+    dbc['srv'] = 'ldg-jgm003.jax.org'
 else:
     print('invalid database configuration')
     print('running the SVE without the SVEDB')
