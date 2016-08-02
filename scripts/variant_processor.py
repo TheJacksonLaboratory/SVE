@@ -46,14 +46,40 @@ dbc = {'srv':'','db':'','uid':'','pwd':''}
 if args.database is not None:
     with open(args.database, 'r') as f:
         params = f.read().split('\n') #newline seperated configuration file
-    dbc['db']  = 'sve' #testing run without DB
-    dbc['uid'] = 'sv_calibrator'
-    dbc['pwd'] = 'sv_calibrator'
-    dbc['srv'] = 'ldg-jgm003.jax.org'
+    try:
+        dbc['srv']  = params[0].split('srv=')[-1]
+        dbc['db'] = params[0].split('srv=')[-1]
+        dbc['uid'] = params[0].split('srv=')[-1]
+        dbc['pwd'] = params[0].split('srv=')[-1]
+    except Exception:
+        print('invalid database configuration')
+        print('running the SVE without the SVEDB')
+        pass
 else:
-    print('invalid database configuration')
-    print('running the SVE without the SVEDB')
-    pass
+    with open(os.path.dirname(os.path.abspath(__file__))+'/../data/svedb.config', 'r') as f:
+        params = f.read().split('\n') #newline seperated configuration file
+    try:
+        dbc['srv'] = params[0].split('srv=')[-1]
+        dbc['db']  = params[1].split('db=')[-1]
+        dbc['uid'] = params[2].split('uid=')[-1]
+        dbc['pwd'] = params[3].split('pwd=')[-1]
+        schema = {}
+        with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
+            dbo.embed_schema()
+            schema = dbo.schema
+            print(schema)
+        if len(schema)<1:
+            print('dbc:%s' % [c + '=' + dbc[c] for c in dbc])
+            print('invalid database configuration')
+            print('running the SVE without the SVEDB')
+        else:
+            print('dbc:%s'%[c+'='+dbc[c] for c in dbc])
+            print('valid database configuration found')
+            print('running the SVE with the SVEDB')
+    except Exception:
+        print('invalid database configuration')
+        print('running the SVE without the SVEDB')
+        pass
 
 #db clearing option
 with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
@@ -65,7 +91,6 @@ directory = path('~/'+host+'/') #users base home folder as default plus hostname
 if args.stages is not None:
     sids = []
     with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
-        dbo.embed_schema()
         stage_meta = su.get_stage_meta()
         sids = su.get_stage_name_id(stage_meta)
 #if args.meta_call.upper()=='ALL':
