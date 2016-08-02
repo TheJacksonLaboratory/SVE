@@ -43,7 +43,7 @@ args = parser.parse_args()
 
 dbc = {'srv':'','db':'','uid':'','pwd':''}
 if args.database is not None:
-    dbc['db']  = 'svX' #testing run without DB
+    dbc['db']  = 'sve' #testing run without DB
     dbc['uid'] = 'sv_calibrator'
     dbc['pwd'] = 'sv_calibrator'
     if args.database.upper() == 'UCONN':
@@ -53,15 +53,37 @@ if args.database is not None:
     #add els for SQLite3 here...
 else:
     print('invalid database configuration')
-    raise KeyError
+    print('running the SVE without the SVEDB')
+    pass
 
 #db clearing option
 with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
     if args.erase_db: dbo.new()  # reset db if needed
 
-#[2] apply and bind args to variables
 host = socket.gethostname()
 directory = path('~/'+host+'/') #users base home folder as default plus hostname
+
+if args.stages is not None:
+    sids = []
+    with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
+        dbo.embed_schema()
+        stage_meta = su.get_stage_meta()
+        sids = su.get_stage_name_id(stage_meta)
+#if args.meta_call.upper()=='ALL':
+#need to check the stage_id and that type like 'variant%'
+    try: #get just the callers name:stage_id
+        staging = {c:sids[c] for c in args.stages.split(',')}
+        print('processing with : %s'%(sorted(staging.keys()),))
+    except Exception:
+        print('unknown processor name used as input argument: %s'%args.stages)
+        print('availble stages are %s'%stage_meta)
+        raise KeyError
+else:
+    stage_meta = su.get_stage_meta()
+    print('missing value for caller stage_id list')
+    print('availble stages are %s' % stage_meta)
+    raise AttributeError
+
 if args.out_dir is not None:    #optional reroute
     directory = args.out_dir
 if not os.path.exists(directory): os.makedirs(directory)
@@ -93,25 +115,6 @@ if args.targets is not None:
 else:
     targets = None
     print('no targets')
-     
-if args.stages is not None:
-    sids = []
-    with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
-        dbo.embed_schema()
-        stage_meta = su.get_stage_meta()
-        sids = su.get_stage_name_id(stage_meta)
-#if args.meta_call.upper()=='ALL':
-#need to check the stage_id and that type like 'variant%'        
-    try: #get just the callers name:stage_id
-        staging = {c:sids[c] for c in args.stages.split(',')}
-        print('processing with : %s'%(sorted(staging.keys()),))
-    except Exception:
-        print('unknown processor name used as input argument: %s'%args.stages)
-        print('availble stages are %s'%sids)
-        raise KeyError    
-else:
-    print('missing value for caller stage_id list')
-    raise AttributeError    
 
 if args.ref is not None and os.path.exists(args.ref):
     ref_fa_path = args.ref
