@@ -65,9 +65,8 @@ else:
         dbc['pwd'] = params[3].split('pwd=')[-1]
         schema = {}
         with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
-            dbo.embed_schema()
+            dbo.embed_schema()   #check the schema for a valid db
             schema = dbo.schema
-            print(schema)
         if len(schema)<1:
             print('dbc:%s' % [c + '=' + dbc[c] for c in dbc])
             print('invalid database configuration')

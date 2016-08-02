@@ -28,7 +28,7 @@ parser.add_argument('-m', '--mark_duplicates',action='store_true', help='mark du
 parser.add_argument('-s', '--sample',type=str, help='sample name')
 parser.add_argument('-o', '--out_dir', type=str, help='output directory to store resulting files')
 parser.add_argument('-r', '--ref', type=str, help='fasta reference file path')
-parser.add_argument('-d','--database',type=str, help='UCONN|JAX')
+parser.add_argument('-d','--database',type=str, help='database configuration file')
 fqs_help = """
 fq comma-sep file path list
 [EX PE] --fqs ~/data/sample1_FWD.fq,~/data/sample1_REV.fq"""
@@ -36,7 +36,45 @@ parser.add_argument('-f', '--fqs',type=str, help=fqs_help)
 parser.add_argument('-b', '--bam',type=str, help='bam file path')
 args = parser.parse_args()
 
-#[2] apply and bind args to variables
+#read the database configuration file
+dbc = {'srv':'','db':'','uid':'','pwd':''}
+if args.database is not None:
+    with open(args.database, 'r') as f:
+        params = f.read().split('\n') #newline seperated configuration file
+    try:
+        dbc['srv']  = params[0].split('srv=')[-1]
+        dbc['db'] = params[0].split('srv=')[-1]
+        dbc['uid'] = params[0].split('srv=')[-1]
+        dbc['pwd'] = params[0].split('srv=')[-1]
+    except Exception:
+        print('invalid database configuration')
+        print('running the SVE without the SVEDB')
+        pass
+else:
+    with open(os.path.dirname(os.path.abspath(__file__))+'/../data/svedb.config', 'r') as f:
+        params = f.read().split('\n') #newline seperated configuration file
+    try:
+        dbc['srv'] = params[0].split('srv=')[-1]
+        dbc['db']  = params[1].split('db=')[-1]
+        dbc['uid'] = params[2].split('uid=')[-1]
+        dbc['pwd'] = params[3].split('pwd=')[-1]
+        schema = {}
+        with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
+            dbo.embed_schema()   #check the schema for a valid db
+            schema = dbo.schema
+        if len(schema)<1:
+            print('dbc:%s' % [c + '=' + dbc[c] for c in dbc])
+            print('invalid database configuration')
+            print('running the SVE without the SVEDB')
+        else:
+            print('dbc:%s'%[c+'='+dbc[c] for c in dbc])
+            print('valid database configuration found')
+            print('running the SVE with the SVEDB')
+    except Exception:
+        print('invalid database configuration')
+        print('running the SVE without the SVEDB')
+        pass
+
 host = socket.gethostname()
 directory = path('~/'+host+'/') #users base home folder as default plus hostname
 if args.out_dir is not None:    #optional reroute
@@ -65,22 +103,7 @@ if args.sample is not None:
     SM = args.sample
 else:
     SM = None
-    
-#[3] start DB and execute the Pipeline
-#try a new schema here?....???
-dbc = {'srv':'','db':'','uid':'','pwd':''}
-if args.database is not None:
-    dbc['db']  = 'sve'
-    dbc['uid'] = 'sv_calibrator'
-    dbc['pwd'] = 'sv_calibrator'
-    if args.database.upper() == 'UCONN':
-        dbc['srv'] = 'arc-gis.ad.engr.uconn.edu'
-    elif args.database.upper() == 'JAX':
-        dbc['srv'] = 'ldg-jgm003.jax.org'
-    #add els for SQLite3 here...
-else:
-    print('invalid database configuration')
-    raise KeyError
+
 #take in bam file(s) run
 with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
     dbo.embed_schema()
