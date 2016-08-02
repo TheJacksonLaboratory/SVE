@@ -10,3 +10,5 @@ scripts/all_samples_vp_qsub.py
 scripts/all_samples_pb_qsub.py
 
 .idea/*
+
+svedb.config
