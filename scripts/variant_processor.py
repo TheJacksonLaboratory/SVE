@@ -76,12 +76,13 @@ if args.stages is not None:
         print('processing with : %s'%(sorted(staging.keys()),))
     except Exception:
         print('unknown processor name used as input argument: %s'%args.stages)
-        print('availble stages are %s'%stage_meta)
+        print('availble stages are:\n------------------------------\n%s\n' % '\n'.join(sorted(sids.keys())))
         raise KeyError
 else:
     stage_meta = su.get_stage_meta()
+    sids = su.get_stage_name_id(stage_meta)
     print('missing value for caller stage_id list')
-    print('availble stages are %s' % stage_meta)
+    print('availble stages are:\n------------------------------\n%s\n' % '\n'.join(sorted(sids.keys())))
     raise AttributeError
 
 if args.out_dir is not None:    #optional reroute
