@@ -51,20 +51,20 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         
         #environment variable passing here
         soft = self.software_path
-        SV_DIR = soft+'/svtoolkit/'
-        SV_TMPDIR = out_dir+'/temp/'
+        SV_DIR = soft+'/svtoolkit'
+        SV_TMPDIR = out_dir+'/temp'
         if not os.path.exists(SV_TMPDIR): os.makedirs(SV_TMPDIR)
-        PATH = soft+'jre1.8.0_51/bin:'+ \
-               soft+'svtoolkit/bwa:'+ \
-               soft+'samtools-0.1.19/:'+ \
+        PATH = soft+'/jre1.7.0_72/bin:'+ \
+               soft+'/svtoolkit/bwa:'+ \
+               soft+'/samtools-1.0/bin:'+ \
                '/opt/compsci/R/3.2.1/bin:'+ \
-               '/opt/compsci/pbs-drmaa/1.0.17/bin:'+ \
+               '/opt/compsci/pbs-drmaa/1.0.17/bin'+ \
                os.environ['PATH']
-        #soft+'R-3.1.2/bin:' \ #for other users
-        LD_LIB = soft+'svtoolkit/bwa:'+'/opt/compsci/pbs-drmaa/1.0.17/lib'#dynamic libs
+        LD_LIB = soft+'/svtoolkit/bwa:'+'/opt/compsci/pbs-drmaa/1.0.17/lib'#dynamic libs
         if os.environ.has_key('LD_LIBRARY_PATH'):
             LD_LIB += ':'+os.environ['LD_LIBRARY_PATH']
-            
+
+
         print('checking environment variable = PATH:\n%s'%PATH)
         print('checking environment variable = LD_LIBRARY_PATH:\n%s'%LD_LIB)
         print('checking environment variable = SV_DIR:\n%s'%SV_DIR)
@@ -73,7 +73,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         #PBS cluster specfic tunning
         CLUSTER = True   #dispatched jobs or not
         RAM = 32         #in gigabytes
-        CPU = 1          #tasks
+        CPU = 6          #tasks
         JOBS = 4         #max concurrent jobs
         TIME = '4:00:00' #5 days, fail quickly
         QUEUE= 'test'
@@ -114,39 +114,89 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
             f.write(s)
         
         md   = sub_dir+'/md'
+        if not os.path.exists(md): os.makedirs(md)
         rd   = sub_dir+'/run'
+        if not os.path.exists(rd): os.makedirs(rd)
         logs = sub_dir+'/logs'
+        if not os.path.exists(logs): os.makedirs(logs)
         #scheduler specific commands
         if CLUSTER:
-            scheduler  = ['-jobNative "-v SV_DIR='+SV_DIR+'"',
-                          '-jobNative "-v SV_TMPDIR='+SV_TMPDIR+'"',
-                          '-jobNative "-v PATH='+PATH+'"',
-                          '-jobNative "-v LD_LIBRARY_PATH='+LD_LIB+'"',
-                          '-jobNative "-v classpath='+classpath+'"',
-                          '-jobNative "-l nodes=1:ppn='+str(CPU)+',walltime='+TIME+',mem='+str(RAM*2)+'g"',
-                          '-jobNative "-q '+QUEUE+'"']
-            print('\n'.join(scheduler))
+            scheduler  = ['-jobNative "-v SV_DIR=%s"'%SV_DIR,
+                          '-jobNative "-v SV_TMPDIR=%s"'%SV_TMPDIR,
+                          '-jobNative "-v PATH=%s"'%PATH,
+                          '-jobNative "-v LD_LIBRARY_PATH=%s"'%LD_LIB,
+                          '-jobNative "-v classpath=%s"'%classpath,
+                          '-jobNative "-l nodes=1:ppn=%s,walltime=%s,mem=%sg"'%(str(CPU),str(TIME),str(RAM*2))]
             #job specific commands
-            job = ['-gatkJobRunner PbsEngine','-jobRunner PbsEngine','-disableJobReport','-disableGATKTraversal']
+            job = ['-gatkJobRunner PbsEngine','-jobRunner PbsEngine','--disableJobReport']
         else:
             scheduler = []
-            job = ['-disableJobReport','-disableGATKTraversal']
+            job = ['--disableJobReport']
                
         #[0] Preprocess The Bam Data and Generate MetaData
         pp   = sv+'/qscript/SVPreprocess.q'
-        preprocess = [java,'-cp',classpath,qcmd,'-S',pp,'-S',qs,'-gatk',gatk]+\
-                     job+['-cp',classpath]+\
-                      ['-configFile',conf,'-tempDir',SV_TMPDIR,'-R',ref,
-                      '-runDirectory',rd,'-md',md,'-jobLogDir',logs,
-                      '-genomeMaskFile',gmask,'-copyNumberMaskFile',cnmask,'-readDepthMaskFile',rdmask,
-                      '-ploidyMapFile',ploidy,'-genderMapFile',gender_map,
+        preprocess = [java+' -cp %s'%classpath,
+                      qcmd,
+                      '-S %s '%pp,
+                      '-S %s'%qs,
+                      '-gatk %s'%gatk]+job+\
+                     ['-cp %s'%classpath,'-configFile %s'%conf,'-tempDir %s'%SV_TMPDIR,
+                      '-R %s'%ref,'-runDirectory %s'%rd,'-md %s'%md,'-jobLogDir %s'%logs,
+                      '-genomeMaskFile %s'%gmask,'-copyNumberMaskFile %s'%cnmask,'-readDepthMaskFile %s'%rdmask,
+                      '-ploidyMapFile %s'%ploidy,'-genderMapFile %s'%gender_map,
                       '-useMultiStep','-reduceInsertSizeDistributions true',
                       '-bamFilesAreDisjoint true','-computeGCProfiles true','-computeReadCounts true',
-                      '-I',bams]+\
-                     scheduler #+ ['-run']
-        print(preprocess)
+                      '-I %s'%bams]+\
+                     scheduler + ['-run'] #take this off for a dry run
 
-        # #[1] Initial Pooled Deletion Discovery
+        # try writing it to a bash script?
+        s = '#!/bin/bash\n'
+        s += 'export PATH=%s\n'%PATH
+        s += 'export LD_LIBRARY_PATH=%s\n'%LD_LIB
+        s += 'export SV_DIR=%s\n'%SV_DIR
+        s += 'export SV_TMPDIR=%s\n'%SV_TMPDIR
+        s += 'which samtools > /dev/null || exit 1\n'
+        s += 'which tabix > /dev/null || exit 1\n'
+        s += 'echo `samtools`\n'
+        s += 'echo `tabix`\n'
+        print('\n')
+        for line in preprocess:
+            s += line+' \\\n'
+            print(line + ' \\')
+        s += '|| exit 1\n'
+        print('\n')
+
+        #try writing a bash script and executing that
+        with open(rd+'/preprocess.sh','w') as f:
+            f.write(s)
+        command = ['chmod','a+x',rd+'/preprocess.sh','&&','cd %s'%rd,'&& pwd && ./preprocess.sh']
+        output, err = '', {}
+        try:
+            output = subprocess.check_output(' '.join(command), stderr=subprocess.STDOUT, shell=True,
+                                             env={'classpath': classpath, 'PATH': PATH, 'SV_DIR': SV_DIR,
+                                                  'SV_TMPDIR': SV_TMPDIR, 'LD_LIBRARY_PATH': LD_LIB})
+        # catch all errors that arise under normal call behavior
+        except subprocess.CalledProcessError as E:
+            print('call error: ' + E.output)  # what you would see in the term
+            err['output'] = E.output
+            # the python exception issues (shouldn't have any...
+            print('message: ' + E.message)  # ?? empty
+            err['message'] = E.message
+            # return codes used for failure....
+            print('code: ' + str(E.returncode))  # return 1 for a fail in art?
+            err['code'] = E.returncode
+        except OSError as E:
+            print('os error: ' + E.strerror)  # what you would see in the term
+            err['output'] = E.strerror
+            # the python exception issues (shouldn't have any...
+            print('message: ' + E.message)  # ?? empty
+            err['message'] = E.message
+            # the error num
+            print('code: ' + str(E.errno))
+            err['code'] = E.errno
+        print('output:\n' + output)
+
+        #[1] Initial Pooled Deletion Discovery
         # dd = sv+'/qscript/SVDiscovery.q'
         # del_discovery = [java,'-cp',classpath,qcmd,'-S',dd,'-S',qs,'-gatk',gatk]+\
         #                 job+['-cp',classpath]+\
@@ -191,15 +241,15 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         # move_vcf = ['mv',sub_dir+'/results/gs_cnv.genotypes.vcf.gz'] #this seems to be hard coded
         # convert_vcf = ['python','gs_slpit_merge.py']
         # clean = ['rm','-rf',SV_TMPDIR, sub_dir] #delete temp, stage_id folder after vcfs are copied
-        #
-        # #add entries to DB
-        # self.db_start(run_id,in_names['.bam'][0])
-        #
-        # #[3a]execute the commands here----------------------------------------------------
+
+        #add entries to DB
+        self.db_start(run_id,in_names['.bam'][0])
+
+        #[3a]execute the commands here----------------------------------------------------
         # output,err = '',{}
         # try:
         #     output = subprocess.check_output(' '.join(preprocess),stderr=subprocess.STDOUT,shell=True,
-        #                                      env={'PATH':PATH,'SV_DIR':SV_DIR,
+        #                                      env={'classpath':classpath,'PATH':PATH,'SV_DIR':SV_DIR,
         #                                           'SV_TMPDIR':SV_TMPDIR,'LD_LIBRARY_PATH':LD_LIB})
         # #catch all errors that arise under normal call behavior
         # except subprocess.CalledProcessError as E:

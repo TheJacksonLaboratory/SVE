@@ -31,6 +31,7 @@ python ./setup.py build
 sudo python ./setup.py install
 cd /
 
+pip install --upgrade pip
 pip install -I numpy
 pip install -I scipy
 pip install -I paramiko

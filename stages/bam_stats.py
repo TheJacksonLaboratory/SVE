@@ -46,7 +46,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
             out_name = self.strip_in_ext(in_names['.bam'],'.bam')+out_ext
         
         #[2a]build command args
-        samtools = self.software_path+'/samtools-1.0/bin/samtools'
+        samtools = self.software_path+'/samtools-1.2'
         summary =   [samtools,'stats',in_names['.bam'],'| grep ^SN | cut -f 2-']
         size    =   [samtools,'view','-H', in_names['.bam'],
                      "| grep -P '^@SQ' | cut -f 3 -d ':' | awk '{sum+=$1} END {print sum}'"]

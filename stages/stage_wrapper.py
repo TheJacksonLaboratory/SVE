@@ -37,7 +37,7 @@ class Stage_Wrapper(object):
             self.params = self.default_params()
         else:
             self.params = params
-        self.software_path = os.path.dirname(os.path.abspath(__file__))+'/../../'
+        self.software_path = os.path.abspath(os.path.dirname(os.path.abspath(__file__))+'/../..')
         
     def __enter__(self):
         return self
