@@ -96,7 +96,10 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
             s = subprocess.check_output(' '.join(summary), stderr=subprocess.STDOUT, shell=True)
             with open(out_name+'.summary','w') as f:
                 f.write(s)
-            output = '' #put together the pass back for variant_processor.py here
+            output = 'calculating summaries of read statistics\n'
+            output += 'ref size = %s\n'%x
+            output += 'average depth = %s\n'%(int(round(1.0*x/y,0)))
+            output += s
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
             err['output'] = E.output
