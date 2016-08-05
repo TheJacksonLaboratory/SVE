@@ -5,11 +5,5 @@ helix_push.py
 
 *.pyc
 
-scripts/all_samples_vp_qsub.py
-
-scripts/all_samples_pb_qsub.py
-
 .idea/*
 
-
-data/svedb.config
