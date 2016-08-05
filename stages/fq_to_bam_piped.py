@@ -51,11 +51,11 @@ class fq_to_bam_piped(stage_wrapper.Stage_Wrapper):
         if not os.path.exists(out_dir): os.makedirs(out_dir)
         #if not os.path.exists(out_dir+'/sort/'): os.makedirs(out_dir+'/sort/')
         threads = str(self.get_params()['-t']['value'])
-        bwa = self.software_path+'/bwa-0.7.13/bwa' #latest release
-        samtools = self.software_path+'/samtools-1.2/samtools'
+        bwa = self.software_path+'/bwa-master/bwa' #latest release
+        samtools = self.software_path+'/samtools-1.3/samtools'
         java   = self.software_path+'jre1.8.0_51/bin/java'
         mem    = '-Xmx32g'
-        picard = self.software_path+'picard-tools-2.1.1/picard.jar' #latest release here
+        picard = self.software_path+'picard-tools-2.5/picard.jar' #latest release here
         sample = stripped_name+'RG'
         #'@RG\tID:H7AGF.2\tLB:Solexa-206008\tPL:illumina\tPU:H7AGFADXX131213.2\tSM:HG00096\tCN:BI'
         RG = r'\t'.join(["'@RG",'ID:'+sample,'LB:'+'Solexa'+sample,'PL:'+inputs['platform_id'][0],

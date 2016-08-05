@@ -37,7 +37,7 @@ class bam_split_simple(stage_wrapper.Stage_Wrapper):
             out_names = {'.bam' :cascade}  
         
         #[2a]build command args
-        samtools = self.software_path+'/samtools-1.2/samtools'
+        samtools = self.software_path+'/samtools-1.3/samtools'
         #cut out a headerless sam file that includes anything to do with chr A
         cut  = [samtools,'view','-bh', in_names['.bam'],'%s','-o','%s']
         idx  = [samtools,'index','%s']

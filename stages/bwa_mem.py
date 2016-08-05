@@ -47,7 +47,7 @@ class bwa_mem(stage_wrapper.Stage_Wrapper):
         else:
             SM = stripped_name
         threads = str(self.get_params()['-t']['value'])
-        bwa = self.software_path+'/bwa-0.7.13/bwa'
+        bwa = self.software_path+'/bwa-master/bwa'
         sample = stripped_name+'RG'
         #'@RG\tID:H7AGF.2\tLB:Solexa-206008\tPL:illumina\tPU:H7AGFADXX131213.2\tSM:HG00096\tCN:BI'
         RG = r'\t'.join(["'@RG",'ID:'+sample,'LB:'+'Solexa'+sample,'PL:'+inputs['platform_id'][0],

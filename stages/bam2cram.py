@@ -38,7 +38,7 @@ class cram2bam(stage_wrapper.Stage_Wrapper):
         
         #[2a]build command args
         #single bam2cram here, extend with multiple version later
-        samtools = self.software_path+'/samtools-1.2/samtools'
+        samtools = self.software_path+'/samtools-1.3/samtools'
         #cut out a headerless sam file that includes anything to do with chr A
         cram  = [samtools,'view','-T', in_names['.fa'],'-Ch',in_names['.bam'],'-o',out_names['.cram']]
         index = [samtools,'index',out_names['.cram']]

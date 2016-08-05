@@ -69,7 +69,7 @@ class bam_split_all(stage_wrapper.Stage_Wrapper):
             for h in outbams:
                 outbams[h].close()
             print('finished writing split bams')
-            samtools = self.software_path++'/samtools-1.2/samtools' #should still be in sorted order
+            samtools = self.software_path++'/samtools-1.3/samtools' #should still be in sorted order
 #            sort  = [samtools,'sort','-T','sorting','%s','-O',"'bam'",'-o','%s']
             index = [samtools,'index','%s']
             for h in outbams:

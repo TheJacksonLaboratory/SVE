@@ -73,7 +73,7 @@ class cram2bam_split_all(stage_wrapper.Stage_Wrapper):
         print('total split files:')
         print(H)
         #[2a]build command args
-        samtools = self.software_path+'/samtools-1.2/samtools'       
+        samtools = self.software_path+'/samtools-1.3/samtools'
         cram2sam  = [samtools,'view','-T',in_names['.fa'],'-Sh', in_names['.cram']] #read from in
         sam2bam   = [samtools,'view','-bh','%s','-o','%s']
 
