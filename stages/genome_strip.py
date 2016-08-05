@@ -56,7 +56,9 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         if not os.path.exists(SV_TMPDIR): os.makedirs(SV_TMPDIR)
         PATH = soft+'/jre1.7.0_72/bin:'+ \
                soft+'/svtoolkit/bwa:'+ \
-               soft+'/samtools-1.0/bin:'+ \
+               soft+'/samtools-1.3:'+ \
+               soft+'/bcftools-1.3:'+ \
+               soft+'/htslib-1.3:'+ \
                '/opt/compsci/R/3.2.1/bin:'+ \
                '/opt/compsci/pbs-drmaa/1.0.17/bin'+ \
                os.environ['PATH']

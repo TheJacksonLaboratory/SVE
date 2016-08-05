@@ -35,7 +35,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
         #workflow is to run through the stage correctly and then check for error handles
     
         #[1a]get input names and output names setup
-        in_names  = {'.bam':inputs['.bam'][0],'chroms':inputs['chroms']}
+        in_names  = {'.bam':inputs['.bam'][0]}
         
         out_ext = self.split_out_exts()[0]
         if inputs.has_key('out_dir'):
@@ -44,11 +44,17 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
             out_name = out_dir+stripped_name+'_S'+str(self.stage_id)+out_ext
         else:
             out_name = self.strip_in_ext(in_names['.bam'],'.bam')+out_ext
-        
+
+        if inputs.has_key('chroms'): #subset of the chroms in the bam header
+            chroms = inputs['chroms'].split(',')
+        else:
+            chroms = [] #none selected will do a full stats run
+
         #[2a]build command args
         samtools = self.software_path+'/samtools-1.3/samtools'
         summary =   [samtools,'stats',in_names['.bam'],'| grep ^SN | cut -f 2-']
         header  =   [samtools, 'view', '-SH', in_names['.bam']]
+        #some routines here for X:Y analysis for gender estimation
         size    =   [samtools,'view','-H', in_names['.bam'],
                      "| grep -P '^@SQ' | cut -f 3 -d ':' | awk '{sum+=$1} END {print sum}'"]
         average =   [samtools,'depth',in_names['.bam'], "| awk '{sum+=$3} END {print sum/%s}'"]
