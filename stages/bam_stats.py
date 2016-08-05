@@ -87,7 +87,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
             output = 'calculating summaries of read statistics\n'            
             for line in L:
                 if len(line)>1:
-                    output += '%s = %s\n'%(line[0],str(int(float(line[1]))))
+                    output += '%s = %s\n'%(line[0],str(int(round(float(line[1]),0))))
 
             output += '\nheader from bam file %s with X read groups detected\n'%(stripped_name)
             output += h+'\n'
