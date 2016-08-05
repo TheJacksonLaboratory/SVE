@@ -218,7 +218,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
         #samtools_bam_stats
         st = stage.Stage('bam_stats',dbc)
         outs = st.run(run_id,{'.bam':bams,'out_dir':[directory]})
-        if len(outs)>0:
+        if not type(outs) and len(outs)>0:
             outs = outs[0].split('read statistics\n')[-1].split('\n')
         try: #pull out the positions here
             RD = int(round(float(outs[1].split(' = ')[-1]),0))  #average depth
