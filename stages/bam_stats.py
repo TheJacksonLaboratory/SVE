@@ -75,7 +75,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
                 if l[0].startswith('@SQ'):
                     seqs[l[1].split(':')[-1]] = [int(l[2].split(':')[-1])]
             #get converage over each sequence
-            for k in sorted(seqs):
+            for k in sorted(seqs,key=lambda f: f.zfill(30)):
                 seq_cov = [samtools, 'depth', '-r %s'%k, in_names['.bam'], "| awk '{sum+=$3} END {print sum}'"]
                 c = subprocess.check_output(' '.join(seq_cov),stderr=subprocess.STDOUT,shell=True)
                 x = 0
@@ -83,7 +83,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
                 except ValueError: pass
                 seqs[k] += [x]
             c,x,y = '',0,0
-            for k in sorted(seqs):
+            for k in sorted(seqs,key=lambda f: f.zfill(30)):
                 if k in chroms or k in ['chr'+i for i in chroms]:
                     c += k+'='+str(seqs[k][0])+':'+str(seqs[k][1])+'\n'
                     x += seqs[k][0]
