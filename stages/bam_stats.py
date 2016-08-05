@@ -77,7 +77,11 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
             #get converage over each sequence
             for k in sorted(seqs):
                 seq_cov = [samtools, 'depth', '-r %s'%k, in_names['.bam'], "| awk '{sum+=$3} END {print sum}'"]
-                seqs[k] += [int(subprocess.check_output(' '.join(seq_cov),stderr=subprocess.STDOUT,shell=True))]
+                c = subprocess.check_output(' '.join(seq_cov),stderr=subprocess.STDOUT,shell=True)
+                x = 0
+                try: x = int(c)
+                except ValueError: pass
+                seqs[k] += [x]
             c,x,y = '',0,0
             for k in sorted(seqs):
                 if k in chroms or k in ['chr'+i for i in chroms]:
