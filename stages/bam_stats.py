@@ -88,7 +88,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
                     c += k+'='+str(seqs[k][0])+':'+str(seqs[k][1])+'\n'
                     x += seqs[k][0]
                     y += seqs[k][1]
-            c += 'average coverage = %s\n'%(int(round(1.0*y/x,0)))
+            c += 'average coverage = %s\n'%(int(round(1.0*y/(x+1),0)))
             c += 'over total length of %s\n'%x
             with open(out_name+'.cov','w') as f:
                 f.write(c)
@@ -98,7 +98,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
                 f.write(s)
             output = 'calculating summaries of read statistics\n'
             output += 'ref size = %s\n'%x
-            output += 'average depth = %s\n'%(int(round(1.0*y/x,0)))
+            output += 'average depth = %s\n'%(int(round(1.0*y/(x+1),0)))
             output += s
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
