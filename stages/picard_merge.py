@@ -42,8 +42,11 @@ class picard_merge(stage_wrapper.Stage_Wrapper):
             out_name = {'.bam' : out_dir+stripped_name+out_ext}
 
         #[2a]build command args
-        picard = self.software_path+'/picard-tools-2.1.1/picard.jar'
-        command = ['java','-Xmx32g','-jar',picard,'MergeSamFiles']+\
+        software = self.software_path
+        java = software + 'jre1.8.0_51/bin/java'
+        mem = '-Xmx32g'
+        picard = self.software_path+'/picard-tools-2.5.0/picard.jar'
+        command = [java,mem,'-jar',picard,'MergeSamFiles']+\
                   ['I='+bam for bam in in_name['.bam']]+['O='+out_name['.bam']]
         
         #[2b]make start entry which is a new staged_run row

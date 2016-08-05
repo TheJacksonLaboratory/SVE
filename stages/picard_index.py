@@ -30,8 +30,11 @@ class picard_index(stage_wrapper.Stage_Wrapper):
         out_name = self.strip_in_ext(in_name['.bam'],'.bam')+out_ext #just a temp ext
         
         #[2a]build command args
-        picard = self.software_path+'/picard-tools-1.126/picard.jar'
-        command = ['java','-Xmx64g','-jar',picard,'BuildBamIndex',
+        software = self.software_path
+        java = software + 'jre1.8.0_51/bin/java'
+        mem = '-Xmx32g'
+        picard = self.software_path+'/picard-tools-2.5/picard.jar'
+        command = [java,mem,'-jar',picard,'BuildBamIndex',
                    'I='+in_name['.bam']]
         
         #[2b]make start entry which is a new staged_run row

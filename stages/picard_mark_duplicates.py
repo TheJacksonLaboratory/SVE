@@ -33,7 +33,7 @@ class picard_mark_duplicates(stage_wrapper.Stage_Wrapper):
         software = self.software_path
         java   = software+'jre1.8.0_51/bin/java'
         mem    = '-Xmx32g'
-        picard = software+'picard-tools-2.1.1/picard.jar'
+        picard = software+'picard-tools-2.5.0/picard.jar'
         mark   =  [java,mem,'-jar',picard,'MarkDuplicates','I='+in_name['.bam'],
                    'O='+out_name+'.bam','METRICS_FILE='+out_name+'.picard.metrics.txt',
                    'MAX_RECORDS_IN_RAM='+str(250000*16)]

@@ -46,8 +46,11 @@ class picard_replace_rg(stage_wrapper.Stage_Wrapper):
             SM = stripped_name.rsplit('.')[0]
         #[2a]build command args
         rg = stripped_name.rsplit('.')[0]+'RG'
-        picard = self.software_path+'/picard-tools-2.1.1/picard.jar'
-        command = ['java','-Xmx32g','-jar',picard,'AddOrReplaceReadGroups',
+        software = self.software_path
+        java = software + 'jre1.8.0_51/bin/java'
+        mem = '-Xmx32g'
+        picard = self.software_path+'/picard-tools-2.5.0/picard.jar'
+        command = [java,mem,'-jar',picard,'AddOrReplaceReadGroups',
                    'I='+in_name['.bam'],'O='+out_name['.bam'],'SORT_ORDER=coordinate',
                    'RGID='+rg,'RGLB='+rg,'RGPL='+inputs['platform_id'][0],'RGSM='+SM,'RGPU='+rg]
         

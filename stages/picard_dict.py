@@ -30,8 +30,11 @@ class picard_dict(stage_wrapper.Stage_Wrapper):
         out_name = self.strip_in_ext(in_name['.fa'],'.fa')+out_ext 
         
         #[2a]build command args
-        picard = self.software_path+'/picard-tools-1.126/picard.jar'
-        command = ['java','-Xmx12g','-jar',picard,'CreateSequenceDictionary',
+        software = self.software_path
+        java = software + 'jre1.8.0_51/bin/java'
+        mem = '-Xmx32g'
+        picard = self.software_path+'/picard-tools-2.5.0/picard.jar'
+        command = [java,mem,'-jar',picard,'CreateSequenceDictionary',
                    'R='+in_name['.fa'], 'O='+out_name, 'CREATE_INDEX=true']
         
         #[2b]make start entry which is a new staged_run row
