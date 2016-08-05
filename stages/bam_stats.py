@@ -35,7 +35,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
         #workflow is to run through the stage correctly and then check for error handles
     
         #[1a]get input names and output names setup
-        in_names  = {'.bam':inputs['.bam'][0]}
+        in_names  = {'.bam':inputs['.bam'][0],'chroms':inputs['chroms']}
         
         out_ext = self.split_out_exts()[0]
         if inputs.has_key('out_dir'):
@@ -48,6 +48,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
         #[2a]build command args
         samtools = self.software_path+'/samtools-1.3/samtools'
         summary =   [samtools,'stats',in_names['.bam'],'| grep ^SN | cut -f 2-']
+        header  =   [samtools, 'view', '-SH', in_names['.bam']]
         size    =   [samtools,'view','-H', in_names['.bam'],
                      "| grep -P '^@SQ' | cut -f 3 -d ':' | awk '{sum+=$1} END {print sum}'"]
         average =   [samtools,'depth',in_names['.bam'], "| awk '{sum+=$3} END {print sum/%s}'"]
@@ -60,6 +61,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
+            h = subprocess.check_output(' '.join(header),stderr=subprocess.STDOUT,shell=True)
             print('calculating total ref size by sum of all contigs')
             L = []
             output = subprocess.check_output(' '.join(size),stderr=subprocess.STDOUT,shell=True)
@@ -75,10 +77,14 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
             print('calculating summaries of read statistics')
             output = subprocess.check_output(' '.join(summary),stderr=subprocess.STDOUT,shell=True)
             if type(output) is str and len(output)>0: L += self.summary_as_list(output)
+
             output = 'calculating summaries of read statistics\n'            
             for line in L:
                 if len(line)>1:
-                    output += '%s = %s\n'%(line[0],line[1])
+                    output += '%s = %s\n'%(line[0],int(line[1]))
+
+            output += '\nheader from bam file %s with X read groups detected\n'%(stripped_name)
+            output += h+'\n'
             with open(out_name, 'w') as f:
                 f.write(output)
             #output += subprocess.check_output(' '.join(['echo',output,'>',out_name]),stderr=subprocess.STDOUT,shell=True)
