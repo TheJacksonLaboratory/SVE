@@ -48,7 +48,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
         if inputs.has_key('chroms'): #subset of the chroms in the bam header
             chroms = inputs['chroms'].split(',')
         else:
-            chroms = [str(i) for i in range(1,23)] #none selected will do a full stats run
+            chroms = [str(i) for i in range(1,23)]+['X','Y','MT'] #none selected will do a full stats run
 
         #[2a]build command args
         samtools = self.software_path+'/samtools-1.3/samtools'
@@ -74,6 +74,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
                 l = line.split('\t')
                 if l[0].startswith('@SQ'):
                     seqs[l[1].split(':')[-1]] = [int(l[2].split(':')[-1])]
+
             #get converage over each sequence
             for k in sorted(seqs,key=lambda f: f.zfill(30)):
                 seq_cov = [samtools, 'depth', '-r %s'%k, in_names['.bam'], "| awk '{sum+=$3} END {print sum}'"]
