@@ -41,26 +41,24 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
         if inputs.has_key('out_dir'):
             out_dir = inputs['out_dir'][0]
             stripped_name = self.strip_path(self.strip_in_ext(in_names['.bam'],'.bam'))
-            out_name = out_dir+stripped_name+'_S'+str(self.stage_id)+out_ext
+            out_name = out_dir+stripped_name+'_S'+str(self.stage_id)
         else:
-            out_name = self.strip_in_ext(in_names['.bam'],'.bam')+out_ext
+            out_name = self.strip_in_ext(in_names['.bam'],'.bam')
 
         if inputs.has_key('chroms'): #subset of the chroms in the bam header
             chroms = inputs['chroms'].split(',')
         else:
-            chroms = [] #none selected will do a full stats run
+            chroms = [str(i) for i in range(1,23)] #none selected will do a full stats run
 
         #[2a]build command args
         samtools = self.software_path+'/samtools-1.3/samtools'
         summary =   [samtools,'stats',in_names['.bam'],'| grep ^SN | cut -f 2-']
         header  =   [samtools, 'view', '-SH', in_names['.bam']]
         #some routines here for X:Y analysis for gender estimation
-        size    =   [samtools,'view','-H', in_names['.bam'],
-                     "| grep -P '^@SQ' | cut -f 3 -d ':' | awk '{sum+=$1} END {print sum}'"]
-        average =   [samtools,'depth',in_names['.bam'], "| awk '{sum+=$3} END {print sum/%s}'"]
+
         #write   =   ['echo',' > ',out_name]             
         #[2b]make start entry which is a new staged_run row
-        self.command = summary+size+average
+        self.command = summary
         print(self.get_command_str())
         self.db_start(run_id,in_names['.bam'])
         
@@ -68,33 +66,33 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
         output,err = '',{}
         try:
             h = subprocess.check_output(' '.join(header),stderr=subprocess.STDOUT,shell=True)
-            print('calculating total ref size by sum of all contigs')
-            L = []
-            output = subprocess.check_output(' '.join(size),stderr=subprocess.STDOUT,shell=True)
-            output = output[0:-1]
-            if type(output) is str and len(output)>0: L += [['ref size',output]]
-            else: L += [['ref size',0]]
-            average[-1] = average[-1]%output
-            print('calculating the average by reading bam depth')
-            output = subprocess.check_output(' '.join(average),stderr=subprocess.STDOUT,shell=True)
-            output = output[0:-1]
-            if type(output) is str and len(output)>0: L += [['average depth',output]]
-            else: L += [['average depth',0.0]]
-            print('calculating summaries of read statistics')
-            output = subprocess.check_output(' '.join(summary),stderr=subprocess.STDOUT,shell=True)
-            if type(output) is str and len(output)>0: L += self.summary_as_list(output)
-
-            output = 'calculating summaries of read statistics\n'            
-            for line in L:
-                if len(line)>1:
-                    output += '%s = %s\n'%(line[0],str(int(round(float(line[1]),0))))
-
-            output += '\nheader from bam file %s with X read groups detected\n'%(stripped_name)
-            output += h+'\n'
-            with open(out_name, 'w') as f:
-                f.write(output)
-            #output += subprocess.check_output(' '.join(['echo',output,'>',out_name]),stderr=subprocess.STDOUT,shell=True)
-        #catch all errors that arise under normal call behavior
+            with open(out_name+'.header','w') as f:
+                f.write(h)
+            #get sequence names and lengths
+            seqs = {}
+            for line in h.split('\n'):
+                l = line.split('\t')
+                if l[0].startswith('@SQ'):
+                    seqs[l[1].split(':')[-1]] = [int(l[2].split(':')[-1])]
+            #get converage over each sequence
+            for k in sorted(seqs):
+                seq_cov = [samtools, 'depth', '-r %s'%k, in_names['.bam'], "| awk '{sum+=$3} END {print sum}'"]
+                seqs[k] += [int(subprocess.check_output(' '.join(seq_cov),stderr=subprocess.STDOUT,shell=True))]
+            c,x,y = '',0,0
+            for k in sorted(seqs):
+                if k in chroms or k in ['chr'+i for i in chroms]:
+                    c += k+'='+str(seqs[k][0])+':'+str(seqs[k][1])+'\n'
+                    x += seqs[k][0]
+                    y += seqs[k][1]
+            c += 'average coverage = %s\n'%(int(round(1.0*x/y,0)))
+            c += 'over total length of %s\n'%x
+            with open(out_name+'.cov','w') as f:
+                f.write(c)
+            #get the summary
+            s = subprocess.check_output(' '.join(summary), stderr=subprocess.STDOUT, shell=True)
+            with open(out_name+'.summary','w') as f:
+                f.write(s)
+            output = '' #put together the pass back for variant_processor.py here
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
             err['output'] = E.output
