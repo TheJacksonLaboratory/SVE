@@ -125,7 +125,7 @@ python = software_path + '/anaconda/bin/python'
 vp = software_path + '/SVE/scripts/variant_processor.py'
 ml = 'module load '  # everything that you need below...
 modules = [ml + 'perl/5.16.3', ml + 'gcc/4.9.2', ml + 'R/3.2.1',
-           ml + 'Root/v5.34.18', ml + 'samtools/1.0',
+           ml + 'Root/v5.34.18', ml + 'samtools/1.2',
            ml + 'pbs-drmaa/1.0.17']  # everything that you need here...
 PBS = []
 if args.all_at_once:
