@@ -43,7 +43,7 @@ class breakseq(stage_wrapper.Stage_Wrapper):
         if not os.path.exists(sub_dir): os.makedirs(sub_dir)
             
         python    = self.software_path+'/anaconda/bin/python'
-        samtools  = self.software_path+'/samtools-1.2/samtools'
+        samtools  = self.software_path+'/samtools-0.1.19/samtools'
         bwa       = self.software_path+'/bwa-master/bwa'
         breakseq  = self.software_path+'/breakseq2-2.2/scripts/run_breakseq2.py'
         #brkptlib = human_g1k_v37_decoy_S35.brkptlib.gff etc files ...
