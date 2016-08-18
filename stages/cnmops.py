@@ -43,10 +43,10 @@ class cnmops(stage_wrapper.Stage_Wrapper):
         
         #split the ref seq into seperate chroms...
         #rscript  = self.software_path+'/R-3.1.2/bin/Rscript'
-        rscript  = 'Rscript' #changed for running on clusters
+        rscript  = slef.software+path+'/R-3.3.1/bin/Rscript' #changed for running on clusters
         cnmops_r = self.software_path+'/SVCP/stages/utils/cnmops.R'
-        R_LIBS   = self.software_path+'/R-3.1.2/library'
-        PATH   = '/opt/compsci/R/3.2.1/bin'
+        R_LIBS   = self.software_path+'/R-3.3.1/library'
+        PATH   = self.software_path+'/R-3.3.1/bin'
         if os.environ.has_key('PATH'):
             PATH += ':'+os.environ['PATH']
         #load up params to pass to the Rscript cmd_parser.R        
