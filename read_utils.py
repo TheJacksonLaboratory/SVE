@@ -72,7 +72,11 @@ def get_fasta_seq_names_lens(fasta_path):
 
 def write_fasta(seqs, fasta_path):
     with open(fasta_path, 'w') as fasta:
-        for seq in seqs: seq.write_to_fasta_file(fasta)
+        if type(seqs) is list:
+            for seq in seqs: seq.write_to_fasta_file(fasta)
+        elif type(seqs) is dict:
+            for k in sorted(seqs,key=lambda x: x.zfill(max([len(k) for k in seqs]))):
+                seqs[k].write_to_fasta_file(fasta)
         return True
 
 #ss is a HTSeq Sequence list?   
