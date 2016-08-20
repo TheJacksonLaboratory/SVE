@@ -104,7 +104,7 @@ class hydra(stage_wrapper.Stage_Wrapper):
         final_name = svs+'.final' #not sure if this is correct in general case...
         vcf_name   = svs+'.vcf'
         bkpts_name = svs+'.bkpts'
-        bkpts = [python,hydra+'scripts/hydraToBreakpoint','-i',freq_name,'>',bkpts_name]
+        bkpts = [python,hydra+'scripts/hydraToBreakpoint.py','-i',freq_name,'>',bkpts_name]
         
         #[9] convert to VCF using the utils/hydra_to_vcf.py tool
         bkpt2vcf = [python,hydra_to_vcf,final_name,in_names['.fa'][0:-3]+'.2bit']#assumes a .2bit for ref is there...
@@ -205,7 +205,7 @@ class hydra(stage_wrapper.Stage_Wrapper):
                                                 
         #[3b]check results--------------------------------------------------
         if err == {}:
-            results = ['../'+out_names['.vcf']]
+            results = [out_names['.vcf']]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
                 print("sucessfull........")
