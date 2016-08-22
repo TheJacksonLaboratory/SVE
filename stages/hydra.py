@@ -204,9 +204,9 @@ class hydra(stage_wrapper.Stage_Wrapper):
             output = subprocess.check_output(' '.join(bkpts),
                                               stderr=subprocess.STDOUT,shell=True,
                                               env={'PATH':PATH})+'\n'
-            if os.path.exists(out_names['.vcf']):
-                output += subprocess.check_output(' '.join(clean),
-                                                  stderr=subprocess.STDOUT,shell=True)
+            #if os.path.exists(out_names['.vcf']):
+            #    output += subprocess.check_output(' '.join(clean),
+            #                                      stderr=subprocess.STDOUT,shell=True)
             print('all hydra stages completed')
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
