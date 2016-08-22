@@ -167,6 +167,7 @@ class hydra(stage_wrapper.Stage_Wrapper):
             print('copying files and cleaning sub directory')
             output += subprocess.check_output(' '.join(copy),
                                               stderr=subprocess.STDOUT,shell=True)
+            print('copy is complete')
             #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
@@ -193,9 +194,10 @@ class hydra(stage_wrapper.Stage_Wrapper):
             err['code'] = 1
         print('output:\n'+output)
         
+        print('vcf file %s exists=%s'%(out_names['.vcf'],os.path.exists(out_names['.vcf'])))
+        print('computing hydra breakpoints')
+        print(' '.join(bkpts))
         try:
-            print('computing hydra breakpoints')
-            print(' '.join(bkpts))
             output += subprocess.check_output(' '.join(bkpts),
                                               stderr=subprocess.STDOUT,shell=True,
                                               env={'PATH':PATH})+'\n'
