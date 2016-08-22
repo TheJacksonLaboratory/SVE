@@ -167,16 +167,6 @@ class hydra(stage_wrapper.Stage_Wrapper):
             print('copying files and cleaning sub directory')
             output += subprocess.check_output(' '.join(copy),
                                               stderr=subprocess.STDOUT,shell=True)
-                                              
-            print('computing hydra breakpoints')
-            print(' '.join(bkpts))
-            output += subprocess.check_output(' '.join(bkpts),
-                                              stderr=subprocess.STDOUT,shell=True,
-                                              env={'PATH':PATH})+'\n'
-                                              
-            output += subprocess.check_output(' '.join(clean),
-                                              stderr=subprocess.STDOUT,shell=True)
-            print('all hydra stages completed')
             #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
@@ -202,7 +192,41 @@ class hydra(stage_wrapper.Stage_Wrapper):
             err['message'] = 'vcf write os/file IO error'
             err['code'] = 1
         print('output:\n'+output)
-                                                
+        
+        try:
+            print('computing hydra breakpoints')
+            print(' '.join(bkpts))
+            output += subprocess.check_output(' '.join(bkpts),
+                                              stderr=subprocess.STDOUT,shell=True,
+                                              env={'PATH':PATH})+'\n'
+            if os.path.exists(out_names['.vcf']):
+                output += subprocess.check_output(' '.join(clean),
+                                                  stderr=subprocess.STDOUT,shell=True)
+            print('all hydra stages completed')
+        except subprocess.CalledProcessError as E:
+            print('call error: '+E.output)        #what you would see in the term
+            err['output'] = E.output
+            #the python exception issues (shouldn't have any...
+            print('message: '+E.message)          #?? empty
+            err['message'] = E.message
+            #return codes used for failure....
+            print('code: '+str(E.returncode))     #return 1 for a fail in art?
+            err['code'] = E.returncode
+        except OSError as E:
+            print('os error: '+E.strerror)        #what you would see in the term
+            err['output'] = E.strerror
+            #the python exception issues (shouldn't have any...
+            print('message: '+E.message)          #?? empty
+            err['message'] = E.message
+            #the error num
+            print('code: '+str(E.errno))
+            err['code'] = E.errno
+        except Exception as E:
+            print('vcf write os/file IO error')
+            err['output'] = 'vcf write os/file IO error'
+            err['message'] = 'vcf write os/file IO error'
+            err['code'] = 1
+        print('output:\n'+output)                                        
         #[3b]check results--------------------------------------------------
         if err == {}:
             results = [out_names['.vcf']]
