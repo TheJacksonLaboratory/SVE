@@ -87,7 +87,7 @@ def build_vcf(table):
       INFO = 'END='+END+';SVTYPE='+SVTYPE+';SVLEN='+SVLEN+';IMPRECISE;'
       vcf_table += [[CHR,POS,ID,REF,ALT,QUAL,FILTER,INFO]]
    max_seq = max([len(i[0]) for i in vcf_table])
-   vcf_table = sorted(vcf_table,key=lambda x: (x[0].zfill(max_seq),x[1]))
+   vcf_table = sorted(vcf_table,key=lambda x: (x[0].zfill(max_seq),int(x[1])))
    return vcf_table
 
 #Test Code Here
