@@ -198,7 +198,7 @@ class hydra(stage_wrapper.Stage_Wrapper):
         print('computing hydra breakpoints')
         print(' '.join(bkpts))
         try:
-            output += subprocess.check_output(' '.join(bkpts),
+            output = subprocess.check_output(' '.join(bkpts),
                                               stderr=subprocess.STDOUT,shell=True,
                                               env={'PATH':PATH})+'\n'
             if os.path.exists(out_names['.vcf']):
@@ -228,7 +228,7 @@ class hydra(stage_wrapper.Stage_Wrapper):
             err['output'] = 'vcf write os/file IO error'
             err['message'] = 'vcf write os/file IO error'
             err['code'] = 1
-        print('output:\n'+output)                                        
+        #print('output:\n'+output)                                        
         #[3b]check results--------------------------------------------------
         if err == {}:
             results = [out_names['.vcf']]
