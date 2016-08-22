@@ -57,7 +57,7 @@ def vcf_header(ref):
    alt4 = '##ALT=<ID=TRA,Description="Translocation Event">\n' #this should be updated to a BND event?
    alt5 = '##ALT=<ID=DUP,Description="Duplication Event">\n'
    t_hd = '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n'
-   return (form+date+src+ref+inf1+inf2+inf3+inf4+alt1+alt2+alt3+alt4+t_hd)
+   return (form+date+src+ref+inf1+inf2+inf3+inf4+alt1+alt2+alt3+alt4+alt5+t_hd)
 
 #selects needed fields and converts what is needed to make a .vcf
 #:::TO DO::: include additional CHR2 VCF tags in the INFO field
@@ -65,7 +65,6 @@ def build_vcf(table):
    vcf_table = []
    #main loop to work through the rows...
    for i in range(0,len(table)):
-      vcf_row = []
       CHR = table[i][0]
       POS = table[i][1]
       ID = 'breakdancer_' + str(i)
@@ -86,10 +85,10 @@ def build_vcf(table):
       END = table[i][4]
       SVLEN = table[i][7]
       INFO = 'END='+END+';SVTYPE='+SVTYPE+';SVLEN='+SVLEN+';IMPRECISE;'
-      vcf_row = [CHR,POS,ID,REF,ALT,QUAL,FILTER,INFO]
-      vcf_table.append(vcf_row)
+      vcf_table += [[CHR,POS,ID,REF,ALT,QUAL,FILTER,INFO]]
+   max_seq = max([len(i[0]) for i in vcf_table])
+   vcf_table = sorted(vcf_table,key=lambda x: (x[0].zfill(max_seq),x[1]))
    return vcf_table
-
 
 #Test Code Here
 #input arguments: sys.argv[n]
