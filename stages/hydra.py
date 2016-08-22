@@ -51,7 +51,7 @@ class hydra(stage_wrapper.Stage_Wrapper):
         hydra  = self.software_path+'/Hydra/'
         hydra_to_vcf = self.software_path+'/SVE/stages/utils/hydra_to_vcf.py'
         #ENV
-        PATH = hydra+'bin:'+hydra+'scripts:'+\
+        PATH = '/bin'+hydra+'bin:'+hydra+'scripts:'+\
                self.software_path+'/anaconda/bin:'+\
                os.environ['PATH']        
         
