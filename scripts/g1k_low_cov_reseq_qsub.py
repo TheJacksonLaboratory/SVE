@@ -72,7 +72,7 @@ speedseq = software_path+'/speedseq/bin/speedseq'
 for k in samples:
     job_pbs = pbs_dir+'/'+k+'.realign.pbs'
     PBS += [job_pbs]
-    ml = ['module load']
+    ml = 'module load'
     modules = [ml+'samtools/1.2',ml+'gcc/4.9.2']
     merge   = [sambamba,'merge',out_dir+'/'+k+'.merged.bam']+samples[k]
     index   = [sambamba,'index',out_dir+'/'+k+'.merged.bam']
