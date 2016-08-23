@@ -88,7 +88,8 @@ output,err = '',{}
 for pbs in PBS: #test with one of these and a fast caller on a small file...
     print('processing %s'%pbs) #mark something to save
     try:
-        command = ['qsub','-l','walltime=%s'%walltime+',mem=%s'%ram,'-m','e','-M',email,'-o',pbs[0:-4]+'.log','-j oe',pbs]
+        command = ['qsub','-l','walltime=%s,mem=%s,procs=%s'%(walltime,ram,cpus),'-m','e','-M',email,
+                   '-o',pbs[0:-4]+'.log','-j oe',pbs]
         print(' '.join(command))
         output += subprocess.check_output(' '.join(command),stderr=subprocess.STDOUT,shell=True)
     #catch all errors that arise under normal call behavior
