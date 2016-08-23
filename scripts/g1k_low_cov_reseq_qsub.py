@@ -53,8 +53,8 @@ else:
     raise AttributeError
 
 samples = {}
-mapped_bams   = glob.glob(bam_dir+'/*.mapped.*.bam')
-unmapped_bams = glob.glob(bam_dir+'/*.unmapped.*.bam')
+mapped_bams   = glob.glob(bam_dir+'/*.mapped*.bam')
+unmapped_bams = glob.glob(bam_dir+'/*.unmapped*.bam')
 print(mapped_bams)
 samples = {i.rsplit('/')[-1].split('.')[0]:[i] for i in mapped_bams}
 for j in range(len(unmapped_bams)):
