@@ -73,7 +73,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         print('checking environment variable = SV_TMPDIR:\n%s'%SV_TMPDIR)
 
         #PBS cluster specfic tunning
-        CLUSTER = True   #dispatched jobs or not
+        CLUSTER = False   #dispatched jobs or not
         RAM = 32         #in gigabytes
         CPU = 6          #tasks
         JOBS = 4         #max concurrent jobs
