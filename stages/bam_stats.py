@@ -51,9 +51,13 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
             chroms = [str(i) for i in range(1,23)]+['X','Y','MT'] #none selected will do a full stats run
 
         #[2a]build command args
+        java = self.software_path+'/jre1.8.0_51/bin/java'
+        picardtools = self.software_path+'/picard-tools-2.5.0/picard.jar'
         samtools = self.software_path+'/samtools-1.3/samtools'
-        summary =   [samtools,'stats',in_names['.bam'],'| grep ^SN | cut -f 2-']
-        header  =   [samtools, 'view', '-SH', in_names['.bam']]
+        valid   = [java,'-Xmx4g','-jar',picardtools,'ValidateSamFile',
+                   'MODE=SUMMARY','I=',in_names['.bam'],'O=',out_name+'.valid']
+        summary = [samtools,'stats',in_names['.bam'],'| grep ^SN | cut -f 2-']
+        header  = [samtools, 'view', '-SH', in_names['.bam']]
         #some routines here for X:Y analysis for gender estimation
 
         #write   =   ['echo',' > ',out_name]             
@@ -62,7 +66,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
         print(self.get_command_str())
         self.db_start(run_id,in_names['.bam'])
         
-        #[3a]execute the command here----------------------------------------------------
+        #[3a]execute the command here----------------------------------------------------           
         output,err = '',{}
         try:
             h = subprocess.check_output(' '.join(header),stderr=subprocess.STDOUT,shell=True)
@@ -128,6 +132,13 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
             #the error num
             print('code: '+str(E.errno))
             err['code'] = E.errno
+            
+        #validation summary
+        try:
+            output += subprocess.check_output(' '.join(valid), stderr=subprocess.STDOUT, shell=True)
+        except Exception as E:
+            err['message'] = str(E)
+            
         print('output:\n'+output)
         
         #[3b]check results--------------------------------------------------
