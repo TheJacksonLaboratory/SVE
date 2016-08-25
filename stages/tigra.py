@@ -78,6 +78,7 @@ class tigra(stage_wrapper.Stage_Wrapper):
         self.db_start(run_id,in_names['.bam'])        
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
+        
         #step [1] run tigra-ext
         try: #currently set for one sample targeted assembly
             print(' '.join(fullp))
@@ -106,6 +107,7 @@ class tigra(stage_wrapper.Stage_Wrapper):
             print('code: '+str(E.errno))
             err['code'] = E.errno
         print('tigra-ext call: \n'+output)
+        
         #step [2] samtools sam to bam to sorted and indexed bam file for IGV
         try:
             #if the tigra-ext files are present skip to this section and process the contig alignment
@@ -140,6 +142,7 @@ class tigra(stage_wrapper.Stage_Wrapper):
             #the error num
             print('code: '+str(E.errno))
             err['code'] = E.errno
+        
         #step [3] repair/convert the VCF file
         try:
             #fix the tigra_output and overwrite the partial vcf-----------------------------------
