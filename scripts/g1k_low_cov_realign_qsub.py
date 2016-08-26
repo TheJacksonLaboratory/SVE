@@ -76,7 +76,7 @@ for k in samples:
     modules = [ml+' samtools/1.2\n'+ml+' gcc/4.9.2\n']
     merge   = [sambamba,'merge',out_dir+'/'+k+'.merged.bam']+samples[k]
     index   = [sambamba,'index',out_dir+'/'+k+'.merged.bam']
-    realign = [speedseq,'realign','-t',cpus,ref_path,'-o',out_dir+'/'+k+'.realign',out_dir+'/'+k+'.merged.bam']
+    realign = [speedseq,'realign','-t',cpus,'-o',out_dir+'/'+k+'.realign',ref_path,out_dir+'/'+k+'.merged.bam']
     #clean   = ['rm',out_dir+'/'+k+'.merged.bam']
     with open(job_pbs,'w') as pbs:
         pbs.write('#!/bin/bash\n'+\
