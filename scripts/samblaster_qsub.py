@@ -73,6 +73,7 @@ for k in samples:
              samtools,'view','-Sb',out_dir+'/'+k+'.split.sam','>',out_dir+'/'+k+'.split.bam\n',
              samtools,'index',out_dir+'/'+k+'.disc.bam\n',
              'rm',out_dir+'/'+k+'.disc.sam',out_dir+'/'+k+'.split.sam\n']
+    print (' '.join(blast))
     with open(job_pbs,'w') as pbs:
         pbs.write('#!/bin/bash\n'+\
                   ' '.join(modules)+'\n'+\
