@@ -133,23 +133,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         else:
             scheduler = []
             job = ['--disableJobReport']
-               
-        #[0] Preprocess The Bam Data and Generate MetaData
-        pp   = sv+'/qscript/SVPreprocess.q'
-        preprocess = [java+' -cp %s'%classpath,
-                      qcmd,
-                      '-S %s '%pp,
-                      '-S %s'%qs,
-                      '-gatk %s'%gatk]+job+\
-                     ['-cp %s'%classpath,'-configFile %s'%conf,'-tempDir %s'%SV_TMPDIR,
-                      '-R %s'%ref,'-runDirectory %s'%rd,'-md %s'%md,'-jobLogDir %s'%logs,
-                      '-genomeMaskFile %s'%gmask,'-copyNumberMaskFile %s'%cnmask,#'-readDepthMaskFile %s'%rdmask,
-                      '-ploidyMapFile %s'%ploidy,'-genderMapFile %s'%gender_map,
-                      '-useMultiStep','-reduceInsertSizeDistributions true',
-                      '-bamFilesAreDisjoint true','-computeGCProfiles true','-computeReadCounts true',
-                      '-I %s'%bams]+\
-                     scheduler + ['-run'] #take this off for a dry run
-
+            
         # try writing it to a bash script?
         h = '#!/bin/bash\n'
         h += 'export PATH=%s\n'%PATH
@@ -159,8 +143,35 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         h += 'which samtools > /dev/null || exit 1\n'
         h += 'which tabix > /dev/null || exit 1\n'
         h += 'echo `samtools`\n'
-        h += 'echo `tabix`\n'
-        print('\n')
+        h += 'echo `tabix`\n'       
+        
+        #[0] Preprocess The Bam Data and Generate MetaData
+        pp   = sv+'/qscript/SVPreprocess.q'
+        preprocess = [java+' -cp %s'%classpath,
+                      qcmd,
+                      '-S %s '%pp,
+                      '-S %s'%qs,
+                      '-gatk %s'%gatk]+job+\
+                     ['-cp %s'%classpath,
+                     '-configFile %s'%conf,
+                     '-tempDir %s'%SV_TMPDIR,
+                      '-R %s'%ref,
+                      '-runDirectory %s'%rd,
+                      '-md %s'%md,
+                      '-jobLogDir %s
+                      '%logs,
+                      '-genomeMaskFile %s'%gmask,
+                      '-copyNumberMaskFile %s'%cnmask,
+                      '-readDepthMaskFile %s'%rdmask,
+                      '-ploidyMapFile %s'%ploidy,
+                      '-genderMapFile %s'%gender_map,
+                      '-useMultiStep',
+                      '-reduceInsertSizeDistributions true',
+                      '-bamFilesAreDisjoint true',
+                      '-computeGCProfiles true',
+                      '-computeReadCounts true',
+                      '-I %s'%bams]+\
+                     scheduler + ['-run'] #take this off for a dry run
         s = ''
         s += h
         for line in preprocess:
@@ -336,7 +347,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                          ['-cp %s'%classpath,
                           '-configFile %s'%conf,
                           '-tempDir %s'%SV_TMPDIR,
-                          '-R%s'%ref,
+                          '-R %s'%ref,
                           '-runDirectory %s'%rd,
                           '-md %s'%md,
                           '-jobLogDir %s'%logs,
