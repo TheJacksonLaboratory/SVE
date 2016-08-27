@@ -63,20 +63,20 @@ for k in samples:
     ml = 'module load'
     modules =    [ml+' samtools/1.2\n'+ml+' gcc/4.9.2\n']
     #samtools view -h samp.bam | samblaster [-a] [-e] [-d samp.disc.sam] [-s samp.split.sam] [-u samp.umc.fasta] -o /dev/null    
-    samblaster = [samtools,'view','-Sh',samples[k][0],'|',samblaster,'-e',
-                  '-d',out_dir+'/'+k+'.disc.sam',
-                  '-s',out_dir+'/'+k+'.split.sam'
-                  '-u',out_dir+'/'+k+'.um.fa',
-                  '-o','/dev/null\n',
-                  samtools,'view','-Sb',out_dir+'/'+k+'.disc.sam','>',out_dir+'/'+k+'.disc.bam\n',
-                  samtools,'index',out_dir+'/'+k+'.disc.bam\n',
-                  samtools,'view','-Sb',out_dir+'/'+k+'.split.sam','>',out_dir+'/'+k+'.split.bam\n',
-                  samtools,'index',out_dir+'/'+k+'.disc.bam\n',
-                  'rm',out_dir+'/'+k+'.disc.sam',out_dir+'/'+k+'.split.sam\n']
+    blast = [samtools,'view','-Sh',samples[k][0],'|',samblaster,'-e',
+             '-d',out_dir+'/'+k+'.disc.sam',
+             '-s',out_dir+'/'+k+'.split.sam'
+             '-u',out_dir+'/'+k+'.um.fa',
+             '-o','/dev/null\n',
+             samtools,'view','-Sb',out_dir+'/'+k+'.disc.sam','>',out_dir+'/'+k+'.disc.bam\n',
+             samtools,'index',out_dir+'/'+k+'.disc.bam\n',
+             samtools,'view','-Sb',out_dir+'/'+k+'.split.sam','>',out_dir+'/'+k+'.split.bam\n',
+             samtools,'index',out_dir+'/'+k+'.disc.bam\n',
+             'rm',out_dir+'/'+k+'.disc.sam',out_dir+'/'+k+'.split.sam\n']
     with open(job_pbs,'w') as pbs:
         pbs.write('#!/bin/bash\n'+\
                   ' '.join(modules)+'\n'+\
-                  ' '.join(samblaster)+'\n')
+                  ' '.join(blast)+'\n')
 #execute qsub with the scripts, getting the jids back (can display these or attach to further monitor progress)
 output,err = '',{}
 for pbs in PBS: #test with one of these and a fast caller on a small file...
