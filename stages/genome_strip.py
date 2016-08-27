@@ -44,11 +44,12 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
             out_names = {'.del.vcf' :cascade+'_S'+str(self.stage_id)+out_exts[0],
                          '.del.genotype.vcf' :cascade+'_S'+str(self.stage_id)+out_exts[1],
                          '.cnv.vcf' :cascade+'_S'+str(self.stage_id)+out_exts[2]}  
+
+        self.db_start(run_id,in_names['.bam'][0]) #add entries to DB
         refd = self.strip_name(in_names['.fa']) #this is a bit hackish
         print(refd)
         if inputs.has_key('chroms'): chroms = inputs['chroms']
         #[2a]build command args
-        
         #environment variable passing here
         soft = self.software_path
         SV_DIR = soft+'/svtoolkit'
@@ -65,8 +66,6 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         LD_LIB = soft+'/svtoolkit/bwa:'+'/opt/compsci/pbs-drmaa/1.0.17/lib'#dynamic libs
         if os.environ.has_key('LD_LIBRARY_PATH'):
             LD_LIB += ':'+os.environ['LD_LIBRARY_PATH']
-
-
         print('checking environment variable = PATH:\n%s'%PATH)
         print('checking environment variable = LD_LIBRARY_PATH:\n%s'%LD_LIB)
         print('checking environment variable = SV_DIR:\n%s'%SV_DIR)
@@ -74,7 +73,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
 
         #PBS cluster specfic tunning
         CLUSTER = False   #dispatched jobs or not
-        RAM = 32         #in gigabytes
+        RAM = 4         #in gigabytes
         CPU = 6          #tasks
         JOBS = 4         #max concurrent jobs
         TIME = '4:00:00' #5 days, fail quickly
@@ -144,7 +143,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                       '-gatk %s'%gatk]+job+\
                      ['-cp %s'%classpath,'-configFile %s'%conf,'-tempDir %s'%SV_TMPDIR,
                       '-R %s'%ref,'-runDirectory %s'%rd,'-md %s'%md,'-jobLogDir %s'%logs,
-                      '-genomeMaskFile %s'%gmask,'-copyNumberMaskFile %s'%cnmask,'-readDepthMaskFile %s'%rdmask,
+                      '-genomeMaskFile %s'%gmask,'-copyNumberMaskFile %s'%cnmask,#'-readDepthMaskFile %s'%rdmask,
                       '-ploidyMapFile %s'%ploidy,'-genderMapFile %s'%gender_map,
                       '-useMultiStep','-reduceInsertSizeDistributions true',
                       '-bamFilesAreDisjoint true','-computeGCProfiles true','-computeReadCounts true',
@@ -201,14 +200,27 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
 
         #[1] Initial Pooled Deletion Discovery
         dd = sv+'/qscript/SVDiscovery.q'
-        del_discovery = [java,'-cp',classpath,qcmd,'-S',dd,'-S',qs,'-gatk',gatk]+\
-                         job+['-cp',classpath]+\
-                         ['-configFile',conf,'-tempDir',SV_TMPDIR,'-R',ref,
-                          '-runDirectory',rd,'-md',md,'-jobLogDir',logs,
-                          '-minimumSize',str(100),'-maximumSize',str(1000000),
-                          '-genomeMaskFile',gmask,'-genderMapFile',gender_map,
-                          '-suppressVCFCommandLines','-P select.validateReadPairs:false',
-                          '-I',bams,'-O',out_names['.del.vcf']]+\
+        del_discovery = [java,'-cp %s'%classpath,
+                         qcmd,
+                         '-S %s'%dd,
+                         '-S %s'%qs,
+                         '-gatk %s'%gatk]+job+\
+                         ['-cp %s'%classpath,
+                          '-configFile %s'%conf,
+                          '-tempDir %s'%SV_TMPDIR,
+                          '-R %s'%ref,
+                          '-runDirectory %s'%rd,
+                          '-md %s'%md,
+                          '-disableGATKTraversal',
+                          '-jobLogDir %s'%logs,
+                          '-minimumSize %s'%100,
+                          '-maximumSize %s'%1000000,
+                          '-genomeMaskFile %s'%gmask,
+                          '-genderMapFile %s'%gender_map,
+                          '-suppressVCFCommandLines',
+                          '-P select.validateReadPairs:false',
+                          '-I %s'%bams,
+                          '-O %s'%out_names['.del.vcf']]+\
                          scheduler+\
                          ['-run']
         print(del_discovery)
@@ -251,158 +263,152 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
             err['code'] = E.errno
         print('output:\n' + output)
         
-        #
-        # #[2] Genotype Individual Deleteions (this needs the GS_DEL_VCF_splitter.py)
-        # dg = sv+'/qscript/SVGenotyper.q'
-        # del_genotyping = [java,'-cp',classpath,qcmd,'-S',dg,'-S',qs,'-gatk',gatk]+\
-        #                  job+['-cp',classpath]+\
-        #                  ['-configFile',conf,'-tempDir',SV_TMPDIR,'-R',ref,
-        #                   '-runDirectory',rd,'-md',md,'-jobLogDir',logs,
-        #                   '-genomeMaskFile', gmask, '-genderMapFile', gender_map,
-        #                   '-I',bams,'-vcf',out_names['.del.vcf'],'-O',out_names['.del.genotype.vcf']]+\
-        #                  scheduler+\
-        #                  ['-run']
-        # print(del_genotyping)
-        #
-        # #[3] GenomeSTRiP2.0 CNV algorithm (this needs the gs_slpit_merge.py)
-        # cnv = sv+'/qscript/discovery/cnv/CNVDiscoveryPipeline.q'
-        # cnv_discovery = [java,'-cp',classpath,qcmd,'-S',cnv,'-S',qs,'-gatk',gatk]+\
-        #                 job+['-cp',classpath]+\
-        #                 ['-configFile',conf,'-tempDir',SV_TMPDIR,'-R',ref,
-        #                  '-runDirectory',rd,'-md',md,'-jobLogDir',logs,
-        #                  '-genomeMaskFile', gmask, '-genderMapFile', gender_map,
-        #                  '-ploidyMapFile',ploidy,'-I',bams,
-        #                  '-tilingWindowSize',str(5000),'-tilingWindowOverlap',str(2500),
-        #                  '-maximumReferenceGapLength',str(25000),'-boundaryPrecision',str(200),
-        #                  '-minimumRefinedLength',str(2500)]+\
-        #                  scheduler
-        # if CLUSTER: cnv_discovery += ['-maxConcurrentStageJobs',str(JOBS),'-run']
-        # else:       cnv_discovery += ['-run']
-        # print(cnv_discovery)
+        
+        #[2] Genotype Individual Deleteions (this needs the GS_DEL_VCF_splitter.py)
+        dg = sv+'/qscript/SVGenotyper.q'
+        del_genotyping = [java,'-cp %s'%classpath,
+                          qcmd,
+                          '-S %s'%dg,
+                          '-S %s'%qs,
+                          '-gatk %s'%gatk]+job+\
+                          ['-cp %s'%classpath,
+                           '-configFile %s'%conf,
+                           '-tempDir %s'%SV_TMPDIR,
+                           '-R %s'%ref,
+                           '-runDirectory %s'%rd,
+                           '-md %s'%md,
+                           '-disableGATKTraversal',
+                           '-jobLogDir %s'%logs,
+                           '-genomeMaskFile %s'%gmask,
+                           '-genderMapFile %s'%gender_map,
+                           '-I %s'%bams,
+                           '-vcf %s'%out_names['.del.vcf'],
+                           '-O %s'%out_names['.del.genotype.vcf']]+\
+                          scheduler+\
+                          ['-run']
+        print(del_genotyping)
+        
+        s = ''
+        s += h
+        for line in del_genotyping:
+            s += line+' \\\n'
+            print(line + ' \\')
+        s += '|| exit 1\n'
+        print('\n')
+
+        #try writing a bash script and executing that
+        with open(rd+'/del_genotyping.sh','w') as f:
+            f.write(s)
+        command = ['chmod','a+x',rd+'/del_genotyping.sh','&&','cd %s'%rd,'&& pwd && ./del_genotyping.sh']
+        output, err = '', {}
+        try:
+            output = subprocess.check_output(' '.join(command), stderr=subprocess.STDOUT, shell=True,
+                                             env={'classpath': classpath, 'PATH': PATH, 'SV_DIR': SV_DIR,
+                                                  'SV_TMPDIR': SV_TMPDIR, 'LD_LIBRARY_PATH': LD_LIB})
+        # catch all errors that arise under normal call behavior
+        except subprocess.CalledProcessError as E:
+            print('call error: ' + E.output)  # what you would see in the term
+            err['output'] = E.output
+            # the python exception issues (shouldn't have any...
+            print('message: ' + E.message)  # ?? empty
+            err['message'] = E.message
+            # return codes used for failure....
+            print('code: ' + str(E.returncode))  # return 1 for a fail in art?
+            err['code'] = E.returncode
+        except OSError as E:
+            print('os error: ' + E.strerror)  # what you would see in the term
+            err['output'] = E.strerror
+            # the python exception issues (shouldn't have any...
+            print('message: ' + E.message)  # ?? empty
+            err['message'] = E.message
+            # the error num
+            print('code: ' + str(E.errno))
+            err['code'] = E.errno
+        print('output:\n' + output)
+        
+        #[3] GenomeSTRiP2.0 CNV algorithm (this needs the gs_slpit_merge.py)
+        cnv = sv+'/qscript/discovery/cnv/CNVDiscoveryPipeline.q'
+        cnv_discovery = [java,'-cp %s'%classpath,
+                         qcmd,
+                         '-S %s'%cnv,
+                         '-S %s'%qs,
+                         '-gatk %s'%gatk]+job+\
+                         ['-cp %s'%classpath,
+                          '-configFile %s'%conf,
+                          '-tempDir %s'%SV_TMPDIR,
+                          '-R%s'%ref,
+                          '-runDirectory %s'%rd,
+                          '-md %s'%md,
+                          '-jobLogDir %s'%logs,
+                          #'-genomeMaskFile %s'%gmask,
+                          '-genderMapFile %s'%gender_map,
+                          '-ploidyMapFile %s'%ploidy,
+                          '-I %s'%bams,
+                          '-tilingWindowSize %s'%5000,
+                          '-tilingWindowOverlap %s'%2500,
+                          '-maximumReferenceGapLength %s'%25000,
+                          '-boundaryPrecision %s'%200,
+                          '-minimumRefinedLength %s'%2500]+\
+                          scheduler
+        if CLUSTER: cnv_discovery += ['-maxConcurrentStageJobs',str(JOBS),'-run']
+        else:       cnv_discovery += ['-run']
+        print(cnv_discovery)
+        
+        s = ''
+        s += h
+        for line in cnv_discovery:
+            s += line+' \\\n'
+            print(line + ' \\')
+        s += '|| exit 1\n'
+        print('\n')
+
+        #try writing a bash script and executing that
+        with open(rd+'/cnv_discovery.sh','w') as f:
+            f.write(s)
+        command = ['chmod','a+x',rd+'/cnv_discovery.sh','&&','cd %s'%rd,'&& pwd && ./cnv_discovery.sh']
+        output, err = '', {}
+        try:
+            output = subprocess.check_output(' '.join(command), stderr=subprocess.STDOUT, shell=True,
+                                             env={'classpath': classpath, 'PATH': PATH, 'SV_DIR': SV_DIR,
+                                                  'SV_TMPDIR': SV_TMPDIR, 'LD_LIBRARY_PATH': LD_LIB})
+        # catch all errors that arise under normal call behavior
+        except subprocess.CalledProcessError as E:
+            print('call error: ' + E.output)  # what you would see in the term
+            err['output'] = E.output
+            # the python exception issues (shouldn't have any...
+            print('message: ' + E.message)  # ?? empty
+            err['message'] = E.message
+            # return codes used for failure....
+            print('code: ' + str(E.returncode))  # return 1 for a fail in art?
+            err['code'] = E.returncode
+        except OSError as E:
+            print('os error: ' + E.strerror)  # what you would see in the term
+            err['output'] = E.strerror
+            # the python exception issues (shouldn't have any...
+            print('message: ' + E.message)  # ?? empty
+            err['message'] = E.message
+            # the error num
+            print('code: ' + str(E.errno))
+            err['code'] = E.errno
+        print('output:\n' + output)        
+        
         # #then some renaming, conversion and clean up
         # move_vcf = ['mv',sub_dir+'/results/gs_cnv.genotypes.vcf.gz'] #this seems to be hard coded
         # convert_vcf = ['python','gs_slpit_merge.py']
         # clean = ['rm','-rf',SV_TMPDIR, sub_dir] #delete temp, stage_id folder after vcfs are copied
-
-        #add entries to DB
-        self.db_start(run_id,in_names['.bam'][0])
-
-        #[3a]execute the commands here----------------------------------------------------
-        # output,err = '',{}
-        # try:
-        #     output = subprocess.check_output(' '.join(preprocess),stderr=subprocess.STDOUT,shell=True,
-        #                                      env={'classpath':classpath,'PATH':PATH,'SV_DIR':SV_DIR,
-        #                                           'SV_TMPDIR':SV_TMPDIR,'LD_LIBRARY_PATH':LD_LIB})
-        # #catch all errors that arise under normal call behavior
-        # except subprocess.CalledProcessError as E:
-        #     print('call error: '+E.output)        #what you would see in the term
-        #     err['output'] = E.output
-        #     #the python exception issues (shouldn't have any...
-        #     print('message: '+E.message)          #?? empty
-        #     err['message'] = E.message
-        #     #return codes used for failure....
-        #     print('code: '+str(E.returncode))     #return 1 for a fail in art?
-        #     err['code'] = E.returncode
-        # except OSError as E:
-        #     print('os error: '+E.strerror)        #what you would see in the term
-        #     err['output'] = E.strerror
-        #     #the python exception issues (shouldn't have any...
-        #     print('message: '+E.message)          #?? empty
-        #     err['message'] = E.message
-        #     #the error num
-        #     print('code: '+str(E.errno))
-        #     err['code'] = E.errno
-        # print('output:\n'+output)
-        #
-        # try:
-        #     output = subprocess.check_output(' '.join(del_discovery),stderr=subprocess.STDOUT,shell=True,
-        #                                      env={'PATH':PATH,'SV_DIR':SV_DIR,
-        #                                           'SV_TMPDIR':SV_TMPDIR,'LD_LIBRARY_PATH':LD_LIB})
-        # #catch all errors that arise under normal call behavior
-        # except subprocess.CalledProcessError as E:
-        #     print('call error: '+E.output)        #what you would see in the term
-        #     err['output'] = E.output
-        #     #the python exception issues (shouldn't have any...
-        #     print('message: '+E.message)          #?? empty
-        #     err['message'] = E.message
-        #     #return codes used for failure....
-        #     print('code: '+str(E.returncode))     #return 1 for a fail in art?
-        #     err['code'] = E.returncode
-        # except OSError as E:
-        #     print('os error: '+E.strerror)        #what you would see in the term
-        #     err['output'] = E.strerror
-        #     #the python exception issues (shouldn't have any...
-        #     print('message: '+E.message)          #?? empty
-        #     err['message'] = E.message
-        #     #the error num
-        #     print('code: '+str(E.errno))
-        #     err['code'] = E.errno
-        # print('output:\n'+output)
-        #
-        # try:
-        #     output = subprocess.check_output(' '.join(del_genotyping),stderr=subprocess.STDOUT,shell=True,
-        #                                      env={'PATH':PATH,'SV_DIR':SV_DIR,
-        #                                           'SV_TMPDIR':SV_TMPDIR,'LD_LIBRARY_PATH':LD_LIB})
-        # #catch all errors that arise under normal call behavior
-        # except subprocess.CalledProcessError as E:
-        #     print('call error: '+E.output)        #what you would see in the term
-        #     err['output'] = E.output
-        #     #the python exception issues (shouldn't have any...
-        #     print('message: '+E.message)          #?? empty
-        #     err['message'] = E.message
-        #     #return codes used for failure....
-        #     print('code: '+str(E.returncode))     #return 1 for a fail in art?
-        #     err['code'] = E.returncode
-        # except OSError as E:
-        #     print('os error: '+E.strerror)        #what you would see in the term
-        #     err['output'] = E.strerror
-        #     #the python exception issues (shouldn't have any...
-        #     print('message: '+E.message)          #?? empty
-        #     err['message'] = E.message
-        #     #the error num
-        #     print('code: '+str(E.errno))
-        #     err['code'] = E.errno
-        # print('output:\n'+output)
-        #
-        # try:
-        #     output = subprocess.check_output(' '.join(cnv_discovery),stderr=subprocess.STDOUT,shell=True,
-        #                                      env={'PATH':PATH,'SV_DIR':SV_DIR,
-        #                                           'SV_TMPDIR':SV_TMPDIR,'LD_LIBRARY_PATH':LD_LIB})
-        # #catch all errors that arise under normal call behavior
-        # except subprocess.CalledProcessError as E:
-        #     print('call error: '+E.output)        #what you would see in the term
-        #     err['output'] = E.output
-        #     #the python exception issues (shouldn't have any...
-        #     print('message: '+E.message)          #?? empty
-        #     err['message'] = E.message
-        #     #return codes used for failure....
-        #     print('code: '+str(E.returncode))     #return 1 for a fail in art?
-        #     err['code'] = E.returncode
-        # except OSError as E:
-        #     print('os error: '+E.strerror)        #what you would see in the term
-        #     err['output'] = E.strerror
-        #     #the python exception issues (shouldn't have any...
-        #     print('message: '+E.message)          #?? empty
-        #     err['message'] = E.message
-        #     #the error num
-        #     print('code: '+str(E.errno))
-        #     err['code'] = E.errno
-        # print('output:\n'+output)
-        #
-        # #[3b]check results--------------------------------------------------
-        # if err == {}:
-        #     results = [out_names['.del.vcf'],out_names['.del.genotype.vcf'],
-        #                sub_dir + '/results/gs_cnv.genotypes.vcf.gz'] #this one is hard coded
-        #     #for i in results: print i
-        #     if all([os.path.exists(r) for r in results]):
-        #         print("sucessfull........")
-        #         self.db_stop(run_id,self.vcf_to_vca(out_names['.del.vcf']),'',True)
-        #         return results   #return a list of names
-        #     else:
-        #         print("failure...........")
-        #         self.db_stop(run_id,{'output':output},'',False)
-        #         return False
-        # else:
-        #     print("failure...........")
-        #     self.db_stop(run_id,{'output':output},err['message'],False)
-        #     return None
+        
+        final_vcf = rd+'/S14.vcf'
+        #[3b]check results--------------------------------------------------
+        if err == {}:
+            self.db_stop(run_id,{'output':output},'',True)
+            results = [final_vcf]
+            #for i in results: print i
+            if all([os.path.exists(r) for r in results]):
+                print("sucessfull........")
+                return results   #return a list of names
+            else:
+                print("failure...........")
+                return False
+        else:
+            self.db_stop(run_id,{'output':output},err['message'],False)
+            return None
