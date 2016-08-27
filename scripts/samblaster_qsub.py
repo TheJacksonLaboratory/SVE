@@ -8,9 +8,8 @@ import subprocess32 as subprocess #to call qsub a bunch of times
 des = """
 Automated PBS job resequencing (speedseq) generator for low coverage g1k sample data"""
 parser = argparse.ArgumentParser(description=des)
-parser.add_argument('-r', '--ref_path',type=str, help='reference fasta')
-parser.add_argument('-b', '--bam_dir',type=str, help='input data directory with *.mapped* and *.unmapped* bams')
-parser.add_argument('-o', '--out_dir',type=str, help='outputdirectory to use with speedseq')
+parser.add_argument('-b', '--bam_dir',type=str, help='input data directory bams')
+parser.add_argument('-o', '--out_dir',type=str, help='outputdirectory to use with samblaster')
 parser.add_argument('-w', '--wall_time',type=str,help='wall time requested from cluster')
 parser.add_argument('-m', '--memory',type=str,help='radom access memory needed')
 parser.add_argument('-p', '--cpus',type=str,help='|| processors needed')
@@ -27,11 +26,6 @@ if args.out_dir is not None:
     if not os.path.exists(out_dir): os.makedirs(out_dir)
 else:
     print('no output')
-    raise IOError
-if args.ref_path is not None:
-    ref_path = args.ref_path
-else:
-    print('ref_path not provided, will not be able to write a vcf and g1k file')
     raise IOError
 
 if args.wall_time is not None:
