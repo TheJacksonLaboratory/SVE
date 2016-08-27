@@ -158,8 +158,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                       '-R %s'%ref,
                       '-runDirectory %s'%rd,
                       '-md %s'%md,
-                      '-jobLogDir %s
-                      '%logs,
+                      '-jobLogDir %s'%logs,
                       '-genomeMaskFile %s'%gmask,
                       '-copyNumberMaskFile %s'%cnmask,
                       '-readDepthMaskFile %s'%rdmask,
