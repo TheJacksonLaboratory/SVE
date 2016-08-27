@@ -65,7 +65,7 @@ for k in samples:
     #samtools view -h samp.bam | samblaster [-a] [-e] [-d samp.disc.sam] [-s samp.split.sam] [-u samp.umc.fasta] -o /dev/null    
     blast = [samtools,'view','-Sh',samples[k][0],'|',samblaster,'-e',
              '-d',out_dir+'/'+k+'.disc.sam',
-             '-s',out_dir+'/'+k+'.split.sam'
+             '-s',out_dir+'/'+k+'.split.sam',
              '-u',out_dir+'/'+k+'.um.fa',
              '-o','/dev/null\n',
              samtools,'view','-Sb',out_dir+'/'+k+'.disc.sam','>',out_dir+'/'+k+'.disc.bam\n',
