@@ -224,7 +224,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         #try writing a bash script and executing that
         with open(rd+'/del_discovery.sh','w') as f:
             f.write(s)
-        command = ['chmod','a+x',rd+'/del_discovery.sh','&&','cd %s'%rd,'&& pwd && ./preprocess.sh']
+        command = ['chmod','a+x',rd+'/del_discovery.sh','&&','cd %s'%rd,'&& pwd && ./del_discovery.sh']
         output, err = '', {}
         try:
             output = subprocess.check_output(' '.join(command), stderr=subprocess.STDOUT, shell=True,
