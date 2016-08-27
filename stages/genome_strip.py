@@ -152,22 +152,23 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                      scheduler + ['-run'] #take this off for a dry run
 
         # try writing it to a bash script?
-        s = '#!/bin/bash\n'
-        s += 'export PATH=%s\n'%PATH
-        s += 'export LD_LIBRARY_PATH=%s\n'%LD_LIB
-        s += 'export SV_DIR=%s\n'%SV_DIR
-        s += 'export SV_TMPDIR=%s\n'%SV_TMPDIR
-        s += 'which samtools > /dev/null || exit 1\n'
-        s += 'which tabix > /dev/null || exit 1\n'
-        s += 'echo `samtools`\n'
-        s += 'echo `tabix`\n'
+        h = '#!/bin/bash\n'
+        h += 'export PATH=%s\n'%PATH
+        h += 'export LD_LIBRARY_PATH=%s\n'%LD_LIB
+        h += 'export SV_DIR=%s\n'%SV_DIR
+        h += 'export SV_TMPDIR=%s\n'%SV_TMPDIR
+        h += 'which samtools > /dev/null || exit 1\n'
+        h += 'which tabix > /dev/null || exit 1\n'
+        h += 'echo `samtools`\n'
+        h += 'echo `tabix`\n'
         print('\n')
+        s = ''
+        s += h
         for line in preprocess:
             s += line+' \\\n'
             print(line + ' \\')
         s += '|| exit 1\n'
         print('\n')
-
         #try writing a bash script and executing that
         with open(rd+'/preprocess.sh','w') as f:
             f.write(s)
@@ -199,18 +200,57 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         print('output:\n' + output)
 
         #[1] Initial Pooled Deletion Discovery
-        # dd = sv+'/qscript/SVDiscovery.q'
-        # del_discovery = [java,'-cp',classpath,qcmd,'-S',dd,'-S',qs,'-gatk',gatk]+\
-        #                 job+['-cp',classpath]+\
-        #                 ['-configFile',conf,'-tempDir',SV_TMPDIR,'-R',ref,
-        #                  '-runDirectory',rd,'-md',md,'-jobLogDir',logs,
-        #                  '-minimumSize',str(100),'-maximumSize',str(1000000),
-        #                  '-genomeMaskFile',gmask,'-genderMapFile',gender_map,
-        #                  '-suppressVCFCommandLines','-P select.validateReadPairs:false',
-        #                  '-I',bams,'-O',out_names['.del.vcf']]+\
-        #                 scheduler+\
-        #                 ['-run']
-        # print(del_discovery)
+        dd = sv+'/qscript/SVDiscovery.q'
+        del_discovery = [java,'-cp',classpath,qcmd,'-S',dd,'-S',qs,'-gatk',gatk]+\
+                         job+['-cp',classpath]+\
+                         ['-configFile',conf,'-tempDir',SV_TMPDIR,'-R',ref,
+                          '-runDirectory',rd,'-md',md,'-jobLogDir',logs,
+                          '-minimumSize',str(100),'-maximumSize',str(1000000),
+                          '-genomeMaskFile',gmask,'-genderMapFile',gender_map,
+                          '-suppressVCFCommandLines','-P select.validateReadPairs:false',
+                          '-I',bams,'-O',out_names['.del.vcf']]+\
+                         scheduler+\
+                         ['-run']
+        print(del_discovery)
+        
+        s = ''
+        s += h
+        for line in del_discovery:
+            s += line+' \\\n'
+            print(line + ' \\')
+        s += '|| exit 1\n'
+        print('\n')
+
+        #try writing a bash script and executing that
+        with open(rd+'/del_discovery.sh','w') as f:
+            f.write(s)
+        command = ['chmod','a+x',rd+'/del_discovery.sh','&&','cd %s'%rd,'&& pwd && ./preprocess.sh']
+        output, err = '', {}
+        try:
+            output = subprocess.check_output(' '.join(command), stderr=subprocess.STDOUT, shell=True,
+                                             env={'classpath': classpath, 'PATH': PATH, 'SV_DIR': SV_DIR,
+                                                  'SV_TMPDIR': SV_TMPDIR, 'LD_LIBRARY_PATH': LD_LIB})
+        # catch all errors that arise under normal call behavior
+        except subprocess.CalledProcessError as E:
+            print('call error: ' + E.output)  # what you would see in the term
+            err['output'] = E.output
+            # the python exception issues (shouldn't have any...
+            print('message: ' + E.message)  # ?? empty
+            err['message'] = E.message
+            # return codes used for failure....
+            print('code: ' + str(E.returncode))  # return 1 for a fail in art?
+            err['code'] = E.returncode
+        except OSError as E:
+            print('os error: ' + E.strerror)  # what you would see in the term
+            err['output'] = E.strerror
+            # the python exception issues (shouldn't have any...
+            print('message: ' + E.message)  # ?? empty
+            err['message'] = E.message
+            # the error num
+            print('code: ' + str(E.errno))
+            err['code'] = E.errno
+        print('output:\n' + output)
+        
         #
         # #[2] Genotype Individual Deleteions (this needs the GS_DEL_VCF_splitter.py)
         # dg = sv+'/qscript/SVGenotyper.q'
