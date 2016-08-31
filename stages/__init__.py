@@ -35,6 +35,8 @@ import samtools_sort
 import samtools_index
 import samtools_fasta_index
 import samtools_snp
+import speedseq_align
+import speedseq_realign
 import variationhunter
 import vcftools_filter
 import tigra

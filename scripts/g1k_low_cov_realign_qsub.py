@@ -37,15 +37,15 @@ else:
 if args.wall_time is not None:
     walltime = args.wall_time
 else:
-    walltime = '12:00:00'
+    walltime = '24:00:00'
 if args.memory is not None:
     ram = args.memory
 else:
-    ram = '64gb'
+    ram = '32gb'
 if args.cpus is not None:
     cpus = args.cpus
 else:
-    cpus = '16'
+    cpus = '4'
 if args.email_address is not None:
     email = args.email_address
 else:
