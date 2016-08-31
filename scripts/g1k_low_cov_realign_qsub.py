@@ -83,7 +83,7 @@ for k in samples:
                   ' '.join(modules)+'\n'+\
                   ' '.join(merge)+'\n'+\
                   ' '.join(index)+'\n'+\
-                  ' '.join(realign)+'\n')#+\
+                  ' '.join(realign)+'\n'+\
                   ' '.join(clean)+'\n')
 #execute qsub with the scripts, getting the jids back (can display these or attach to further monitor progress)
 output,err = '',{}
