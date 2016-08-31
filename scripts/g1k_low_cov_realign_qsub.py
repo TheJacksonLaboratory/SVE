@@ -77,14 +77,14 @@ for k in samples:
     merge   = [sambamba,'merge',out_dir+'/'+k+'.merged.bam']+samples[k]
     index   = [sambamba,'index',out_dir+'/'+k+'.merged.bam']
     realign = [speedseq,'realign','-t',cpus,'-o',out_dir+'/'+k+'.realign',ref_path,out_dir+'/'+k+'.merged.bam']
-    #clean   = ['rm',out_dir+'/'+k+'.merged.bam']
+    clean   = ['rm',out_dir+'/'+k+'.merged.bam']
     with open(job_pbs,'w') as pbs:
         pbs.write('#!/bin/bash\n'+\
                   ' '.join(modules)+'\n'+\
                   ' '.join(merge)+'\n'+\
                   ' '.join(index)+'\n'+\
                   ' '.join(realign)+'\n')#+\
-                  #' '.join(clean)+'\n')
+                  ' '.join(clean)+'\n')
 #execute qsub with the scripts, getting the jids back (can display these or attach to further monitor progress)
 output,err = '',{}
 for pbs in PBS: #test with one of these and a fast caller on a small file...
