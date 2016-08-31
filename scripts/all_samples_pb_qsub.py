@@ -138,7 +138,7 @@ for sample in S:
         PBS += [group_pbs]
         with open(group_pbs,'w') as pbs:
             call = [python,pb,'-r',ref_path,'-f',','.join(S[sample][rg]),
-                    '-s',sample,'-a',algo,'-o',out_dir]
+                    '-s',sample,'-a',algo,'-p',str(cpus),'-o',out_dir]
             pbs.write('#!/bin/bash\n'+'\n'.join(modules)+'\n'+' '.join(call))
 #execute qsub with the scripts, getting the jids back (can display these or attach to further monitor progress)
 output,err = '',{}

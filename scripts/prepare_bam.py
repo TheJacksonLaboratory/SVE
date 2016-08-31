@@ -34,6 +34,7 @@ fq comma-sep file path list
 [EX PE] --fqs ~/data/sample1_FWD.fq,~/data/sample1_REV.fq"""
 parser.add_argument('-f', '--fqs',type=str, help=fqs_help)
 parser.add_argument('-b', '--bam',type=str, help='bam file path')
+parser.add_argument('-p','--cpus',type=str, help='number of cpus for alignment and sorting, ect')
 args = parser.parse_args()
 
 #read the database configuration file
@@ -85,7 +86,7 @@ if args.ref is not None:
 else:
     print('no ref pattern found')
     ref_fa_path = ''
-    
+
 refbase = ref_fa_path.rsplit('/')[-1].split('.fa')[0]
 if args.fqs is not None:
     reads = args.fqs.split(',') #CSL returns a list of 1+
@@ -104,6 +105,11 @@ if args.sample is not None:
 else:
     SM = None
 
+if args.cpus is not None:
+    cpus = int(args.cpus)
+else:
+    cpus = 1
+    
 #take in bam file(s) run
 with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
     dbo.embed_schema()
@@ -142,7 +148,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
                 #alignment, mapping and add read groups
                 st = stage.Stage('bwa_mem',dbc)
                 bwa_mem_params = st.get_params()
-                bwa_mem_params['-t']['value'] = 16
+                bwa_mem_params['-t']['value'] = cpus
                 st.set_params(bwa_mem_params)
                 outs = st.run(run_id,{'.fa':[ref_fa_path],'.fq':reads,
                                       'platform_id':['illumina'],
@@ -155,7 +161,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
         elif args.algorithm == 'piped_mem':
             st = stage.Stage('fq_to_bam_piped',dbc)
             bwa_mem_params = st.get_params()
-            bwa_mem_params['-t']['value'] = 16
+            bwa_mem_params['-t']['value'] = cpus
             st.set_params(bwa_mem_params)
             outs = st.run(run_id,{'.fa':[ref_fa_path],'.fq':reads,
                                   'platform_id':['illumina'],
@@ -165,7 +171,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
             #index gapped/ungapped alnment files
             st = stage.Stage('bwa_aln',dbc)
             bwa_aln_params = st.get_params()
-            bwa_aln_params['-t']['value'] = 12
+            bwa_aln_params['-t']['value'] = cpus
             st.set_params(bwa_aln_params)
             #this is more of the cascading code we want to use:::::::::::::::::::::::::::::::::::::::
             #fix the JSON so that outs has more or less the cascaded file you want to pass into the next stage
