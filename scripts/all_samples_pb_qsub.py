@@ -31,7 +31,7 @@ parser.add_argument('-p', '--processors',type=int,help='processors needed')
 parser.add_argument('-e', '--email_address',type=str,help='cluster email results to this email address')
 args = parser.parse_args()
 
-if args.ref_path is not None:
+if args.ref_path is not None and os.path.exists(args.ref_path):
     ref_path = args.ref_path
 else:
     print('reference fasta not found')
