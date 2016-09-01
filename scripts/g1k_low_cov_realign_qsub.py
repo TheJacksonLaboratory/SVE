@@ -74,7 +74,6 @@ sambamba = software_path+'/speedseq/bin/sambamba'
 speedseq = software_path+'/speedseq/bin/speedseq'
 for k in samples:
     job_pbs = pbs_dir+'/'+k+'.realign.pbs'
-    PBS += [job_pbs]
     ml = 'module load'
     modules = [ml+' samtools/1.2\n'+ml+' gcc/4.9.2\n']
     merge   = [sambamba,'merge',out_dir+'/'+k+'.merged.bam']+samples[k]
@@ -83,10 +82,9 @@ for k in samples:
     clean   = ['rm',out_dir+'/'+k+'.merged.bam']
     with open(job_pbs,'w') as pbs:
         s = '#!/bin/bash\n'+' '.join(modules)+'\n'
-        s_merge   = os.path.exists(out_dir+'/'+k+'.merged.bam.bai')  #merged bam is present
-        s_realign = os.path.exists(out_dir+'/'+k+'.realign.bam.bai') #realign is done already
-        if not s_realign:   #already done
-            if not s_merge: #do everything
+        if not os.path.exists(out_dir+'/'+k+'.realign.bam.bai'):   #already done
+            print('sample %s needs processing'%k)
+            if not os.path.exists(out_dir+'/'+k+'.merged.bam.bai'): #do everything
                 s +=  ' '.join(merge)+'\n'+\
                       ' '.join(index)+'\n'+\
                       ' '.join(realign)+'\n'+\
@@ -95,6 +93,7 @@ for k in samples:
                 s +=  ' '.join(realign)+'\n'+\
                       ' '.join(clean)+'\n' 
             pbs.write(s) #only dispatch if there is work to do
+            PBS += [job_pbs]
 #execute qsub with the scripts, getting the jids back (can display these or attach to further monitor progress)
 output,err = '',{}
 for pbs in PBS: #test with one of these and a fast caller on a small file...
