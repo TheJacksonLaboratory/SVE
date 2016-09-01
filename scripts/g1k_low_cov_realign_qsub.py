@@ -55,14 +55,17 @@ else:
 samples = {}
 mapped_bams   = glob.glob(bam_dir+'/*.mapped*.bam')
 unmapped_bams = glob.glob(bam_dir+'/*.unmapped*.bam')
-print(mapped_bams)
+merged_bams   = glob.glob(out_dir+'/*.merged.bam')
+realign_bams  = glob.glob(out_dir+'/*.realign.bam')
+print('found these mapped bams:\n%s'%mapped_bams)
+print('found these unmapped bams:\n%s'%unmapped_bams)
+print('found these merged bams:\n%s'%merged_bams)
+print('found these realigned bams:\n%s'%realign_bams)
 samples = {i.rsplit('/')[-1].split('.')[0]:[i] for i in mapped_bams}
 for j in range(len(unmapped_bams)):
     unmapped_sname = unmapped_bams[j].rsplit('/')[-1].split('.')[0]
     if samples.has_key(unmapped_sname): samples[unmapped_sname] += [unmapped_bams[j]]
     else:                               samples[unmapped_sname]  = [unmapped_bams[j]]
-
-
 #make a temp directory for pbs scripts
 PBS,pbs_dir = [],out_dir+'PBS'
 if not os.path.exists(pbs_dir): os.makedirs(pbs_dir)
@@ -79,12 +82,19 @@ for k in samples:
     realign = [speedseq,'realign','-t',cpus,'-o',out_dir+'/'+k+'.realign',ref_path,out_dir+'/'+k+'.merged.bam']
     clean   = ['rm',out_dir+'/'+k+'.merged.bam']
     with open(job_pbs,'w') as pbs:
-        pbs.write('#!/bin/bash\n'+\
-                  ' '.join(modules)+'\n'+\
-                  ' '.join(merge)+'\n'+\
-                  ' '.join(index)+'\n'+\
-                  ' '.join(realign)+'\n'+\
-                  ' '.join(clean)+'\n')
+        s = '#!/bin/bash\n'+' '.join(modules)+'\n'
+        s_merge   = os.path.exists(out_dir+'/'+k+'.merged.bam.bai')  #merged bam is present
+        s_realign = os.path.exists(out_dir+'/'+k+'.realign.bam.bai') #realign is done already
+        if not s_realign:   #already done
+            if not s_merge: #do everything
+                s +=  ' '.join(merge)+'\n'+\
+                      ' '.join(index)+'\n'+\
+                      ' '.join(realign)+'\n'+\
+                      ' '.join(clean)+'\n'
+            else:           #skip merge step
+                s +=  ' '.join(realign)+'\n'+\
+                      ' '.join(clean)+'\n' 
+            pbs.write(s) #only dispatch if there is work to do
 #execute qsub with the scripts, getting the jids back (can display these or attach to further monitor progress)
 output,err = '',{}
 for pbs in PBS: #test with one of these and a fast caller on a small file...
@@ -93,7 +103,7 @@ for pbs in PBS: #test with one of these and a fast caller on a small file...
         command = ['qsub','-l','walltime=%s,mem=%s,procs=%s'%(walltime,ram,cpus),'-m','e','-M',email,
                    '-o',pbs[0:-4]+'.log','-j oe',pbs]
         print(' '.join(command))
-        output += subprocess.check_output(' '.join(command),stderr=subprocess.STDOUT,shell=True)
+        #output += subprocess.check_output(' '.join(command),stderr=subprocess.STDOUT,shell=True)
     #catch all errors that arise under normal call behavior
     except subprocess.CalledProcessError as E:
         print('call error: '+E.output)        #what you would see in the term

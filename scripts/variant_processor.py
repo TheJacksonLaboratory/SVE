@@ -215,7 +215,8 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
        staging.has_key('cnmops') and auto_RD_RL or \
        staging.has_key('cnvnator') and auto_RD_RL or \
        staging.has_key('genome_strip') and auto_RD_RL:
-        #samtools_bam_stats
+           
+        #check for the *_S3 files
         st = stage.Stage('bam_stats',dbc)
         outs = st.run(run_id,{'.bam':bams,'out_dir':[directory]})
         if not type(outs) and len(outs)>0:
