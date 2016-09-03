@@ -79,7 +79,7 @@ for k in samples:
     merge   = [sambamba,'merge',out_dir+'/'+k+'.merged.bam']+samples[k]
     index   = [sambamba,'index',out_dir+'/'+k+'.merged.bam']
     realign = [speedseq,'realign','-t',cpus,'-o',out_dir+'/'+k+'.realign',ref_path,out_dir+'/'+k+'.merged.bam']
-    clean   = ['rm',out_dir+'/'+k+'.merged.bam']
+    clean   = ['rm',out_dir+'/'+k+'.merged.bam*']
     with open(job_pbs,'w') as pbs:
         s = '#!/bin/bash\n'+' '.join(modules)+'\n'
         if not os.path.exists(out_dir+'/'+k+'.realign.bam.bai'):   #already done
