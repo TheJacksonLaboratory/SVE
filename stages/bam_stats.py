@@ -27,7 +27,26 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
             expand = line.split('\t')              #samtools v1.0 uses \t
             if len(expand)>1: out += [expand[0:2]] #chop the #...
         return out
-        
+    
+    #takes in a header file and parses the RG tage
+    def make_rg_header(self,header_path,rg_header_path):
+        header = []
+        with open(header_path,'r') as f:
+            header = f.readlines()
+        RG = {}
+        for l in range(len(header)):
+            i = 0
+            if header[l].startswith('@RG'):
+                RG[i] = {x.split(':')[0]:x.split(':')[-1].replace('\n','') for x in header[l].split('@RG')[-1].split('\t')[1:]}
+                if RG[i].has_key('SM'): 
+                    RG[i]['LB'] = RG[i]['SM']+'_LB%s'%str(i+1)
+                    RG[i]['PU'] = RG[i]['SM']+'_RG%s'%str(i+1)
+                RG[i]['PL'] = 'ILLUMINA'
+                if not RG[i].has_key('CN'): RG[i]['CN'] = 'NA'
+                rg_line = '@RG\tID:%s\tSM:%s\tLB:%s\tPU:%s\tPL:%s\tCN:%s\n'                
+                header[l] = rg_line%(RG[i]['ID'],RG[i]['SM'],RG[i]['LB'],RG[i]['PU'],RG[i]['PL'],RG[i]['CN'])
+        with open(rg_header_path,'w') as f:
+            f.write(''.join(header))
         
     #override this function in each wrapper...
     #bwa sampe ref.fa L.sai R.sai L.fq R.fq -f out.sam
@@ -72,6 +91,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
             h = subprocess.check_output(' '.join(header),stderr=subprocess.STDOUT,shell=True)
             with open(out_name+'.header','w') as f:
                 f.write(h)
+            self.make_rg_header(out_name+'.header',out_name+'.header.rg')
             #get sequence names and lengths
             seqs = {}
             for line in h.split('\n'):
@@ -155,3 +175,17 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
         else:
             self.db_stop(run_id,{'output':output},err['message'],False)
             return None
+
+#testing of automated read group correction
+base_path = '/Users/tbecker/Desktop/TEMP/SVE/data/test/pre-alignment.TCGA-A6-2679-10A-01D-1405-02_IlluminaHiSeq-DNASeq_whole'
+header_path = base_path+'_S3.header'
+valid_path  = base_path+'_S3.valid'
+rg_path     = base_path+'_S3.rg'
+
+
+
+
+
+
+
+

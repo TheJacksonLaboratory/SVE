@@ -1,0 +1,31 @@
+raw total sequences:	64637478
+filtered sequences:	0
+sequences:	64637478
+is sorted:	1
+1st fragments:	32318739
+last fragments:	32318739
+reads mapped:	59766026
+reads mapped and paired:	58722944	# paired-end technology bit set + both mates mapped
+reads unmapped:	4871452
+reads properly paired:	57464975	# proper-pair bit set
+reads paired:	64637478	# paired-end technology bit set
+reads duplicated:	0	# PCR or optical duplicate bit set
+reads MQ0:	3894932	# mapped and MQ=0
+reads QC failed:	0
+non-primary alignments:	0
+total length:	3296511378	# ignores clipping
+bases mapped:	3048067326	# ignores clipping
+bases mapped (cigar):	3041225903	# more accurate
+bases trimmed:	0
+bases duplicated:	0
+mismatches:	17578916	# from NM fields
+error rate:	5.780207e-03	# mismatches / bases mapped (cigar)
+average length:	51
+maximum length:	51
+average quality:	66.4
+insert size average:	242.8
+insert size standard deviation:	75.6
+inward oriented pairs:	28760783
+outward oriented pairs:	23911
+pairs with other orientation:	20496
+pairs on different chromosomes:	556176
