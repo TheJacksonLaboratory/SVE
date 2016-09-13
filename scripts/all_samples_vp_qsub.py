@@ -24,8 +24,16 @@ parser.add_argument('-d', '--debug', action='store_true', help='save results/err
 parser.add_argument('-e', '--email_address', type=str, help='cluster email results to this email address')
 args = parser.parse_args()
 
+if args.stage_list is not None:
+    stages = args.stage_list.split(',')  # don't have to split, just pass in...
+else:
+    print('stage not found')
+    raise IOError
 if args.ref_path is not None:
     ref_path = args.ref_path
+elif len(stages)==1 and stages[0]=='bam_stats':
+    print('not using a reference for bam_stats')
+    ref_path = ''
 else:
     print('reference fasta not found')
     raise IOError
@@ -79,13 +87,6 @@ if not (RD is None) and not (RL is None):
     auto_RD_RL = False
 else:
     auto_RD_RL = True
-
-# don't bother to check for validity here.....
-if args.stage_list is not None:
-    stages = args.stage_list.split(',')  # don't have to split, just pass in...
-else:
-    print('stage not found')
-    raise IOError
 
 if args.output_dir is not None:
     out_dir = args.output_dir
