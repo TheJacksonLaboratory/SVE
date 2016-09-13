@@ -33,7 +33,7 @@ if args.ref_path is not None:
     ref_path = args.ref_path
 elif len(stages)==1 and stages[0]=='bam_stats':
     print('not using a reference for bam_stats')
-    ref_path = ''
+    ref_path = '/missing_ref.fa'
 else:
     print('reference fasta not found')
     raise IOError
