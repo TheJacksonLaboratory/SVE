@@ -32,11 +32,13 @@ sudo python ./setup.py install
 cd /
 
 pip install --upgrade pip
+pip install -I argeparse
 pip install -I numpy
 pip install -I scipy
 pip install -I paramiko
 pip install -I subprocess32
 pip install -I pysam
+pip install -I pysamstats
 pip install -I HTSeq
 echo "checking SVE executables"
 /software/SVE/scripts/variant_processor.py -h
