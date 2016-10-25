@@ -8,4 +8,8 @@ for line in sys.stdin:
         print line
     else:                    #alignments
         raw = line.split('\t')
-        print '\t'.join(raw[:10]+[''.join([chr(ord(i)-33) for i in raw[10]])]+raw[11:])
+        if len(raw)>10:
+            print '\t'.join(raw[:10]+[''.join([chr(ord(i)-33) for i in raw[10]])]+raw[11:])
+        else:
+            print '\t'.join(raw[:10]+[''.join([chr(ord(i)-33) for i in raw[10]])]
+            
