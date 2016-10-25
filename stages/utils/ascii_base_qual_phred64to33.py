@@ -1,8 +1,6 @@
 #HTSeq quality conversion Phred64 to Phred33 scale
 import argparse
-import sys
 import time
-import os
 import HTSeq as ht
 
 des = """phred64 to phred 33 base quality conversion"""
