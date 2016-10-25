@@ -11,5 +11,5 @@ for line in sys.stdin:
         if len(raw)>10:
             print '\t'.join(raw[:10]+[''.join([chr(ord(i)-33) for i in raw[10]])]+raw[11:])
         else:
-            print '\t'.join(raw[:10]+[''.join([chr(ord(i)-33) for i in raw[10]])]
+            print '\t'.join(raw[:10]+[''.join([chr(ord(i)-33) for i in raw[10]])])
             
