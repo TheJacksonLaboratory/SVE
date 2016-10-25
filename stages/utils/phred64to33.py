@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#HTSeq quality conversion Phred64 to Phred33 scale
+#base quality conversion Phred64 to Phred33 scale
 import sys
 
 for line in sys.stdin:
@@ -8,4 +8,4 @@ for line in sys.stdin:
         print line
     else:                    #alignments
         raw = line.split('\t')
-        print raw[:10]+[chr(ord(raw[10])-33)]+raw[11:]
+        print '\t'.join(raw[:10]+[''.join([chr(ord(i)-33) for i in raw[10]])]+raw[11:])
