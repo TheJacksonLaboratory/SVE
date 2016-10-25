@@ -17,12 +17,13 @@ else:
     out_bam_path = args.out_bam_path
 
 start = time.time()
-i = 0
+i = 1
 bam_reader = ht.BAM_Reader(in_bam_path)
 bam_writer = ht.BAM_Writer.from_BAM_Reader(out_bam_path,bam_reader)
 for aln in bam_reader:
     if i%1E6==0: print('-')
     aln.read.qual -= 31
     bam_writer.write(aln)
+    i += 1
 stop = time.time()
 print('%s record written in %s sec'%(i,int(round(stop-start))))
