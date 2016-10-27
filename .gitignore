@@ -9,3 +9,5 @@ helix_push.py
 
 
 .DS_Store
+
+*.sam
