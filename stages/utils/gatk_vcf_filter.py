@@ -23,7 +23,7 @@ def filter_by_sv_len(raw,lower,upper):
 
 def write_filtered_vcf(header,data,path):
     with open(path+'_S13.vcf','w') as f:
-        f.write('\n'.join(['\t'.join(row) for row in header]))
+        f.write('\n'.join(['\t'.join(row) for row in header])+'\n')
         f.write('\n'.join(['\t'.join(row) for row in data]))
     print('done')
 
