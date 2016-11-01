@@ -269,7 +269,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
     if staging.has_key('cnmops'):
         st = stage.Stage('cnmops',dbc)
         cnmops_params = st.get_params()
-        cnmops_params['window']['value'] = ru.expected_window(depth=RD,length=RL,target=500)/4
+        cnmops_params['window']['value'] = ru.expected_window(depth=RD,length=RL,target=100)
         if len(bams)<=1:
             cnmops_params['mode']['value']   = 3  
         elif len(bams)==2:

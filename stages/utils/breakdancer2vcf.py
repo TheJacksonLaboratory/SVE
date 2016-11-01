@@ -32,32 +32,28 @@ def read_breakdancer(path):
 
 # writes a new .vcf file from a formatted table
 def write_vcf(path,header,vcf_table):
-   file = open(path, 'w')
-   s = header
-   t = ''
-   for i in vcf_table:
-      for j in i: t+=str(j)+'\t'
-      t+='\n'
-   file.write(s+t)
-   file.close()
+    with open(path,'w') as f:
+        s = header
+        s = header + '\n'.join(['\t'.join(i) for i in vcf_table])
+        f.write(s)        
 
 #Build the VCF4.0 Header
 def vcf_header(ref):
-   form = '##fileformat=VCFv4.1\n'
-   date = '##fileDate=' + strftime('%Y%m%d',time.localtime()) + '\n' 
-   src  = '##source=BreakDancer_Max-1.4.5\n'
-   ref  = '##reference=' + ref + '\n'
-   inf1 = '##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the variant described in this record">\n'
-   inf2 = '##INFO=<ID=IMPRECISE,Number=0,Type=Flag,Description="Imprecise structural variation">\n'
-   inf3 = '##INFO=<ID=SVLEN,Number=1,Type=Integer,Description="Difference in length between REF and ALT alleles">\n'
-   inf4 = '##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">\n'
-   alt1 = '##ALT=<ID=CNV,Description="Copy number variable region">\n'
-   alt2 = '##ALT=<ID=DEL,Description="Deletion">\n'
-   alt3 = '##ALT=<ID=INS,Description="Insertion">\n'
-   alt4 = '##ALT=<ID=TRA,Description="Translocation Event">\n' #this should be updated to a BND event?
-   alt5 = '##ALT=<ID=DUP,Description="Duplication Event">\n'
-   t_hd = '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n'
-   return (form+date+src+ref+inf1+inf2+inf3+inf4+alt1+alt2+alt3+alt4+alt5+t_hd)
+    form = '##fileformat=VCFv4.1\n'
+    date = '##fileDate=' + strftime('%Y%m%d',time.localtime()) + '\n' 
+    src  = '##source=BreakDancer_Max-1.4.5\n'
+    ref  = '##reference=' + ref + '\n'
+    inf1 = '##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the variant described in this record">\n'
+    inf2 = '##INFO=<ID=IMPRECISE,Number=0,Type=Flag,Description="Imprecise structural variation">\n'
+    inf3 = '##INFO=<ID=SVLEN,Number=1,Type=Integer,Description="Difference in length between REF and ALT alleles">\n'
+    inf4 = '##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">\n'
+    alt1 = '##ALT=<ID=CNV,Description="Copy number variable region">\n'
+    alt2 = '##ALT=<ID=DEL,Description="Deletion">\n'
+    alt3 = '##ALT=<ID=INS,Description="Insertion">\n'
+    alt4 = '##ALT=<ID=TRA,Description="Translocation Event">\n' #this should be updated to a BND event?
+    alt5 = '##ALT=<ID=DUP,Description="Duplication Event">\n'
+    t_hd = '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n'
+    return (form+date+src+ref+inf1+inf2+inf3+inf4+alt1+alt2+alt3+alt4+alt5+t_hd)
 
 #selects needed fields and converts what is needed to make a .vcf
 #:::TO DO::: include additional CHR2 VCF tags in the INFO field
@@ -68,7 +64,7 @@ def build_vcf(table):
       CHR = table[i][0]
       POS = table[i][1]
       ID = 'breakdancer_' + str(i)
-      REF = '.'
+      REF = 'N'
       #convert breakdancer type to vcf type
       t = table[i][6]
       SVTYPE  = 'CNV' #default type
@@ -84,7 +80,7 @@ def build_vcf(table):
       FILTER = 'PASS'
       END = table[i][4]
       SVLEN = table[i][7]
-      INFO = 'END='+END+';SVTYPE='+SVTYPE+';SVLEN='+SVLEN+';IMPRECISE;'
+      INFO = 'END='+END+';SVTYPE='+SVTYPE+';SVLEN='+SVLEN+';IMPRECISE'
       vcf_table += [[CHR,POS,ID,REF,ALT,QUAL,FILTER,INFO]]
    max_seq = max([len(i[0]) for i in vcf_table])
    vcf_table = sorted(vcf_table,key=lambda x: (x[0].zfill(max_seq),int(x[1])))
@@ -93,11 +89,11 @@ def build_vcf(table):
 #Test Code Here
 #input arguments: sys.argv[n]
 #0-script.py, 1-refname 2-bd_calls_dir
-#glob_path = '/Users/tbecker/Documents/CourseWork/15_2015_Fall/test/'
-#calls = glob.glob(glob_path+'*/*_S4.calls')
-#for call in calls:
-#    table = read_breakdancer(call)
-#    write_vcf(call[0:-6]+'.vcf',vcf_header('human_g1k_v37_decoy'),build_vcf(table))
+glob_path = '/Users/tbecker/Documents/CourseWork/16_2016_Spring/S4_clean/'
+calls = glob.glob(glob_path+'/*_S4.calls')
+for call in calls:
+    table = read_breakdancer(call)
+    write_vcf(call[0:-6]+'.vcf',vcf_header('human_g1k_v37_decoy'),build_vcf(table))
 
 
 
