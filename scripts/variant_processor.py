@@ -6,6 +6,7 @@
 import argparse
 import os
 import sys
+import glob
 import socket
 relink = os.path.dirname(os.path.abspath(__file__))+'/../'
 sys.path.append(relink) #go up one in the modules
@@ -146,8 +147,8 @@ if args.ref is not None and os.path.exists(args.ref):
 else:
     #escape this if bam_split is the only stage
     noref = staging.has_key('bam_split_simple') or staging.has_key('bam_split_all') or \
-            staging.has_key('bam_stats') or staging.has_key('samtools_merge') or \
-            staging.has_key('picard_merge')
+            staging.has_key('bam_clean') or staging.has_key('bam_stats') or\
+            staging.has_key('samtools_merge') or staging.has_key('picard_merge')
     if len(staging)<=1 and noref:
         ref_fa_path = '/missing_ref.fa'
     else:
@@ -211,23 +212,48 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
         if verbose: print(outs)
     
     #good for QC or for auto estimating RD,RL
-    if staging.has_key('bam_stats') or \
+    #leaving RD callers blank with imply bam_stats first
+    #bam_stats will imply bam_clean to ensure full SV compatibilty, IE GATK, GenomeSTRiP will fail...
+    if staging.has_key('bam_clean') or staging.has_key('bam_stats') or\
        staging.has_key('cnmops') and auto_RD_RL or \
        staging.has_key('cnvnator') and auto_RD_RL or \
        staging.has_key('genome_strip') and auto_RD_RL:
            
-        #check for the *_S3 files
-        st = stage.Stage('bam_stats',dbc)
-        outs = st.run(run_id,{'.bam':bams,'out_dir':[directory]})
-        if not type(outs) and len(outs)>0:
-            outs = outs[0].split('read statistics\n')[-1].split('\n')
-        try: #pull out the positions here
-            RD = int(round(float(outs[1].split(' = ')[-1]),0))  #average depth
-            RL = int(round(float(outs[24].split(' = ')[-1]),0)) #average length
-        except Exception:
-            RD,RL = 30,100
-        #parse the output to get the read depth and length estimates
-        #rd_s = outs.split('average depth')
+        #check for the *_S3 files first
+        st = stage.Stage('bam_clean',dbc)
+        in_ext = stage.search_inputs()
+        in_stats = glob.glob(directory+'*'+sids['bam_stats']+'.header') +\
+                   glob.glob(directory+'*'+sids['bam_stats']+'.valid')
+        if all([os.path.exists(stat) for stat in in_stats]): #run bam_clean
+            bam_clean_params = st.get_params()
+            bam_clean_params['-t'] = 4 #default threads
+            st.set_params(bam_clean_params)
+            outs = st.run(run_id,{'.header':[in_stats],'.valid':[in_stats],
+                                  '.bam':bams,'out_dir':[directory]})
+        else:
+            st = stage.Stage('bam_stats',dbc)
+            outs = st.run(run_id,{'.bam':bams,'out_dir':[directory]})
+            if not type(outs) and len(outs)>0:
+                outs = outs[0].split('read statistics\n')[-1].split('\n')
+            try: #pull out the positions here
+                RD = int(round(float(outs[1].split(' = ')[-1]),0))  #average depth
+                RL = int(round(float(outs[24].split(' = ')[-1]),0)) #average length
+            except Exception:
+                RD,RL = 30,100
+            #parse the output to get the read depth and length estimates
+            #rd_s = outs.split('average depth')
+            st = stage.Stage('bam_clean',dbc)
+            in_ext = stage.search_inputs()
+            in_stats = glob.glob(directory+'*'+sids['bam_stats']+'.header') +\
+                       glob.glob(directory+'*'+sids['bam_stats']+'.valid')
+            if all([os.path.exists(stat) for stat in in_stats]): #run bam_clean
+                bam_clean_params = st.get_params()
+                bam_clean_params['-t'] = 4 #default threads
+                bam_clean_params['-t'] = 8 #default memory
+                st.set_params(bam_clean_params)
+                outs =+ st.run(run_id,{'.header':[in_stats],'.valid':[in_stats],
+                                       '.bam':bams,'out_dir':[directory]})
+                #:::TO DO::: check on last time for validation...
         if verbose: print(outs)
 
     if staging.has_key('bam2cram'):
@@ -373,6 +399,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
     #svseq2
     
     #gindel
+    
+    #svelter
 
-#now apply metacalling scoring and ensmble integration methods
-#write a final integrated metacaller.vcf file with bed visualizations                        
+#now you can run FusorSV for one sample if needed                       

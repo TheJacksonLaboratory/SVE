@@ -6,7 +6,7 @@ import stage_wrapper
 import stage_utils as su
 
 #function for auto-making svedb stage entries and returning the stage_id
-class speedseq_align(stage_wrapper.Stage_Wrapper):
+class speedseq_realign(stage_wrapper.Stage_Wrapper):
     #path will be where a node should process the data using the in_ext, out_ext
     #stage_id should be pre-registered with db, set to None will require getting
     #a new stage_id from the  db by writing and registering it in the stages table

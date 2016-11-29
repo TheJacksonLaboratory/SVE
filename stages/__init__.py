@@ -1,4 +1,5 @@
 import art_illumina
+import bam_clean
 import bam_stats
 import bam2cram
 import bam_split_all

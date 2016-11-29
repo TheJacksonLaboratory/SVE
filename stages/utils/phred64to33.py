@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 #base quality conversion Phred64 to Phred33 scale
+#used as: samtools view -Sh old.bam | SVE/stages/utils/phred64to33.py | samtools view -Sb - > ./phred33.bam
 import sys
 
 for line in sys.stdin:

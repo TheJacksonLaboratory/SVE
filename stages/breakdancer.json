@@ -4,7 +4,7 @@
     "name":"breakdancer",
     "version":"1.4.5",
     "wrapper":"breakdancer",
-    "in_ext":".fa,,.bam",
+    "in_ext":".fa,.bam",
     "out_ext":".calls,.vcf",
     "param_map":{"-s":  {"type":"int","min":7,"max":1000,"steps":20},
                  "-c":  {"type":"int","min":3,"max":10,"steps":7},

@@ -253,7 +253,6 @@ class Stage_Wrapper(object):
     #search input bam names for grouping stems? or can pass a sample label mapping to inputs...    
     #def get_input_groups(self,inputs):
         
-        
     #basic accessor for command string include paths, etc    
     def get_command_str(self):
         try:
@@ -266,6 +265,9 @@ class Stage_Wrapper(object):
             return ' '.join(self.stage_id)
         except AttributeError:
             return ''
+    
+    def get_in_ext(self):
+        return self.in_ext
         
     #basic param accessor for params used for the command without paths
     #this is comparable between runs and invariant of paths used...
