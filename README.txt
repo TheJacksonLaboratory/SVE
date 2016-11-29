@@ -1,5 +1,5 @@
 Structural Variation Engine
-(c) Timothy Becker, July 28 2016
+(c) Timothy Becker, November 17 2016
 
 requirements: python 2.7.10+, numpy, scipy, subprocess32, paramiko, scp, HTSeq, mysql.connector
 automated bash configuration of requirements is included for docker or container use
@@ -15,19 +15,24 @@ cloud systems via VM images such as docker.  Easily extensible for addition of n
 and data sources.  Several comon pre and post processing stages are included.
 
 Current SV Callers:
-1.  BreakDancer
+1.  BreakDancer (with VCF converter)
 2.  BreakSeq2
-3.  cnMOPS
+3.  cnMOPS (with VCF converter)
 4.  CNVnator
 5.  Delly
-6.  Hydra-Multi
-7.  GATK Haplotype Caller
-8.  GenomeSTRiP (both SVDiscovery and CNVdiscovery)
+6.  Hydra-Multi (with VCF converter)
+7.  GATK Haplotype Caller (with SV size VCF filter)
+8.  GenomeSTRiP (both SVDiscovery and CNVdiscovery) (with DEL/DUP VCF converter)
 9.  Lumpy-SV
-10. Tigra-SV
+10. Tigra-SV (and EXT pipeline)
+
+Future SV Callers:
+1. SVelter
+2. MindTheGap
+3. TakeABreak
 
 Current Metacalling Methods:
-1.  fusorSV
+1.  FusorSV (with optional crossmap liftover)
 
 Pre and Post Processing:
 1.  art_illumina
@@ -36,3 +41,6 @@ Pre and Post Processing:
 4.  bwa
 5.  fa_to_2bit
 6.  vcf_tools
+7.  sambamba
+8.  samblaster
+9.  phred64to33 base quality conversion

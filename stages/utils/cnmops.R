@@ -280,7 +280,7 @@ if(len > 0){
 	POS   <- cnr[,'start']; #copy over start values
 	ID    <- matrix('',nrow=len, ncol=1);
 	ID    <- as.matrix(paste('cnmops_',seq(1,len,1),ID,sep=''));
-	REF   <- matrix('.',nrow=len, ncol=1); #N for a DEL, full seq ACGT...AAACT for ref
+	REF   <- matrix('N',nrow=len, ncol=1); #N for a DEL, full seq ACGT...AAACT for ref
 	ALT   <- matrix(paste('<',ctype,'>',sep=''),nrow=len, ncol=1);
 	QUAL  <- matrix('.',nrow=len, ncol=1);
 	FILTER<- matrix('PASS',nrow=len, ncol=1);
@@ -311,17 +311,17 @@ if(len > 0){
 
 #VCF 4.0 Header construction-------------------------------------------------------
 # '.' => don't know the value like <NA> or unknown
-l01 <- '##fileformat=VCFv4.0\n';
+l01 <- '##fileformat=VCFv4.1\n';
 l02 <- paste('##fileDate=',format(Sys.time(),'%Y%m%d'),'\n',sep='');
 l03 <- '##source=cn.mops_CNV_calling\n';
 l04 <- paste('##reference=',s_names[1],'\n',sep='');
-l05 <- '##INFO=<ID=IMPRECISE,Number=0,Type=Flag,Description=“Imprecise structural variation”>\n';
-l06 <- '##INFO=<ID=END,Number=1,Type=Integer,Description=“End position of the variant   described in this record”>\n';
-l07 <- '##INFO=<ID=SVTYPE,Number=1,Type=String,Description=“Type of structural variant”>\n';
-l08 <- '##INFO=<ID=SVLEN,Number=1,Type=Integer,Description=“Difference in length between REF and ALT alleles”>\n';
-l09 <- '##ALT=<ID=CNV,Description="Copy number variable region">\n';
-l10 <- '##ALT=<ID=DEL,Description="Deletion">\n';
-l11 <- '##ALT=<ID=DUP,Description="Duplication">'; #put back \n if adding format
+l05 <- '##INFO=<ID=IMPRECISE,Number=0,Type=Flag,Description=\"Imprecise structural variation\">\n';
+l06 <- '##INFO=<ID=END,Number=1,Type=Integer,Description=\"End position of the variant described in this record\">\n';
+l07 <- '##INFO=<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">\n';
+l08 <- '##INFO=<ID=SVLEN,Number=1,Type=Integer,Description=\"Difference in length between REF and ALT alleles\">\n';
+l09 <- '##ALT=<ID=CNV,Description=\"Copy number variable region\">\n';
+l10 <- '##ALT=<ID=DEL,Description=\"Deletion\">\n';
+l11 <- '##ALT=<ID=DUP,Description=\"Duplication\">'; #put back \n if adding format
 #l12 <- '##FORMAT=<ID=CN,Number=1,Type=Integer,Description="Copy number genotype for imprecise events">';
 header <- paste(l01,l02,l03,l04,l05,l06,l07,l08,l09,l10,l11,sep='');
 #VCF 4.0 Header construction-------------------------------------------------------
