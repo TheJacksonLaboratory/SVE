@@ -1,0 +1,10 @@
+{
+    "stage_id":45,
+    "type":"utility",
+    "name":"speedseq_align",
+    "version":"2.1.1",
+    "wrapper":"speedseq_align",
+    "in_ext":".bam",
+    "out_ext":".bam",
+    "param_map":{"-b":{"type":"bool","min":true,"max":false,"steps":1}}
+}
