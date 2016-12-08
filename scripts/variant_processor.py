@@ -221,7 +221,6 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
            
         #check for the *_S3 files first
         st = stage.Stage('bam_clean',dbc)
-        in_ext = stage.search_inputs()
         in_stats = glob.glob(directory+'*'+sids['bam_stats']+'.header') +\
                    glob.glob(directory+'*'+sids['bam_stats']+'.valid')
         if all([os.path.exists(stat) for stat in in_stats]): #run bam_clean
@@ -243,7 +242,6 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
             #parse the output to get the read depth and length estimates
             #rd_s = outs.split('average depth')
             st = stage.Stage('bam_clean',dbc)
-            in_ext = stage.search_inputs()
             in_stats = glob.glob(directory+'*'+sids['bam_stats']+'.header') +\
                        glob.glob(directory+'*'+sids['bam_stats']+'.valid')
             if all([os.path.exists(stat) for stat in in_stats]): #run bam_clean

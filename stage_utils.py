@@ -41,7 +41,7 @@ def get_stage_meta():
     
 def get_stage_name_id(stage_meta):
     return {stage_meta[k]['name']:'_S'+str(k) for k in stage_meta}
-
+            
 #given a list of n strings
 #return the longest common string to the left
 def get_common_string_left(L):
