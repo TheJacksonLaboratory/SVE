@@ -67,6 +67,7 @@ class bam_clean(stage_wrapper.Stage_Wrapper):
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
+            output = ''
 #            output += subprocess.check_output(' '.join(reheader),stderr=subprocess.STDOUT,shell=True)
         #catch all errors that arise under normal cleaning behavior
         except subprocess.CalledProcessError as E:
