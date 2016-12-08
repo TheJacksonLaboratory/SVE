@@ -70,13 +70,16 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
             chroms = [str(i) for i in range(1,23)]+['X','Y','MT'] #none selected will do a full stats run
 
         #[2a]build command args
-        java = self.software_path+'/jre1.8.0_51/bin/java'
+        java        = self.software_path+'/jre1.8.0_51/bin/java'
         picardtools = self.software_path+'/picard-tools-2.5.0/picard.jar'
-        samtools = self.software_path+'/samtools-1.3/samtools'
-        valid   = [java,'-Xmx4g','-jar',picardtools,'ValidateSamFile',
-                   'MODE=SUMMARY','I=',in_names['.bam'],'O=',out_name+'.valid']
-        summary = [samtools,'stats',in_names['.bam'],'| grep ^SN | cut -f 2-']
-        header  = [samtools, 'view', '-SH', in_names['.bam']]
+        samtools    = self.software_path+'/samtools-1.3/samtools'
+        phred       = self.software_path+'/SVE/stages/utils/phred_encoding.py'
+        valid       = [java,'-Xmx4g','-jar',picardtools,'ValidateSamFile',
+                       'MODE=SUMMARY','I=',in_names['.bam'],'O=',out_name+'.valid']
+        summary     = [samtools,'stats',in_names['.bam'],'| grep ^SN | cut -f 2-']
+        header      = [samtools, 'view', '-SH', in_names['.bam']]
+        #samtools view -Sh old.bam | SVE/stages/utils/phred_encoding.py 1E6 ./old.valid        
+        encoding    = [samtools,'view','-Sh',in_names['.bam'],'|',phred,str(float(1E6)),out_name+'.valid']
         #some routines here for X:Y analysis for gender estimation
 
         #write   =   ['echo',' > ',out_name]             
@@ -156,6 +159,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
         #validation summary
         try:
             output += subprocess.check_output(' '.join(valid), stderr=subprocess.STDOUT, shell=True)
+            output += subprocess.check_output(' '.join(encoding), stderr=subprocess.STDOUT, shell=True)
         except Exception as E:
             err['message'] = str(E)
             
@@ -175,17 +179,3 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
         else:
             self.db_stop(run_id,{'output':output},err['message'],False)
             return None
-
-#testing of automated read group correction
-base_path = '/Users/tbecker/Desktop/TEMP/SVE/data/test/pre-alignment.TCGA-A6-2679-10A-01D-1405-02_IlluminaHiSeq-DNASeq_whole'
-header_path = base_path+'_S3.header'
-valid_path  = base_path+'_S3.valid'
-rg_path     = base_path+'_S3.rg'
-
-
-
-
-
-
-
-
