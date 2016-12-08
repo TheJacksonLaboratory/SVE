@@ -39,11 +39,11 @@ class bam_clean(stage_wrapper.Stage_Wrapper):
         #[2]build command args
         if not os.path.exists(out_dir): os.makedirs(out_dir)
         
-        #valid check: No errors found\n
+        #valid check: No errors found
         valid_string = ''
         with open(in_names['.valid'],'r') as f: valid_string = f.readlines()
         valid = len(valid_string) == 1 and valid_string[0].startswith('No errors found')
-        #conditional execution
+        #conditional execution starts with this parsed string
         
         mem      = '-Xmx'+str(self.get_params()['-m']['value'])+'g'
         threads  = str(self.get_params()['-t']['value'])
@@ -52,11 +52,11 @@ class bam_clean(stage_wrapper.Stage_Wrapper):
         picard = self.software_path+'/picard-tools-2.5.0/picard.jar' #latest release here
         phred64to33 = self.software_path+'/SVE/stages/utils/phred64to33.py'
         
-        reheader    = [samtools,'reheader','-i',in_names['header']+'.rg',in_names['.bam']]
-        cleansam    = [java,mem,'-jar',picard,'CleanSam','I=','O=']
-        fixmate     = [java,mem,'-jar',picard,'FixMateInformation','I=','O=']
+        reheader  = [samtools,'reheader','-i',in_names['.header']+'.rg',in_names['.bam']]
+        cleansam  = [java,mem,'-jar',picard,'CleanSam','I=%s'%in_names['.bam'],'O=%s'%in_names['.bam']]
+        fixmate   = [java,mem,'-jar',picard,'FixMateInformation','I=%s'%in_names['.bam'],'O=%s'%in_names['.bam']]
         #samtools view -Sh old.bam | SVE/stages/utils/phred64to33.py | samtools view -Sb - > ./phred33.bam
-        fixphred = [samtools,'view','-Sh',in_names['.bam'],'|',phred64to33,'|',samtools,'view','-Sb','-','>',out_name['.clean.bam']]
+        fixphred  = [samtools,'view','-Sh',in_names['.bam'],'|',phred64to33,'|',samtools,'view','-Sb','-','>',out_name['.clean.bam']]
 
         #[2b]make start entry which is a new staged_run row
         #[1a]make start entry which is a new staged_run row  
@@ -67,7 +67,12 @@ class bam_clean(stage_wrapper.Stage_Wrapper):
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
-            output += subprocess.check_output(' '.join(reheader),stderr=subprocess.STDOUT,shell=True)
+            print(valid_string)
+            print('validated bam file = %s'%valid)
+#            output += subprocess.check_output(' '.join(reheader),stderr=subprocess.STDOUT,shell=True)
+#            output += subprocess.check_output(' '.join(cleansam),stderr=subprocess.STDOUT,shell=True)
+#            output += subprocess.check_output(' '.join(fixmate),stderr=subprocess.STDOUT,shell=True)
+#            output += subprocess.check_output(' '.join(fixphred),stderr=subprocess.STDOUT,shell=True)
         #catch all errors that arise under normal cleaning behavior
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
