@@ -25,50 +25,49 @@ class bam_clean(stage_wrapper.Stage_Wrapper):
     def run(self,run_id,inputs):
         #workflow is to run through the stage correctly and then check for error handles
         #[1b]
-#        in_names  = {'.header':inputs['.header'][0],'.valid':inputs['.valid'],'.bam':inputs['.bam'][0]}
-#        #will have to figure out output file name handling
-#        out_exts = self.split_out_exts()
-#        if inputs.has_key('out_dir'):
-#            out_dir = inputs['out_dir'][0]
-#            stripped_name = self.strip_path(self.strip_in_ext(in_names['.header'],'.header'))
-#            out_name = {'.clean.bam' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[0]}
-#        else:
-#            cascade = self.strip_in_ext(in_names['.header'],'.header') #default path
-#            out_name = {'.clean.bam' :cascade+'_S'+str(self.stage_id)+out_exts[0]}
-#            
-#        #[2]build command args
-#        if not os.path.exists(out_dir): os.makedirs(out_dir)
-#        
-#        #valid check: No errors found\n
-#        valid_string = ''
-#        with open(in_names['.valid'],'r') as f: valid_string = f.readlines()
-#        valid = len(valid_string) == 1 and valid_string[0].startswith('No errors found')
-#        #conditional execution
-#        
-#        mem      = '-Xmx'+str(self.get_params()['-m']['value'])+'g'
-#        threads  = str(self.get_params()['-t']['value'])
-#        samtools = self.software_path+'/samtools-1.3/samtools'
-#        java   = self.software_path+'/jre1.8.0_51/bin/java'
-#        picard = self.software_path+'/picard-tools-2.5.0/picard.jar' #latest release here
-#        phred64to33 = self.software_path+'/SVE/stages/utils/phred64to33.py'
-#        
-#        reheader    = [samtools,'reheader','-i',in_names['header']+'.rg',in_names['.bam']]
-#        cleansam    = [java,mem,'-jar',picard,'CleanSam','I=','O=']
-#        fixmate     = [java,mem,'-jar',picard,'FixMateInformation','I=','O=']
-#        #samtools view -Sh old.bam | SVE/stages/utils/phred64to33.py | samtools view -Sb - > ./phred33.bam
-#        fixphred = [samtools,'view','-Sh',in_names['.bam'],'|',phred64to33,'|',samtools,'view','-Sb','-','>',out_name['.clean.bam']]
-#
-#        #[2b]make start entry which is a new staged_run row
-#        #[1a]make start entry which is a new staged_run row  
-#        self.command = bwa_mem+view
-#        print(self.get_command_str())
-#        self.db_start(run_id,in_names['.fq'][0])
+        in_names  = {'.header':inputs['.header'][0],'.valid':inputs['.valid'],'.bam':inputs['.bam'][0]}
+        #will have to figure out output file name handling
+        out_exts = self.split_out_exts()
+        if inputs.has_key('out_dir'):
+            out_dir = inputs['out_dir'][0]
+            stripped_name = self.strip_path(self.strip_in_ext(in_names['.header'],'.header'))
+            out_name = {'.clean.bam' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[0]}
+        else:
+            cascade = self.strip_in_ext(in_names['.header'],'.header') #default path
+            out_name = {'.clean.bam' :cascade+'_S'+str(self.stage_id)+out_exts[0]}
+            
+        #[2]build command args
+        if not os.path.exists(out_dir): os.makedirs(out_dir)
+        
+        #valid check: No errors found\n
+        valid_string = ''
+        with open(in_names['.valid'],'r') as f: valid_string = f.readlines()
+        valid = len(valid_string) == 1 and valid_string[0].startswith('No errors found')
+        #conditional execution
+        
+        mem      = '-Xmx'+str(self.get_params()['-m']['value'])+'g'
+        threads  = str(self.get_params()['-t']['value'])
+        samtools = self.software_path+'/samtools-1.3/samtools'
+        java   = self.software_path+'/jre1.8.0_51/bin/java'
+        picard = self.software_path+'/picard-tools-2.5.0/picard.jar' #latest release here
+        phred64to33 = self.software_path+'/SVE/stages/utils/phred64to33.py'
+        
+        reheader    = [samtools,'reheader','-i',in_names['header']+'.rg',in_names['.bam']]
+        cleansam    = [java,mem,'-jar',picard,'CleanSam','I=','O=']
+        fixmate     = [java,mem,'-jar',picard,'FixMateInformation','I=','O=']
+        #samtools view -Sh old.bam | SVE/stages/utils/phred64to33.py | samtools view -Sb - > ./phred33.bam
+        fixphred = [samtools,'view','-Sh',in_names['.bam'],'|',phred64to33,'|',samtools,'view','-Sb','-','>',out_name['.clean.bam']]
+
+        #[2b]make start entry which is a new staged_run row
+        #[1a]make start entry which is a new staged_run row  
+        self.command = ''
+        print(self.get_command_str())
+        self.db_start(run_id,in_names['.fq'][0])
         
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
-            output = ''
-#            output += subprocess.check_output(' '.join(reheader),stderr=subprocess.STDOUT,shell=True)
+            output += subprocess.check_output(' '.join(reheader),stderr=subprocess.STDOUT,shell=True)
         #catch all errors that arise under normal cleaning behavior
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
