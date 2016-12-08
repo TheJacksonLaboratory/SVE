@@ -44,7 +44,7 @@ else:
 
 if args.sample_to_lane is not None and args.fqs_input_dir is not None:
     s = args.sample_to_lane
-    if s.find(':')!=-1:# and s.find(',')!=-1: #associate se or pe fastq lanes to a sample name
+    if s.find(':')!=-1 and s.find(',')!=-1: #associate se or pe fastq lanes to a sample name
         S = {s.split(':')[0]:{k:[] for k in s.split(':')[1].split(',')} for s in args.sample_to_lane.split(';')}
         F = {p.rsplit('/')[-1]:p for p in glob.glob(args.fqs_input_dir+'*')}
         for p in fqs_pattern:
