@@ -220,10 +220,10 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
        staging.has_key('genome_strip') and auto_RD_RL:
            
         #check for the *_S3 files first
-        st = stage.Stage('bam_clean',dbc)
         in_stats = glob.glob(directory+'*'+sids['bam_stats']+'.header') +\
                    glob.glob(directory+'*'+sids['bam_stats']+'.valid')
         if all([os.path.exists(stat) for stat in in_stats]): #run bam_clean
+            st = stage.Stage('bam_clean',dbc)
             bam_clean_params = st.get_params()
             bam_clean_params['-t'] = 4 #default threads
             st.set_params(bam_clean_params)
@@ -239,8 +239,6 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
                 RL = int(round(float(outs[24].split(' = ')[-1]),0)) #average length
             except Exception:
                 RD,RL = 30,100
-            #parse the output to get the read depth and length estimates
-            #rd_s = outs.split('average depth')
             st = stage.Stage('bam_clean',dbc)
             in_stats = glob.glob(directory+'*'+sids['bam_stats']+'.header') +\
                        glob.glob(directory+'*'+sids['bam_stats']+'.valid')

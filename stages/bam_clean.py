@@ -25,7 +25,7 @@ class bam_clean(stage_wrapper.Stage_Wrapper):
     def run(self,run_id,inputs):
         #workflow is to run through the stage correctly and then check for error handles
         #[1b]
-        in_names  = {'.header':inputs['.header'][0],'.valid':inputs['.valid'],'.bam':inputs['.bam'][0]}
+        in_names  = {'.header':inputs['.header'][0],'.valid':inputs['.valid'][0],'.bam':inputs['.bam'][0]}
         #will have to figure out output file name handling
         out_exts = self.split_out_exts()
         if inputs.has_key('out_dir'):
