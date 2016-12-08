@@ -221,7 +221,11 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
            
         #check for the *_S3 files first
         in_stats = glob.glob(directory+'*_S'+sids['bam_stats'])
-        for check in ['.header']
+        h,v = False,False
+        for i in range(len(in_stats)):
+            if in_stats[i].endswith('.header'): h = True
+            if in_stats[i].endswith('.valid'):  v = True
+ 
         if all([os.path.exists(stat) for stat in in_stats]): #run bam_clean
             st = stage.Stage('bam_clean',dbc)
             bam_clean_params = st.get_params()
