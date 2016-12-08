@@ -220,8 +220,8 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
        staging.has_key('genome_strip') and auto_RD_RL:
            
         #check for the *_S3 files first
-        in_stats = glob.glob(directory+'*'+sids['bam_stats']+'.header') +\
-                   glob.glob(directory+'*'+sids['bam_stats']+'.valid')
+        in_stats = glob.glob(directory+'*_S'+sids['bam_stats'])
+        for check in ['.header']
         if all([os.path.exists(stat) for stat in in_stats]): #run bam_clean
             st = stage.Stage('bam_clean',dbc)
             bam_clean_params = st.get_params()
