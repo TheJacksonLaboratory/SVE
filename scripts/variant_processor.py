@@ -227,7 +227,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
             bam_clean_params = st.get_params()
             bam_clean_params['-t'] = 4 #default threads
             st.set_params(bam_clean_params)
-            outs = st.run(run_id,{'.header':[in_stats],'.valid':[in_stats],
+            outs = st.run(run_id,{'.header':[in_stats[0]],'.valid':[in_stats[1]],
                                   '.bam':bams,'out_dir':[directory]})
         else:
             st = stage.Stage('bam_stats',dbc)
