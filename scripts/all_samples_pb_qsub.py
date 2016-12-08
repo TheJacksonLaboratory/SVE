@@ -16,11 +16,11 @@ http://gatkforums.broadinstitute.org/gatk/discussion/6472/read-groups.
      this will produce two bam files for sample NA12878 (will need to be merged) and one for NA12891
      
      python all_samples_py_qsub.py -r /data/reference/ref.fa \
-     -f _1.fastq.gz,fastq.gz \
+     -f _1.fastq.gz,_2.fastq.gz \
      -s NA12878:ERR194147,ERR262997;NA12891:ERR194160 \
      -i /data/fastq/ \
      -o /data/bams/ \
-     -w 24:00:00 -p 16 -e your@email.com\n
+     -w 24:00:00 -m 128g -p 16 -e your@email.com\n
 """
 parser = argparse.ArgumentParser(description=des)
 parser.add_argument('-r', '--ref_path',type=str, help='reference fasta')
