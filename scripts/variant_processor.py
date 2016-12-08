@@ -224,9 +224,8 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
         h,v = False,False
         for i in range(len(in_stats)):
             if in_stats[i].endswith('.header'): h = True
-            if in_stats[i].endswith('.valid'):  v = True
- 
-        if all([os.path.exists(stat) for stat in in_stats]): #run bam_clean
+            if in_stats[i].endswith('.valid'):  v = True 
+        if not (h and v): #run bam_clean
             st = stage.Stage('bam_clean',dbc)
             bam_clean_params = st.get_params()
             bam_clean_params['-t'] = 4 #default threads
