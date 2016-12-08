@@ -5,13 +5,12 @@ import glob
 import subprocess32 as subprocess #to call qsub a bunch of times
 
 des = """
-[overview]\n
 This script auto-generates and submits PBS torque scripts for runing a bwa mem|aln sampe pipeline variant on a
 folder of fastq files (compressed or uncompressed) saving the resulting bams,bais to a single root directory.  Special
 arguments are provided that enable multiple lanes or libraries to be associated correctly with the sample identifier.
 For an overview of why sample naming is important in the SV calling and SNV analysis please see the best practices
 outlined by the Broad Institute for compatiblity with thier tools such as GATK and GenomeSTRiP:
-http://gatkforums.broadinstitute.org/gatk/discussion/6472/read-groups \n   
+http://gatkforums.broadinstitute.org/gatk/discussion/6472/read-groups.   
 [EX] using sample NA12891 with files: ERR194160_1.fastq.gz,ERR194160_2.fastq.gz 
      and sample NA12878 with files: ERR194147_1.fastq.gz,ERR194147_1.fastq.gz,ERR262997_1.fastq.gz,ERR262997_1.fastq.gz
      this will produce two bam files for sample NA12878 (will need to be merged) and one for NA12891
@@ -28,11 +27,11 @@ parser.add_argument('-r', '--ref_path',type=str, help='reference fasta')
 
 parser.add_argument('-i', '--fqs_input_dir',type=str, help='directory for fastq files')
 sample_to_lane_help = """
-sample to multiple lane mapping string
-samples are associated to lanes with the ':' symbol
-lanes are seperated by the ',' symbol
-samples are sperated by the ';' symbol
-[EX SE/PE] --sample_to_lane NA12878:ERR1205,ERR1206,NA19238:ERR1104
+Sample to multiple lane/lib mapping string.
+Samples are associated to lanes/libs with the ':' symbol
+Lanes/libs are seperated by the ',' symbol
+Sample mappings are sperated by the ';' symbol
+[EX SE/PE] --sample_to_lane NA12878:ERR194147,ERR262997;NA12891:ERR194160
 """
 parser.add_argument('-s', '--sample_to_lane',type=str, help=sample_to_lane_help)
 parser.add_argument('-f', '--fqs_pattern',type=str, help='fqs search pattern [_1.fq.gz,_2.fq.gz]')
