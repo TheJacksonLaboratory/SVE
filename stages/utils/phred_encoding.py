@@ -23,7 +23,7 @@ for line in sys.stdin:
             if j < MIN: MIN = j
             if j > MAX: MAX = j
     if MIN <= 33: #sanger adds no new inputs for our validation pipeline
-        #with open(valid,'a') as f: f.write('\nbase quality encoding = Sanger:33-73\n')
+        with open(valid,'a') as f: f.write('\nbase quality encoding = Sanger:33-73\n')
         sys.exit()
     elif MIN > 33 and MAX > 73:
         if MIN < 64:
