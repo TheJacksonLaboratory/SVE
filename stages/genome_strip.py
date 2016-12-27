@@ -82,7 +82,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         #reused paths and files...
         sv = self.software_path+'/svtoolkit'
         classpath = sv+'/lib/SVToolkit.jar:'+sv+'/lib/gatk/GenomeAnalysisTK.jar:'+sv+'/lib/gatk/Queue.jar'
-        java  = self.software_path+'/jre1.8.0_51/bin/java -Xmx'+str(RAM)+'g'
+        java  = self.software_path+'/jre1.7.0_72/bin/java -Xmx'+str(RAM)+'g'
         qcmd  = 'org.broadinstitute.gatk.queue.QCommandLine'
         qs    = sv+'/qscript/SVQScript.q'
         gatk  = sv+'/lib/gatk/GenomeAnalysisTK.jar'
