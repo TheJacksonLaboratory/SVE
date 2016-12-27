@@ -73,16 +73,16 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
 
         #PBS cluster specfic tunning
         CLUSTER = False   #dispatched jobs or not
-        RAM = 4         #in gigabytes
+        RAM = 16         #in gigabytes
         CPU = 6          #tasks
         JOBS = 4         #max concurrent jobs
         TIME = '4:00:00' #5 days, fail quickly
-        QUEUE= 'test'
+#        QUEUE= 'test'
 
         #reused paths and files...
         sv = self.software_path+'/svtoolkit'
         classpath = sv+'/lib/SVToolkit.jar:'+sv+'/lib/gatk/GenomeAnalysisTK.jar:'+sv+'/lib/gatk/Queue.jar'
-        java  = 'java -Xmx'+str(RAM)+'g'
+        java  = self.software_path+'/jre1.8.0_51/bin/java -Xmx'+str(RAM)+'g'
         qcmd  = 'org.broadinstitute.gatk.queue.QCommandLine'
         qs    = sv+'/qscript/SVQScript.q'
         gatk  = sv+'/lib/gatk/GenomeAnalysisTK.jar'
