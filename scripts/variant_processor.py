@@ -250,12 +250,12 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
             for i in range(len(in_stats)):
                 if in_stats[i].endswith('.header'): header = in_stats[i]
                 if in_stats[i].endswith('.valid'):  valid  = in_stats[i]
-            if len(header) and len(valid): #run bam_clean
+            if len(header)>0 and len(valid)>0: #run bam_clean
                 bam_clean_params = st.get_params()
                 bam_clean_params['-t'] = 4 #default threads
-                bam_clean_params['-t'] = 8 #default memory
+                bam_clean_params['-m'] = 8 #default memory
                 st.set_params(bam_clean_params)
-                outs =+ st.run(run_id,{'.header':[header],'.valid':[valid],
+                outs += st.run(run_id,{'.header':[header],'.valid':[valid],
                                        '.bam':bams,'out_dir':[directory]})
                 #:::TO DO::: check on last time for validation...
         if verbose: print(outs)

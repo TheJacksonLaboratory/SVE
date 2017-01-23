@@ -62,7 +62,7 @@ class bam_clean(stage_wrapper.Stage_Wrapper):
         #[1a]make start entry which is a new staged_run row  
         self.command = ''
         print(self.get_command_str())
-        self.db_start(run_id,in_names['.fq'][0])
+        self.db_start(run_id,in_names['.bam'][0])
         
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
