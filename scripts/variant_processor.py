@@ -241,16 +241,21 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
                 RD = int(round(float(outs[1].split(' = ')[-1]),0))  #average depth
                 RL = int(round(float(outs[24].split(' = ')[-1]),0)) #average length
             except Exception:
+                print('RD,RL not determined, setting default values')
                 RD,RL = 30,100
             st = stage.Stage('bam_clean',dbc)
             in_stats = glob.glob(directory+'*'+sids['bam_stats']+'.header') +\
                        glob.glob(directory+'*'+sids['bam_stats']+'.valid')
-            if all([os.path.exists(stat) for stat in in_stats]): #run bam_clean
+            header,valid = [],[]
+            for i in range(len(in_stats)):
+                if in_stats[i].endswith('.header'): header = in_stats[i]
+                if in_stats[i].endswith('.valid'):  valid  = in_stats[i]
+            if len(header) and len(valid): #run bam_clean
                 bam_clean_params = st.get_params()
                 bam_clean_params['-t'] = 4 #default threads
                 bam_clean_params['-t'] = 8 #default memory
                 st.set_params(bam_clean_params)
-                outs =+ st.run(run_id,{'.header':[in_stats],'.valid':[in_stats],
+                outs =+ st.run(run_id,{'.header':[header],'.valid':[valid],
                                        '.bam':bams,'out_dir':[directory]})
                 #:::TO DO::: check on last time for validation...
         if verbose: print(outs)
