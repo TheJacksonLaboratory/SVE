@@ -236,11 +236,9 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
             print('---------------running stats and conditional cleaning-------------------')
             st = stage.Stage('bam_stats',dbc)
             outs = st.run(run_id,{'.bam':bams,'out_dir':[directory]})
-            if outs is not None and len(outs)>0:
-                    outs = outs[0].split('read statistics\n')[-1].split('\n')
             try: #pull out the positions here
-                RD = int(round(float(outs[1].split(' = ')[-1]),0))  #average depth
-                RL = int(round(float(outs[24].split(' = ')[-1]),0)) #average length
+                RD = int(round(float(outs.split('\n')[2].split(' = ')[-1]),0))                #average depth
+                RL = int(round(float(outs.split('\n')[25].split(':')[-1].split('\t')[-1]),0)) #average length
             except Exception:
                 print('--------------RD,RL not determined, setting default values-----------------')
                 RD,RL = 30,100

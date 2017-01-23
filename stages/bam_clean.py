@@ -45,8 +45,8 @@ class bam_clean(stage_wrapper.Stage_Wrapper):
         valid = len(valid_string) == 1 and valid_string[0].startswith('No errors found')
         #conditional execution starts with this parsed string
         
-        mem      = '-Xmx'+str(self.get_params()['-m']['value'])+'g'
-        threads  = str(self.get_params()['-t']['value'])
+#        mem      = '-Xmx'+str(self.get_params()['-m']['value'])+'g'
+#        threads  = str(self.get_params()['-t']['value'])
         samtools = self.software_path+'/samtools-1.3/samtools'
         java   = self.software_path+'/jre1.8.0_51/bin/java'
         picard = self.software_path+'/picard-tools-2.5.0/picard.jar' #latest release here
