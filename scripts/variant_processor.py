@@ -233,15 +233,16 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
             outs = st.run(run_id,{'.header':[in_stats[0]],'.valid':[in_stats[1]],
                                   '.bam':bams,'out_dir':[directory]})
         else:
+            print('---------------running stats and conditional cleaning-------------------')
             st = stage.Stage('bam_stats',dbc)
             outs = st.run(run_id,{'.bam':bams,'out_dir':[directory]})
-            if not type(outs) and len(outs)>0:
+            if not type(outs) is None and len(outs)>0:
                 outs = outs[0].split('read statistics\n')[-1].split('\n')
             try: #pull out the positions here
                 RD = int(round(float(outs[1].split(' = ')[-1]),0))  #average depth
                 RL = int(round(float(outs[24].split(' = ')[-1]),0)) #average length
             except Exception:
-                print('RD,RL not determined, setting default values')
+                print('--------------RD,RL not determined, setting default values-----------------')
                 RD,RL = 30,100
             st = stage.Stage('bam_clean',dbc)
             in_stats = glob.glob(directory+'*'+sids['bam_stats']+'.header') +\
@@ -255,6 +256,9 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
                 bam_clean_params['-t'] = 4 #default threads
                 bam_clean_params['-m'] = 8 #default memory
                 st.set_params(bam_clean_params)
+                #print the .valid file for debugging-------
+                print('-------------valid file output-----------------')
+                with open(valid) as f: print(f.readlines())
                 outs += st.run(run_id,{'.header':[header],'.valid':[valid],
                                        '.bam':bams,'out_dir':[directory]})
                 #:::TO DO::: check on last time for validation...

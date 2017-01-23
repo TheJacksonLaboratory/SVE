@@ -7,6 +7,6 @@
     "in_ext":".header,.valid,.bam",
     "out_ext":".clean.bam",
     "param_map":{"-b":{"type":"bool","min":true,"max":false,"steps":1},
-                 "-t":{"type":"int","min":1,"max":128,"steps":128},
-                 "-m":{"type":"int","min":4,"max":256,"steps":252}}
+                 "-t":{"type":"int","min":1,"max":32,"steps":32},
+                 "-t":{"type":"int","min":1,"max":256,"steps":256}}
 }
