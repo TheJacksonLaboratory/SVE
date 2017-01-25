@@ -30,7 +30,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
     
     #takes in a header file and parses the RG tage
     def make_rg_header(self,header_path,rg_header_path):
-        header = []
+        header,no_rg = [],True
         with open(header_path,'r') as f:
             header = f.readlines()
         RG = {}
@@ -45,6 +45,11 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
                 if not RG[i].has_key('CN'): RG[i]['CN'] = 'NA'
                 rg_line = '@RG\tID:%s\tSM:%s\tLB:%s\tPU:%s\tPL:%s\tCN:%s\n'                
                 header[l] = rg_line%(RG[i]['ID'],RG[i]['SM'],RG[i]['LB'],RG[i]['PU'],RG[i]['PL'],RG[i]['CN'])
+                no_rg = False
+        if no_rg: #harvest names from the bam.header name
+            base = header_path.rsplit('/')[-1].rsplit('.header')[0]
+            rg_line = '@RG\tID:%s\tSM:%s\tLB:%s\tPU:%s\tPL:%s\tCN:%s\n'
+            header += [rg_line%(base,base,base,base,'illumina','unknown')]
         with open(rg_header_path,'w') as f:
             f.write(''.join(header))
         
@@ -79,7 +84,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
         summary     = [samtools,'stats',in_names['.bam'],'| grep ^SN | cut -f 2-']
         header      = [samtools, 'view', '-SH', in_names['.bam']]
         #samtools view -Sh old.bam | SVE/stages/utils/phred_encoding.py 1E6 ./old.valid        
-        encoding    = [samtools,'view','-Sh',in_names['.bam'],'|',phred,str(float(1E6)),out_name+'.valid']
+        encoding    = [samtools,'view','-Sh',in_names['.bam'],'|',phred,str(float(1E6)),out_name+'.phred']
         #some routines here for X:Y analysis for gender estimation
 
         #write   =   ['echo',' > ',out_name]             
