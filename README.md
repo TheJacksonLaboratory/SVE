@@ -15,7 +15,7 @@ python 2.7.10+, numpy, scipy, subprocess32, paramiko, scp, HTSeq, mysql.connecto
 automated bash configuration of requirements is included for docker or container use
 
 ###Requirements (docker) full SVE
-docker toolbox (or engine) version (:::) +
+docker toolbox (or engine) version 1.13.0+<br>
 a full docker image can be obtained by:<br>
 ```bash
 docker pull timothyjamesbecker/sve
