@@ -140,10 +140,10 @@ variationhunter
 vcftools_filter
 ```
 Optional Arguments:<br>
--D or --read_depth will privide average read depth guidance to RD callers that will assist with auto-setting internal paramters such as window size and junction length.<br>
--L or --read_length will provide guidnce on the read length used in the BAM file which will assist with auto-setting internal parameters such as window size and junction length.<br>
-If -D or -L are left out, the bam_stats information gathering stage with determine this information for you and pass it on to the serially executed SV callers attached to the -s argument above<br>
--t or -targets option is used for target assembly for in silico SV callng validation or SV calling breakpoint refinement.  This step is recommened after all calling is completed and the step (3) FusorSV data fusion and arbitration step has produce SV calls for each sample which will be passed to this -t argument.  See the FusorSV manual for more information.<br>
+-D or --read_depth will privide average read depth guidance to RD callers that will assist with auto-setting internal paramters such as window size and junction length.<br><br>
+-L or --read_length will provide guidnce on the read length used in the BAM file which will assist with auto-setting internal parameters such as window size and junction length.<br><br>
+If -D or -L are left out, the bam_stats information gathering stage with determine this information for you and pass it on to the serially executed SV callers attached to the -s argument above<br><br>
+-t or -targets option is used for target assembly for in silico SV callng validation or SV calling breakpoint refinement.  This step is recommened after all calling is completed and the step (3) FusorSV data fusion and arbitration step has produce SV calls for each sample which will be passed to this -t argument.  See the FusorSV manual for more information.<br><br>
 -c or --chroms will attemp to run SV callers on a subset of the sequences present in the BAM file, effectively skipping alignments that fall on the undesired sequences.<br>
 <br>
 
@@ -159,12 +159,11 @@ docker run -v /data:/data timothyjamesbecker/sve /software/FusorSV/FusorSV.py\
 -M 0.5\
 -L
 ```<br>
--r or --ref is a fasta reference path.  The files should already have indecies produced.<br>
--c or --chroms is an optional chrom list if you only want calls that were made on specific sequences.The default is 1-22,X,Y,MT with auto-sensing of (chr prefix)<br>
+-r or --ref is a fasta reference path.  The files should already have indecies produced.<br><br>
+-c or --chroms is an optional chrom list if you only want calls that were made on specific sequences.The default is 1-22,X,Y,MT with auto-sensing of (chr prefix)<br><br>
 -i or --in_dir takes the VCF directory that was produced from step (2) the variant_processor.py script.  This will auto-append the stag or SV caller name to each samples VCF file in addition to creating a per sample sirectory with all callers inside which will look like this if you had samle1 and sample2 already processed:<br>
 ```bash
 ls /data/vcfs/*/*
-
 /data/vcfs/sample1/
   bd_config.txt
   sample1_S3.cov
@@ -182,7 +181,6 @@ ls /data/vcfs/*/*
   sample1_S35.vcf
   sample1_S36.vcf
   sample1_S38.vcf
-  
 /data/vcfs/sample2/
   bd_config.txt
   sample2_S3.cov
@@ -201,9 +199,10 @@ ls /data/vcfs/*/*
   sample2_S36.vcf
   sample2_S38.vcf
 ```
--o or --out_dir is the resulting directory where FusorSV will write to.  Output for FUsorSV includes a single VC file for each sample as well as a single merged VCF file across all samples attached to the -i arguments search.  Additionally the -L command will run the crossmap liftover tool using one of the internal UCSC chain files and partition the resulting VCF files into either [mapped]: meaning that there is a one to one mapping in the chain file on the coordinates or [unmapped]: meaning there was either a one to zero or a one to many mapping from the source into the destination sections of the chain file used.<br>
--f or --apply_fusion_model_path is used to apply a default model or to apply a new model you have created using the Training commands.  For more information on how to generate new models or update/append into models see the full FusorSV documentation.<br>
--p or --cpus sets the number of processor cores that will be used.  This will increase the amount of RAM but will speed up the processing by p as all major parts of the FusorSV processing are out-of-core and optimally || due to complete independance in the data stream by partitions.<br>
+<br>
+-o or --out_dir is the resulting directory where FusorSV will write to.  Output for FUsorSV includes a single VC file for each sample as well as a single merged VCF file across all samples attached to the -i arguments search.  Additionally the -L command will run the crossmap liftover tool using one of the internal UCSC chain files and partition the resulting VCF files into either [mapped]: meaning that there is a one to one mapping in the chain file on the coordinates or [unmapped]: meaning there was either a one to zero or a one to many mapping from the source into the destination sections of the chain file used.<br><br>
+-f or --apply_fusion_model_path is used to apply a default model or to apply a new model you have created using the Training commands.  For more information on how to generate new models or update/append into models see the full FusorSV documentation.<br><br>
+-p or --cpus sets the number of processor cores that will be used.  This will increase the amount of RAM but will speed up the processing by p as all major parts of the FusorSV processing are out-of-core and optimally || due to complete independance in the data stream by partitions.<br><br>
 -M or cluster_overlap sets the amount of overlap permitted in the resulting VCF file for all samples attached to the -i argument.  This currently uses a (non-optimal) reciprocal overlap scanning proceedure to join together toaching calls, where the final resulting breakpoints with be averaged across all calls.  Individual VCF files will still remain, but this single master file will provide approximated genotype information with the support f every caller and the expectation under the fusion model giving you a clear an concise file to move forward with the biological relavence of the high-accuracy FusorSV calls.<br>
-
+-L or --lift_over argument is used to pass a valid chain file to the FusorSV machinery to apply crossmap lift over<br>
 
