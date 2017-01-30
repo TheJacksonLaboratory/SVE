@@ -58,8 +58,10 @@ docker pull timothyjamesbecker/sve
 ##Core Frameworks and Extending
 
 ##Usage
-docker usage requires docker toolbox or other docker engine be installed, otherwise all executables should be build and eplaced inside a ...some_path/software/ folder where the SVE scritps should reside at: ...some_path/software/SVE.  Alternativly sym links can be used to redirect the script paths.
-
+docker usage requires docker toolbox or other docker engine be installed, otherwise all executables should be build and eplaced inside a ...some_path/software/ folder where the SVE scritps should reside at: ...some_path/software/SVE.  Alternativly sym links can be used to redirect the script paths.  Additionally if you are using docker, you can update to the latest SVE scripts and pre-built executables (will just do a file diff and will be much faster than the first pull):
+```bash
+docker pull timothyjamesbecker/sve
+```
 ####(1) Alignment of FASTQ and generation of BAM files
 The first step is to align FASTQ paired end reads to a reference genome.  The 1000 Genomes phase 3 reference fasta is currently sugested and tested against: http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz  (Hg38 and mm10 are planned)
 ```bash
@@ -70,12 +72,88 @@ docker run -v /data:/data timothyjamesbecker/sve /software/SVE/scripts/prepare_b
 -o /data/bams/\
 -p 4
 ```
+-a or --algorithm selects bewteen the ```bash bwa aln, bwa mem and bwa mem | samtools view -Sb -``` workflows. The default is the highest perfromaing that also produces the compressed BAM directly names piped_mem.<br>
+-r or --ref is a fasta reference path.  The files should already have indecies produced.  You can perfrom these steps by using the optional script /software/SVE/scripts/prepare_ref.py described below/<br>
+-f or --fqs is a comma seperated list of the FASTQ files you wish to align and map to the reference FASTA file listed with the -r argument.<br>
+-o or --out_dir is the output directory that you wish to put intermediary files such as the unsorted (by coordinate) BAM files.  If this directory does not exist, a new directory will be generated in the files system and then files will be written to this location.<br>
+-p or --cpus is the number of threads/cpus allocated to the alignment and mapping step which is passed to any section that is multithread or multiprocessor aware.
+-h or --help provides the latest build options.
 
 ####(2) Structural Variation Calling on Bam files and generation of VCF files
 ```bash
+docker run -v /data:/data timothyjamesbecker/sve /software/SVE/scripts/variant_processor.py\
+-r /data/human_g1k_v37_decoy/human_g1k_v37_decoy.fa\
+-b /data/bams/sample1.bam\
+-o /data/vcfs/\
+-s breakdancer,breakseq,cnmops,cnvnator,delly,hydra,lumpy
 ```
-####(3) Merging Structural Variation Call Sets (VCF files)
+-r or --ref is a fasta reference path.  The files should already have indecies produced.  You can perfrom these steps by using the optional script /software/SVE/scripts/prepare_ref.py described below/<br>
+-b or --bams is the coordinate sorted and index BAM files that was generated in step (1) by the prepare_bam.py script
+-o or --out_dir is the output directory that you wish to put intermediary files such as FASTA assembly and partitioned BAM and BED files.  If this directory does not exist, a new directory will be generated in the files system and then files will be written to this location.<br>
+-s a comma seperated listing of Structural Varaition calling pipelines you wish to invoke in series.  This workflow will continue through the list even if one caller fails until each caller pipeline has either finished returning a success or failed returning the failure status. If the -s argument list is left out, the currently supported names of caller will be displayed to assit the user.<br>
 ```bash
+unknown processor name used as input argument: ham
+availble stages are:
+------------------------------
+art_illumina
+bam2cram
+bam_split_all
+bam_split_simple
+bam_stats
+breakdancer
+breakseq
+bwa_aln
+bwa_index
+bwa_mem
+bwa_sampe
+cnmops
+cnvnator
+cram2bam
+cram2bam_split_all
+delly
+exomedepth
+fa_to_2bit
+fq_to_bam_piped
+fusor
+gatk_haplo
+genome_strip
+genome_strip_prepare_ref
+hydra
+lumpy
+mrfast_divet
+mrfast_index
+picard_dict
+picard_index
+picard_mark_duplicates
+picard_merge
+picard_replace_rg
+picard_sam_convert
+pindel
+samtools_fasta_index
+samtools_index
+samtools_merge
+samtools_snp
+samtools_sort
+samtools_view
+svseq
+tigra
+variationhunter
+vcftools_filter
+```
+Optional Arguments:
+-D or --read_depth will privide average read depth guidance to RD callers that will assist with auto-setting internal paramters such as window size and junction length.
+-L or --read_length will provide guidnce on the read length used in the BAM file which will assist with auto-setting internal parameters such as window size and junction length.
+If -D or -L are left out, the bam_stats information gathering stage with determine this information for you and pass it on to the serially executed SV callers attached to the -s argument above<br>
+-t or -targets option is used for target assembly for in silico SV callng validation or SV calling breakpoint refinement.  This step is recommened after all calling is completed and the step (3) FusorSV data fusion and arbitration step has produce SV calls for each sample which will be passed to this -t argument.  See the FusorSV manual for more information.<br>
+-c or --chroms will attemp to run SV callers on a subset of the sequences present in the BAM file, effectively skipping alignments that fall on the undesired sequences.<br>
+<br>
+
+####(3) Merging Structural Variation Call Sets (Using a default fusion model with FusorSV)
+```bash
+docker run -v /data:/data timothyjamesbecker/sve /software/FusorSV/FusorSV.py\
+-r /data/human_g1k_v37_decoy/human_g1k_v37_decoy.fa\
+-i /data/vcfs/\
+-o /data/fused/\
 ```
 
 
