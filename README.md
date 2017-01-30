@@ -1,15 +1,15 @@
 
 ##Structural Variation Engine<br>
 (c) 2016 Timothy Becker<br><br>
-A script based execution engine for SV calling that abstracts seperate SV calling pipelines into a stage.
+A script based execution engine for SV calling that abstracts separate SV calling pipelines into a stage.
 Each stage has a set of configurations for runtime which is stored as a JSON format parameter map.
 Each SV caller stage has access to a set of standard inputs as well as reference specific and SV caller
 specific files and ecosystems that are needed for execution.  Additional metadata files directories are
 automatically generated at runtime into user specified directories. Each SV calling stage produces
 a VCF formated file for use as input to the FusorSV data fusion and arbitration method. Additional features include process spawning, output checking
 file conversion and database integration.  Adapted for use on single systems, clusters or
-cloud systems viadocker images.  Easily extensible for addition of new SV calling algorithms
-and data sources.  Several comon pre and post processing stages are included.<br>
+cloud systems via docker images.  Easily extensible for addition of new SV calling algorithms
+and data sources.  Several common pre and post processing stages are included.<br>
 
 ###Requirements (docker) full SVE
 docker toolbox (or engine) version 1.13.0+<br>
@@ -21,7 +21,7 @@ docker pull timothyjamesbecker/sve
 ###Requirements (non-docker)
 python 2.7.10+, numpy, scipy, subprocess32, paramiko, scp, HTSeq, mysql.connector<br>
 All callers and pre post processing executables will have to be built and tested. See the links provided for each of these.
-An automated bash configuration of the python requirements will setup the python distribution for you but not individual callers of algorithms.<br>
+An automated bash configuration of the python requirements will setup the python distribution for you, but not individual callers or algorithms.<br>
 
 ###Current SV Callers
 (see each of these links for liscensing information and citations)
@@ -61,7 +61,7 @@ An automated bash configuration of the python requirements will setup the python
 ##Core Frameworks and Extending
 
 ##Usage
-docker usage requires docker toolbox or other docker engine be installed, otherwise all executables should be build and eplaced inside a ...some_path/software/ folder where the SVE scritps should reside at: ...some_path/software/SVE.  Alternativly sym links can be used to redirect the script paths.  Additionally if you are using docker, you can update to the latest SVE scripts and pre-built executables (will just do a file diff and will be much faster than the first pull):
+docker usage requires docker toolbox or other docker engine be installed, otherwise all executables should be build and eplaced inside a ...some_path/software/ folder where the SVE scritps should reside at: ...some_path/software/SVE.  Alternatively sym links can be used to redirect the script paths.  Additionally if you are using docker, you can update to the latest SVE scripts and pre-built executables (will just do a file diff and will be much faster than the first pull):
 ```bash
 docker pull timothyjamesbecker/sve
 ```
@@ -75,7 +75,7 @@ docker run -v /data:/data timothyjamesbecker/sve /software/SVE/scripts/prepare_b
 -o /data/bams/\
 -p 4
 ```
--a or --algorithm selects bewteen the ```bash bwa aln, bwa mem and bwa mem | samtools view -Sb -``` workflows. The default is the highest performing that also produces the compressed BAM directly: piped_mem.<br>
+-a or --algorithm selects between the ```bash bwa aln, bwa mem and bwa mem | samtools view -Sb -``` workflows. The default is the highest performing that also produces the compressed BAM directly: piped_mem.<br>
 -r or --ref is a fasta reference path.  The files should already have indecies produced.  You can perfrom these steps by using the optional script /software/SVE/scripts/prepare_ref.py described below/<br>
 -f or --fqs is a comma seperated list of the FASTQ files you wish to align and map to the reference FASTA file listed with the -r argument.<br>
 -o or --out_dir is the output directory that you wish to put intermediary files such as the unsorted (by coordinate) BAM files.  If this directory does not exist, a new directory will be generated in the files system and then files will be written to this location.<br>
