@@ -22,37 +22,38 @@ docker pull timothyjamesbecker/sve
 the requires a docker toolbox or docker engine to be installed on your system<br>
 
 ###Current SV Callers
-1.  BreakDancer (with VCF converter)<br>
-2.  BreakSeq2<br>
-3.  cnMOPS (with VCF converter)<br>
-4.  CNVnator<br>
-5.  Delly2<br>
-6.  Hydra-Multi (with VCF converter)<br>
-7.  GATK Haplotype Caller 3.6(with SV size VCF filter)<br>
-8.  GenomeSTRiP2.0 (both SVDiscovery and CNVdiscovery) (with DEL/DUP VCF converter)<br>
-9.  Lumpy-SV<br>
-10. Tigra-SV (and EXT pipeline)<br>
+1.  BreakDancer (with VCF converter)<br>https://github.com/genome/breakdancer2.<br>
+2.  BreakSeq2<br>https://github.com/bioinform/breakseq2<br>
+3.  cnMOPS (with VCF converter)<br>http://bioconductor.org/packages/release/bioc/html/cn.mops.html<br>
+4.  CNVnator<br>https://github.com/abyzovlab/CNVnator<br>
+5.  Delly2<br>https://github.com/dellytools/delly<br>
+6.  Hydra-Multi (with VCF converter)<br>https://github.com/arq5x/Hydra<br>
+7.  GATK Haplotype Caller 3.6(with SV size VCF filter)<br>https://software.broadinstitute.org/gatk/download<br>
+8.  GenomeSTRiP2.0 (both SVDiscovery and CNVdiscovery) (with DEL/DUP VCF converter)<br> http://software.broadinstitute.org/software/genomestrip/download-genome-strip<br>
+9.  Lumpy-SV<br> https://github.com/arq5x/lumpy-sv<br>
+10. Tigra-SV (and EXT pipeline)<br> https://bitbucket.org/xianfan/tigra<br> https://bitbucket.org/xianfan/tigra-ext<br>
 
 ###Planned Future SV Callers
-1. SVelter<br>
-2. MindTheGap<br>
-3. TakeABreak<br>
+1. SVelter<br> https://github.com/mills-lab/svelter<br>
+2. MindTheGap<br> https://gatb.inria.fr/software/mind-the-gap/<br>
+3. TakeABreak<br> https://gatb.inria.fr/software/takeabreak/<br>
 
 ###Current Metacalling Methods:
-1.  FusorSV (with optional crossmap liftover)
+1.  FusorSV (with optional crossmap liftover) <br> https://github.com/timothyjamesbecker/FusorSV<br>
 
 ###Current Pre and Post Processing Tools
-1.  art_illumina<br>
-2.  samtools<br>
-3.  picard_tools<br>
-4.  bwa aln, bwa mem<br>
-5.  fa_to_2bit<br>
-6.  vcf_tools<br>
-7.  sambamba<br>
-8.  samblaster<br>
-9.  phred base quality encoding in BAM files<br>
-10. bam_stats tool (samtools flagstat, coverage by sequence, BAM validation, phred sensing, read-group checking,ect)<br>
-11. bam_clean (broken/problematic BAM file cleaning conditional routines)<br>
+1.  art_illumina<br> https://www.niehs.nih.gov/research/resources/software/biostatistics/art/<br>
+2.  samtools (also bcftools, tabix, ect)<br> https://github.com/samtools/samtools<br>
+3.  picard_tools<br> https://broadinstitute.github.io/picard/<br>
+4.  bedtools2 <br> https://github.com/arq5x/bedtools2<br>
+5.  bwa aln, bwa mem<br> https://github.com/lh3/bwa<br>
+6.  fa_to_2bit<br>http://hgdownload.soe.ucsc.edu/admin/exe/<br>
+7.  vcf_tools<br> https://github.com/vcftools/vcftools<br>
+8.  sambamba<br>https://github.com/lomereiter/sambamba<br>
+9.  samblaster<br>https://github.com/GregoryFaust/samblaster<br>
+10. phred base quality encoding in BAM files<br>
+11. bam_stats tool (samtools flagstat, coverage by sequence, BAM validation, phred sensing, read-group checking,ect)<br>
+12. bam_clean (broken/problematic BAM file cleaning conditional routines)<br>
 
 ##Core Frameworks and Extending
 
