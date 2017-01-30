@@ -6,9 +6,9 @@ Each stage has a set of configurations for runtime which is stored as a JSON for
 Each SV caller stage has access to a set of standard inputs as well as reference specific and SV caller
 specific files and ecosystems that are needed for execution.  Additional metadata files directories are
 automatically generated at runtime into user specified directories. Each SV calling stage produces
-a VCF formated file for use as input to fusorSV. Additional features include process spawning, output checking
+a VCF formated file for use as input to the FusorSV data fusion and arbitration method. Additional features include process spawning, output checking
 file conversion and database integration.  Adapted for use on single systems, clusters or
-cloud systems via VM images such as docker.  Easily extensible for addition of new SV calling algorithms
+cloud systems viadocker images.  Easily extensible for addition of new SV calling algorithms
 and data sources.  Several comon pre and post processing stages are included.<br>
 ###Requirements
 python 2.7.10+, numpy, scipy, subprocess32, paramiko, scp, HTSeq, mysql.connector<br>
