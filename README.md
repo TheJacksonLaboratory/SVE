@@ -10,9 +10,6 @@ a VCF formated file for use as input to the FusorSV data fusion and arbitration 
 file conversion and database integration.  Adapted for use on single systems, clusters or
 cloud systems viadocker images.  Easily extensible for addition of new SV calling algorithms
 and data sources.  Several comon pre and post processing stages are included.<br>
-###Requirements (Non-docker)
-python 2.7.10+, numpy, scipy, subprocess32, paramiko, scp, HTSeq, mysql.connector<br>
-automated bash configuration of requirements is included for docker or container use
 
 ###Requirements (docker) full SVE
 docker toolbox (or engine) version 1.13.0+<br>
@@ -21,7 +18,13 @@ a full docker image can be obtained by:<br>
 docker pull timothyjamesbecker/sve
 ```
 
+###Requirements (non-docker)
+python 2.7.10+, numpy, scipy, subprocess32, paramiko, scp, HTSeq, mysql.connector<br>
+All callers and pre post processing executables will have to be built and tested. See the links provided for each of these.
+An automated bash configuration of the python requirements will setup the python distribution for you but not individual callers of algorithms.<br>
+
 ###Current SV Callers
+(see each of these links for liscensing information and citations)
 1.  BreakDancer (with VCF converter)<br>https://github.com/genome/breakdancer2.<br>
 2.  BreakSeq2<br>https://github.com/bioinform/breakseq2<br>
 3.  cnMOPS (with VCF converter)<br>http://bioconductor.org/packages/release/bioc/html/cn.mops.html<br>
