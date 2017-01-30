@@ -161,7 +161,8 @@ docker run -v /data:/data timothyjamesbecker/sve /software/FusorSV/FusorSV.py\
 -p 4\
 -M 0.5\
 -L
-```<br>
+```
+<br>
 -r or --ref is a fasta reference path.  The files should already have indecies produced.<br><br>
 -c or --chroms is an optional chrom list if you only want calls that were made on specific sequences.The default is 1-22,X,Y,MT with auto-sensing of (chr prefix)<br><br>
 -i or --in_dir takes the VCF directory that was produced from step (2) the variant_processor.py script.  This will auto-append the stag or SV caller name to each samples VCF file in addition to creating a per sample sirectory with all callers inside which will look like this if you had samle1 and sample2 already processed:<br>
