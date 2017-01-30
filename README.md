@@ -19,6 +19,8 @@ a full docker image can be obtained by:<br>
 ```bash
 docker pull timothyjamesbecker/sve
 ```
+the requires a docker toolbox or docker engine to be installed on your system<br>
+
 ###Current SV Callers
 1.  BreakDancer (with VCF converter)<br>
 2.  BreakSeq2<br>
@@ -52,14 +54,21 @@ docker pull timothyjamesbecker/sve
 10. bam_stats tool (samtools flagstat, coverage by sequence, BAM validation, phred sensing, read-group checking,ect)<br>
 11. bam_clean (broken/problematic BAM file cleaning conditional routines)<br>
 
-##Usage
-
-####Alignment of FASTQ and generation of BAM files
-
-####Structural Variation Calling on Bam files and generation of VCF files
-
-####Merging Structural Variation Call Sets (VCF files)
-
 ##Core Frameworks and Extending
+
+##Usage
+docker usage requires docker toolbox or other docker engine be installed, otherwise all executables should be build and eplaced inside a ...some_path/software/ folder where the SVE scritps should reside at: ...some_path/software/SVE.  Alternativly sym links can be used to redirect the script paths.
+
+####(1) Alignment of FASTQ and generation of BAM files
+The first step is to align FASTQ paired end reads to a reference genome.  The 1000 Genomes phase 3 reference fasta is currently sugested and tested against: http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz  (Hg38 and mm10 are planned)
+```bash
+```
+
+####(2) Structural Variation Calling on Bam files and generation of VCF files
+```bash
+```
+####(3) Merging Structural Variation Call Sets (VCF files)
+```bash
+```
 
 
