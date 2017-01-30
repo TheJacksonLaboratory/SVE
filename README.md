@@ -1,8 +1,6 @@
 
 ##Structural Variation Engine<bd>
-(c) Timothy Becker, January 30 2016
-
-##Overview
+(c) Timothy Becker, January 30 2016<bd>
 A script based execution engine for SV calling that abstracts seperate SV calling pipelines into a stage.
 Each stage has a set of configurations for runtime which is stored as a JSON format parameter map.
 Each SV caller stage has access to a set of standard inputs as well as reference specific and SV caller
