@@ -1,6 +1,6 @@
 
-##Structural Variation Engine<bd>
-(c) Timothy Becker, January 30 2016<bd>
+##Structural Variation Engine<br>
+(c) Timothy Becker, January 30 2016<br>
 A script based execution engine for SV calling that abstracts seperate SV calling pipelines into a stage.
 Each stage has a set of configurations for runtime which is stored as a JSON format parameter map.
 Each SV caller stage has access to a set of standard inputs as well as reference specific and SV caller
@@ -9,9 +9,9 @@ automatically generated at runtime into user specified directories. Each SV call
 a VCF formated file for use as input to fusorSV. Additional features include process spawning, output checking
 file conversion and database integration.  Adapted for use on single systems, clusters or
 cloud systems via VM images such as docker.  Easily extensible for addition of new SV calling algorithms
-and data sources.  Several comon pre and post processing stages are included.<bd>
+and data sources.  Several comon pre and post processing stages are included.<br>
 ###Requirements
-python 2.7.10+, numpy, scipy, subprocess32, paramiko, scp, HTSeq, mysql.connector<bd>
+python 2.7.10+, numpy, scipy, subprocess32, paramiko, scp, HTSeq, mysql.connector<br>
 automated bash configuration of requirements is included for docker or container use
 
 ###Alternative docker image of full SVE
@@ -20,21 +20,21 @@ a full docker image can be obtained by:<br>
 docker pull timothyjamesbecker/sve
 ```
 ###Current SV Callers
-1.  BreakDancer (with VCF converter)<bd>
-2.  BreakSeq2<bd>
-3.  cnMOPS (with VCF converter)<bd>
-4.  CNVnator<bd>
-5.  Delly2<bd>
-6.  Hydra-Multi (with VCF converter)<bd>
-7.  GATK Haplotype Caller 3.6(with SV size VCF filter)<bd>
-8.  GenomeSTRiP2.0 (both SVDiscovery and CNVdiscovery) (with DEL/DUP VCF converter)<bd>
-9.  Lumpy-SV<bd>
-10. Tigra-SV (and EXT pipeline)<bd>
+1.  BreakDancer (with VCF converter)<br>
+2.  BreakSeq2<br>
+3.  cnMOPS (with VCF converter)<br>
+4.  CNVnator<br>
+5.  Delly2<br>
+6.  Hydra-Multi (with VCF converter)<br>
+7.  GATK Haplotype Caller 3.6(with SV size VCF filter)<br>
+8.  GenomeSTRiP2.0 (both SVDiscovery and CNVdiscovery) (with DEL/DUP VCF converter)<br>
+9.  Lumpy-SV<br>
+10. Tigra-SV (and EXT pipeline)<br>
 
 ###Planned Future SV Callers
-1. SVelter<bd>
-2. MindTheGap<bd>
-3. TakeABreak<bd>
+1. SVelter<br>
+2. MindTheGap<br>
+3. TakeABreak<br>
 
 ###Current Metacalling Methods:
 1.  FusorSV (with optional crossmap liftover)
