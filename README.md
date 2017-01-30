@@ -20,7 +20,6 @@ a full docker image can be obtained by:<br>
 ```bash
 docker pull timothyjamesbecker/sve
 ```
-this alternative requires a docker toolbox or docker engine to be installed on your system<br>
 
 ###Current SV Callers
 1.  BreakDancer (with VCF converter)<br>https://github.com/genome/breakdancer2.<br>
@@ -64,6 +63,12 @@ docker usage requires docker toolbox or other docker engine be installed, otherw
 ####(1) Alignment of FASTQ and generation of BAM files
 The first step is to align FASTQ paired end reads to a reference genome.  The 1000 Genomes phase 3 reference fasta is currently sugested and tested against: http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz  (Hg38 and mm10 are planned)
 ```bash
+docker run -v /data:/data timothyjamesbecker/sve /software/SVE/scripts/prepare_bam.py\
+-a piped_mem\
+-r /data/human_g1k_v37_decoy/human_g1k_v37_decoy.fa\
+-f /data/sample1/sample1_1.fq,/data/sample1/sample1_2.fq\
+-o /data/bams/\
+-p 4
 ```
 
 ####(2) Structural Variation Calling on Bam files and generation of VCF files
