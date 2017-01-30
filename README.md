@@ -1,6 +1,6 @@
 
 ##Structural Variation Engine<br>
-(c) Timothy Becker, January 30 2016<br>
+(c) Timothy Becker, January 30 2016<br><br>
 A script based execution engine for SV calling that abstracts seperate SV calling pipelines into a stage.
 Each stage has a set of configurations for runtime which is stored as a JSON format parameter map.
 Each SV caller stage has access to a set of standard inputs as well as reference specific and SV caller
@@ -40,16 +40,26 @@ docker pull timothyjamesbecker/sve
 1.  FusorSV (with optional crossmap liftover)
 
 ###Current Pre and Post Processing Tools
-1.  art_illumina<bd>
-2.  samtools<bd>
-3.  picard_tools<bd>
-4.  bwa aln, bwa mem<bd>
-5.  fa_to_2bit<bd>
-6.  vcf_tools<bd>
-7.  sambamba<bd>
-8.  samblaster<bd>
-9.  phred BAM file sensing and
-10. bam_stats tool (samtools flagstat, coverage by sequence, BAM validation, phred sensing, read-group checking,ect)
-11. bam_clean (broken/problematic BAM file cleaning conditional routines)
+1.  art_illumina<br>
+2.  samtools<br>
+3.  picard_tools<br>
+4.  bwa aln, bwa mem<br>
+5.  fa_to_2bit<br>
+6.  vcf_tools<br>
+7.  sambamba<br>
+8.  samblaster<br>
+9.  phred base quality encoding in BAM files<br>
+10. bam_stats tool (samtools flagstat, coverage by sequence, BAM validation, phred sensing, read-group checking,ect)<br>
+11. bam_clean (broken/problematic BAM file cleaning conditional routines)<br>
 
 ##Usage
+
+####Alignment of FASTQ and generation of BAM files
+
+####Structural Variation Calling on Bam files and generation of VCF files
+
+####Merging Structural Variation Call Sets (VCF files)
+
+##Core Frameworks and Extending
+
+
