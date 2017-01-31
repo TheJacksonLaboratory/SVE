@@ -158,7 +158,7 @@ docker run -v /data:/data timothyjamesbecker/sve /software/FusorSV/FusorSV.py\
 -c 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y\
 -i /data/vcfs/\
 -o /data/fused/\
--f /software.FusorSV/data/models/human_g1k_v37_decoy.current.pickle\
+-f /software/FusorSV/data/models/human_g1k_v37_decoy.current.pickle\
 -p 4\
 -M 0.5\
 -L
