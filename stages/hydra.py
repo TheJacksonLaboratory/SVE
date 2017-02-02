@@ -52,7 +52,7 @@ class hydra(stage_wrapper.Stage_Wrapper):
         hydra_to_vcf = self.software_path+'/SVE/stages/utils/hydra_to_vcf.py'
         #ENV
         PATH = hydra+'bin:'+hydra+'scripts:'+\
-               self.software_path+'/samtools-0.1.19/samtools:'+\
+               self.software_path+'/samtools-0.1.19:'+\
                self.software_path+'/anaconda/bin:'+\
                os.environ['PATH']        
         
