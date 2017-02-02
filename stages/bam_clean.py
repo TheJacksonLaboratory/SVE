@@ -42,11 +42,10 @@ class bam_clean(stage_wrapper.Stage_Wrapper):
         #valid check: No errors found
         valid_string = ''
         with open(in_names['.valid'],'r') as f: valid_string = f.readlines()
-        valid = len(valid_string) == 1 and valid_string[0].startswith('No errors found')
+        valid = (len(valid_string) == 1 and valid_string[0].startswith('No errors found'))
         #conditional execution starts with this parsed string
         
-        mem      = '-Xmx'+str(self.get_params()['-m']['value'])+'g'
-        threads  = str(self.get_params()['-t']['value'])
+        mem      = '-Xmx4g'
         samtools = self.software_path+'/samtools-1.3/samtools'
         java   = self.software_path+'/jre1.8.0_51/bin/java'
         picard = self.software_path+'/picard-tools-2.5.0/picard.jar' #latest release here

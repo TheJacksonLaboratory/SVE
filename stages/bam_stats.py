@@ -50,8 +50,13 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
             base = header_path.rsplit('/')[-1].rsplit('.header')[0]
             rg_line = '@RG\tID:%s\tSM:%s\tLB:%s\tPU:%s\tPL:%s\tCN:%s\n'
             header += [rg_line%(base,base,base,base,'illumina','unknown')]
-        with open(rg_header_path,'w') as f:
-            f.write(''.join(header))
+            with open(rg_header_path,'w') as f:
+                f.write(''.join(header))
+            return False
+        else:
+            with open(rg_header_path,'w') as f:
+                f.write(''.join(header))
+            return True
         
     #override this function in each wrapper...
     #bwa sampe ref.fa L.sai R.sai L.fq R.fq -f out.sam
@@ -80,11 +85,13 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
         samtools    = self.software_path+'/samtools-1.3/samtools'
         phred       = self.software_path+'/SVE/stages/utils/phred_encoding.py'
         valid       = [java,'-Xmx4g','-jar',picardtools,'ValidateSamFile',
-                       'MODE=SUMMARY','I=',in_names['.bam'],'O=',out_name+'.valid']
+                       'MODE=SUMMARY','I=%s'%in_names['.bam'],'O=%s'%out_name+'.valid']
         summary     = [samtools,'stats',in_names['.bam'],'| grep ^SN | cut -f 2-']
         header      = [samtools, 'view', '-SH', in_names['.bam']]
         #samtools view -Sh old.bam | SVE/stages/utils/phred_encoding.py 1E6 ./old.valid        
-        encoding    = [samtools,'view','-Sh',in_names['.bam'],'|',phred,str(float(1E6)),out_name+'.phred']
+        encoding    = [samtools,'view','-Sh', in_names['.bam'] ,'|',phred,'1E6',out_name+'.valid']
+        replace_rg  = [java, '-Xmx4g','-jar',picardtools,'AddOrReplacereadGroups',
+                       'I=%s'%in_names['.bam'],'0=%s'%in_names['.bam'].replace('.bam','.rg.bam')]
         #some routines here for X:Y analysis for gender estimation
 
         #write   =   ['echo',' > ',out_name]             
@@ -94,19 +101,18 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
         self.db_start(run_id,in_names['.bam'])
         
         #[3a]execute the command here----------------------------------------------------           
-        output,err = '',{}
+        output,err,has_rg = '',{},True
         try:
             h = subprocess.check_output(' '.join(header),stderr=subprocess.STDOUT,shell=True)
             with open(out_name+'.header','w') as f:
                 f.write(h)
-            self.make_rg_header(out_name+'.header',out_name+'.header.rg')
+            has_rg = self.make_rg_header(out_name+'.header',out_name+'.header.rg')
             #get sequence names and lengths
             seqs = {}
             for line in h.split('\n'):
                 l = line.split('\t')
                 if l[0].startswith('@SQ'):
                     seqs[l[1].split(':')[-1]] = [int(l[2].split(':')[-1])]
-
             #get converage over each sequence
             for k in sorted(seqs,key=lambda f: f.zfill(30)):
                 seq_cov = [samtools, 'depth', '-r %s'%k, in_names['.bam'], "| awk '{sum+=$3} END {print sum}'"]
@@ -123,8 +129,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
                     y += seqs[k][1]
             c += 'average coverage = %s\n'%(int(round(1.0*y/(x+1),0)))
             c += 'over total length of %s\n'%x
-            with open(out_name+'.cov','w') as f:
-                f.write(c)
+            with open(out_name+'.cov','w') as f: f.write(c)
             #get the summary
             s = subprocess.check_output(' '.join(summary), stderr=subprocess.STDOUT, shell=True)
             with open(out_name+'.summary','w') as f:
@@ -163,11 +168,15 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
             
         #validation summary
         try:
-            output += subprocess.check_output(' '.join(valid), stderr=subprocess.STDOUT, shell=True)
-            output += subprocess.check_output(' '.join(encoding), stderr=subprocess.STDOUT, shell=True)
+            if x <=0:
+                with open(out_name+'.valid','a') as f: f.write('\n@SQ not found in bam, must align/realign the reads!\n')
+            elif has_rg:
+                output += subprocess.check_output(' '.join(valid), stderr=subprocess.STDOUT, shell=True)
+                output += subprocess.check_output(' '.join(encoding), stderr=subprocess.STDOUT, shell=True)
+            else:
+                output += 
         except Exception as E:
             err['message'] = str(E)
-            
         print('output:\n'+output)
         
         #[3b]check results--------------------------------------------------
@@ -183,4 +192,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
                 return False
         else:
             self.db_stop(run_id,{'output':output},err['message'],False)
+            print("failure...........")
+            print(output)
+            print(err)
             return None

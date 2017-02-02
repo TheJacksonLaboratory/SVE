@@ -217,7 +217,8 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
     if staging.has_key('bam_clean') or staging.has_key('bam_stats') or\
        staging.has_key('cnmops') and auto_RD_RL or \
        staging.has_key('cnvnator') and auto_RD_RL or \
-       staging.has_key('genome_strip') and auto_RD_RL:
+       staging.has_key('genome_strip') and auto_RD_RL or \
+       staging.has_key('breakseq') and auto_RD_RL:
            
         #check for the *_S3 files first
         in_stats = glob.glob(directory+'*_S'+sids['bam_stats'])
@@ -225,7 +226,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
         for i in range(len(in_stats)):
             if in_stats[i].endswith('.header'): h = True
             if in_stats[i].endswith('.valid'):  v = True 
-        if h and v: #run bam_clean
+        if h and v: #have the stats files already generated run bam_clean
             st = stage.Stage('bam_clean',dbc)
             bam_clean_params = st.get_params()
             bam_clean_params['-t'] = 4 #default threads
@@ -239,7 +240,8 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
             try: #pull out the positions here
                 RD = int(round(float(outs.split('\n')[2].split(' = ')[-1]),0))                #average depth
                 RL = int(round(float(outs.split('\n')[25].split(':')[-1].split('\t')[-1]),0)) #average length
-            except Exception:
+            except Exception as E:
+                print(E)
                 print('--------------RD,RL not determined, setting default values-----------------')
                 RD,RL = 30,100
             st = stage.Stage('bam_clean',dbc)

@@ -52,6 +52,7 @@ class hydra(stage_wrapper.Stage_Wrapper):
         hydra_to_vcf = self.software_path+'/SVE/stages/utils/hydra_to_vcf.py'
         #ENV
         PATH = hydra+'bin:'+hydra+'scripts:'+\
+               self.software_path+'/samtools-0.1.19.0/samtools:'+\
                self.software_path+'/anaconda/bin:'+\
                os.environ['PATH']        
         
@@ -123,13 +124,15 @@ class hydra(stage_wrapper.Stage_Wrapper):
             print('making the hydra configuration')
             print(' '.join(make_cfg))
             output += subprocess.check_output(' '.join(make_cfg),
-                                              stderr=subprocess.STDOUT,shell=True)+'\n'
+                                              stderr=subprocess.STDOUT,shell=True,
+                                              env={'PATH':PATH})+'\n'
                                               
             for k in ['sample%s'%i for i in range(len(in_names['.bam']))]:
                 print('extracting discordants for %s'%k)
                 print(' '.join(extract+[k]))
                 output += subprocess.check_output(' '.join(extract+[k]),
-                                                  stderr=subprocess.STDOUT,shell=True)+'\n'
+                                                  stderr=subprocess.STDOUT,shell=True,
+                                                  env={'PATH':PATH})+'\n'
                                                   
             print('routing all samples into hydra router')
             print(' '.join(route))
@@ -169,7 +172,8 @@ class hydra(stage_wrapper.Stage_Wrapper):
                                               
             print('copying files and cleaning sub directory')
             output += subprocess.check_output(' '.join(copy),
-                                              stderr=subprocess.STDOUT,shell=True)
+                                              stderr=subprocess.STDOUT,shell=True,
+                                              env={'PATH':PATH})
             print('copy is complete')
             #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:

@@ -22,18 +22,18 @@ for line in sys.stdin:
             if MIN > r: MIN = r
             if MAX < r: MAX = r
     if MIN <= 33: #sanger adds no new inputs for our validation pipeline
-        with open(valid,'a') as f:     f.write('base quality encoding = Sanger:33-73\n')
+        with open(valid,'a') as f:     f.write('[base quality encoding] = Sanger:33-73\n')
         sys.exit()
     elif MIN > 33 and MAX > 73:
         if MIN < 64:
-            with open(valid,'a') as f: f.write('base quality encoding = Solexa:59-104\n')
+            with open(valid,'a') as f: f.write('[base quality encoding] = Solexa:59-104\n')
             sys.exit()
         elif MIN < 67:
-            with open(valid,'a') as f: f.write('base quality encoding = Illumina-1.3:34-104\n')
+            with open(valid,'a') as f: f.write('[base quality encoding] = Illumina-1.3:34-104\n')
             sys.exit()
         else:
-            with open(valid,'a') as f: f.write('base quality encoding = Illumina-1.5:67-104\n')
+            with open(valid,'a') as f: f.write('[base quality encoding] = Illumina-1.5:67-104\n')
             sys.exit()
     if m>n: break
-with open(valid,'a') as f:          f.write('base quality encoding = Unkown Illumina:34-104\n')
+with open(valid,'a') as f:             f.write('[base quality encoding] = Unkown Illumina:34-104\n')
 sys.exit()
