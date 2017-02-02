@@ -174,7 +174,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
                 output += subprocess.check_output(' '.join(valid), stderr=subprocess.STDOUT, shell=True)
                 output += subprocess.check_output(' '.join(encoding), stderr=subprocess.STDOUT, shell=True)
             else:
-                output += 
+                with open(out_name+'.valid','a') as f: f.write('\n@RG tags in bam not properly formed!\n')
         except Exception as E:
             err['message'] = str(E)
         print('output:\n'+output)

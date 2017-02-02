@@ -219,7 +219,6 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
        staging.has_key('cnvnator') and auto_RD_RL or \
        staging.has_key('genome_strip') and auto_RD_RL or \
        staging.has_key('breakseq') and auto_RD_RL:
-           
         #check for the *_S3 files first
         in_stats = glob.glob(directory+'*_S'+sids['bam_stats'])
         h,v = False,False
