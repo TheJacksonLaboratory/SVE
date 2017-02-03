@@ -5,8 +5,10 @@
 #[EX] python ~/path/prepare_ref.py -r -o ~/node_data/ -L 5E4 -C 5
 import argparse 
 import os
+import glob
 import sys
 import socket
+import multiprocessing as mp
 import subprocess32 as subprocess
 import time
 import random
@@ -39,6 +41,24 @@ parser.add_argument('-d', '--database', type=str, help='database configuration f
 parser.add_argument('-e','--erase_db',action='store_true',help='wipe the SVEDB')
 args = parser.parse_args()
 
+result_list = []
+def collect_results(result):
+    result_list.append(result)
+
+#base directory coresponds to the -o argument, x is the sequence name
+def fasta_seq_index(directory, x):
+    output = []
+    indexes = [os.path.exists(directory+x+'.fa.'+ suffix for suffix in ['amb','ann','bwt','pac','sa'])]
+    if not all(indexes):
+        st = stage.Stage('bwa_index',dbc)
+        outs = st.run(run_id,{'.fa':[directory+x+'.fa']})
+        output += [outs]
+    if not os.path.exists(directory+x+'fa.dict'):
+        st = stage.Stage('picard_dict',dbc)
+        outs = st.run(run_id,{'.fa':[directory+x+'.fa']})
+        output += [outs]
+    return output    
+    
 directory = path('~/refs')    #users base home folder as default plus refs folder
 if args.out_dir is not None:  #optional reroute
     directory = args.out_dir
@@ -168,7 +188,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
     except IndexError:
         print('unkown reference: run starting with -1')
     print('using ref_id=%s'%str(ref_id))
-    dbo.new_run('illumina',host,ref_id,debug=args.debug)
+    dbo.new_run('illumina',host,ref_id)
     run_id = dbo.get_max_key('runs')
     print('starting run_id = %s'%run_id)
     
@@ -181,18 +201,25 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
     #split by chrom here and index for random access...
     ks = sorted(seqs.keys())
     ss = [seqs[i] for i in ks] #convert the dict to seq list...
+    #[1]--------------------------------------------------------------------------------------------
     print('writting fasta by chrom...')
     chrom_names = sr.write_fasta_by_chrom(ss,directory,'') #shared to the directory for some callers
+    #[1]--------------------------------------------------------------------------------------------
     ss_len = len(ss)
     tt = [x.name for x in ss] #get names
-    for x in tt:
-        #index for alignment
-        st = stage.Stage('bwa_index',dbc)
-        outs = st.run(run_id,{'.fa':[directory+x+'.fa']})
-        print(outs)
-        st = stage.Stage('picard_dict',dbc)
-        outs = st.run(run_id,{'.fa':[directory+x+'.fa']})
-        print(outs)
+    #could do this in ||::::::::::::::::::::::::::::::::::::::::::::::::
+    p1 = mp.Pool(processes=cpus)
+    for x in tt: #try to index the fasta files
+        indexes = [os.path.exists(directory+x+'.fa.'+ suffix \
+                                  for suffix in ['amb','ann','bwt','pac','sa'])]
+        p1.apply_async(fasta_seq_index,
+                       args=(directory,x),
+                       callback=collect_results)
+    p1.close()
+    p1.join()
+    print(result_list)
+    #[2]--------------------------------------------
+    #could do this in ||::::::::::::::::::::::::::::::::::::::::::::::::
     seqs,ss = {},[] #clear out mem?
     #indexes for alignment
     st = stage.Stage('samtools_fasta_index',dbc)
