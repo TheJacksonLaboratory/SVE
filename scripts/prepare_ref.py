@@ -14,6 +14,7 @@ import hashlib
 relink = os.path.dirname(os.path.abspath(__file__))+'/../'
 sys.path.append(relink) #go up one in the modules
 import read_utils as sr
+import generate_variants as gv
 import svedb
 import stage
 
@@ -33,7 +34,8 @@ group.add_argument('-f', '--file', type=str, help='fasta reference file')
 parser.add_argument('-o', '--out_dir', type=str, help='output directory to store resulting files')
 parser.add_argument('-l','--len',type=float, help='random reference total length')
 parser.add_argument('-c','--chr',type=float,help='random reference number of chroms')
-parser.add_argument('-d', '--database', type=str, help='UCONN,JAX')
+parser.add_argument('-p','--cpus',type=int,help='number of cpus/cores to use')
+parser.add_argument('-d', '--database', type=str, help='database configuration file')
 parser.add_argument('-e','--erase_db',action='store_true',help='wipe the SVEDB')
 args = parser.parse_args()
 
@@ -95,32 +97,56 @@ elif args.file is not None: #using existing ref, now just process
     seqs = sr.read_fasta(ref_fa_path,dictionary=True)     #finally read the fasta with read_utils
     chr_lens = [len(seqs[k]) for k in seqs]
 else:
-    raise IOError #return and Error
-    
+    raise IOError #return and Error 
 print('reference validated, moving on to preprossesing...')
+if args.cpus is not None:
+    cpus = args.cpus
+else:
+    cpus = 2
 #start DB and stages for processing now
 
+#read the database configuration file
 dbc = {'srv':'','db':'','uid':'','pwd':''}
 if args.database is not None:
-    dbc['db']  = 'sve'
-    dbc['uid'] = 'sv_calibrator'
-    dbc['pwd'] = 'sv_calibrator'
-    if args.database.upper() == 'UCONN':
-        dbc['srv'] = 'arc-gis.ad.engr.uconn.edu'
-    elif args.database.upper() == 'JAX':
-        dbc['srv'] = 'ldg-jgm003.jax.org'
-
+    with open(args.database, 'r') as f:
+        params = f.read().split('\n') #newline seperated configuration file
+    try:
+        dbc['srv']  = params[0].split('srv=')[-1]
+        dbc['db'] = params[0].split('srv=')[-1]
+        dbc['uid'] = params[0].split('srv=')[-1]
+        dbc['pwd'] = params[0].split('srv=')[-1]
+    except Exception:
+        print('invalid database configuration')
+        print('running the SVE without the SVEDB')
+        pass
 else:
-    print('invalid database configuration')
-    raise KeyError
+    with open(os.path.dirname(os.path.abspath(__file__))+'/../data/svedb.config', 'r') as f:
+        params = f.read().split('\n') #newline seperated configuration file
+    try:
+        dbc['srv'] = params[0].split('srv=')[-1]
+        dbc['db']  = params[1].split('db=')[-1]
+        dbc['uid'] = params[2].split('uid=')[-1]
+        dbc['pwd'] = params[3].split('pwd=')[-1]
+        schema = {}
+        with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
+            dbo.embed_schema()   #check the schema for a valid db
+            schema = dbo.schema
+        if len(schema)<1:
+            print('dbc:%s' % [c + '=' + dbc[c] for c in dbc])
+            print('invalid database configuration')
+            print('running the SVE without the SVEDB')
+        else:
+            print('dbc:%s'%[c+'='+dbc[c] for c in dbc])
+            print('valid database configuration found')
+            print('running the SVE with the SVEDB')
+    except Exception:
+        print('invalid database configuration')
+        print('running the SVE without the SVEDB')
+        pass
     
 with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
     ks = sorted(seqs.keys())
     host = socket.gethostname()    
-    #start db entriesDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
-    if args.erase_db:
-        print('reseting SVEDB :::::::::::::::::::::')
-        dbo.new() #conditional reset
     dbo.embed_schema() #embed the db schema into the dbo object
     #get table dict
     tables = dbo.select_tables()
@@ -131,20 +157,26 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
         hsh = hashlib.sha512(''.join([seqs[i].seq for i in ks]))
         rsb = dbo.obj_to_blob(hsh.digest())
     #get next non-assigned ref_id
-    ref_id = 0 #run_id == get next int form DB? 
+    ref_id = -1 #run_id == get next int form DB?
 #    name,ref_len,seq_names,seq_lens,seqs='',url=''
     dbo.new_ref(name=refbase,ref_len=sum(chr_lens),
                 seq_names=','.join(seqs.keys()),
                 seq_lens=','.join([str(l) for l in chr_lens]),
                 seqs=rsb,url='')
-    ref_id = dbo.get_max_key('refs')
+    try:
+        ref_id = dbo.get_max_key('refs')
+    except IndexError:
+        print('unkown reference: run starting with -1')
+    print('using ref_id=%s'%str(ref_id))
+    dbo.new_run('illumina',host,ref_id,debug=args.debug)
+    run_id = dbo.get_max_key('runs')
+    print('starting run_id = %s'%run_id)
+    
     print('using registered ref_id=%s'%str(ref_id))
     print('with contig list:')
     print(seqs.keys())
     print(''.join(['-' for i in range(60)]))
     
-    dbo.new_run('illumina',host,ref_id)
-    run_id = dbo.get_max_key('runs')
     #do this once for each ref ... RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR    
     #split by chrom here and index for random access...
     ks = sorted(seqs.keys())
@@ -172,7 +204,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
 
     #genomestrip index and genome masking
     st = stage.Stage('genome_strip_prepare_ref',dbc)
-    outs = st.run(run_id, {'.fa':[ref_fa_path]})
+    outs = st.run(run_id, {'.fa':[ref_fa_path],'cpus':cpus})
     print(outs)
 
     #add a fa2bit stage for use with the hydra to vcf converter...
@@ -181,9 +213,9 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
     print(outs)
 
     #mrfast/variation hunter fasta ref indexing
-    st = stage.Stage('mrfast_index')
-    outs = st.run(run_id,{'.fa':[ref_fa_path]})
-    print(outs)
+#    st = stage.Stage('mrfast_index')
+#    outs = st.run(run_id,{'.fa':[ref_fa_path]})
+#    print(outs)
     
     
     #do this once for each ref ... RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR

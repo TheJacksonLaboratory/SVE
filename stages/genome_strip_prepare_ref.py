@@ -1,6 +1,8 @@
 import csv
 import os
 import sys
+import time
+import multiprocessing as mp
 import subprocess32 as subprocess
 sys.path.append('../') #go up one in the modules
 import stage_wrapper
@@ -15,13 +17,31 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
     def __init__(self,wrapper,dbc,retrieve,upload,params):
         #inheritance of base class stage_wrapper    
         stage_wrapper.Stage_Wrapper.__init__(self,wrapper,dbc,retrieve,upload,params)
+        self.result_list = []
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
-        return 0  
-    
+        return 0
+        
+    def collect_results(self,result):
+        self.result_list.append(result)
+        
+    def genome_mask(self,chrom,genomemask,PATH,SV_DIR,LD_LIB):
+        output = ''
+        print('preparing genome mask for genomestrip chr = %s'%chrom)
+        start = time.time()
+        try:
+            output = subprocess.check_output(' '.join(genomemask),
+                                             stderr=subprocess.STDOUT,shell=True,
+                                             env={'PATH':PATH,'SV_DIR':SV_DIR,'LD_LIBRARY_PATH':LD_LIB})  
+        except Exception as E:
+            output = str(E)
+        stop = time.time()
+        print('chr = %s in %s sec'%(chrom,round(stop-start,0)))
+        return output
+
     #override this function in each wrapper...
     #~/software/svtoolkit/lib/...
     def run(self,run_id,inputs):
@@ -42,6 +62,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         #[2a]build command args
         
         #environment variable passing here
+        cpus = inputs['cpus']
         SV_DIR = self.software_path+'/svtoolkit'
         PATH = self.software_path+'/jre1.7.0_72/bin:'+\
                self.software_path+'/svtoolkit/bwa:'+os.environ['PATH']
@@ -137,15 +158,21 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
             print('building picardtools dict for genomestrip')
             output = subprocess.check_output(' '.join(dictbuild),stderr=subprocess.STDOUT,
                                              shell=True,env={'PATH':PATH,'SV_DIR':SV_DIR,'LD_LIBRARY_PATH':LD_LIB})
+            #|| speedup here?-------------------------------------------------------------------------------------------
             chrmasks = []
+            p1 = mp.Pool(processes=cpus) #default to use all cpus...
             for chrom in seq_n:
                 chrmask = out_names['.fa.svmask.fasta']+'_'+chrom+'.fa.svmask.fasta'
-                genomemask = [java,'-cp',classpath,cgm,'-R',out_names['.fa'],
-                              '-O',chrmask,'-readLength',str(100),'-sequence',chrom] #try with a large read length = 250?
-                print('preparing genome mask for genomestrip chr = %s'%chrom)
-                output = subprocess.check_output(' '.join(genomemask),stderr=subprocess.STDOUT,
-                                                 shell=True,env={'PATH':PATH,'SV_DIR':SV_DIR,'LD_LIBRARY_PATH':LD_LIB})
                 chrmasks += [chrmask]
+                genomemask = [java,'-Xmx4g','-cp',classpath,cgm,'-R',out_names['.fa'],
+                              '-O',chrmask,'-readLength',str(100),'-sequence',chrom] #try with a large read length = 250?
+                p1.apply_async(self.genome_mask,
+                               args=(chrom,genomemask,PATH,SV_DIR,LD_LIB),
+                               callback=self.collect_results)
+                time.sleep(0.25)
+            p1.close()
+            p1.join()
+            #|| speedup here?-------------------------------------------------------------------------------------------
             #concate the results here...
             seqs = []
             for chrom in chrmasks:
