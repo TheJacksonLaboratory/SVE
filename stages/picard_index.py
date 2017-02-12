@@ -33,7 +33,7 @@ class picard_index(stage_wrapper.Stage_Wrapper):
         software = self.software_path
         java = software + 'jre1.8.0_51/bin/java'
         mem = '-Xmx32g'
-        picard = self.software_path+'/picard-tools-2.5/picard.jar'
+        picard = self.software_path+'/picard-tools-2.5.0/picard.jar'
         command = [java,mem,'-jar',picard,'BuildBamIndex',
                    'I='+in_name['.bam']]
         

@@ -29,7 +29,7 @@ class fa_to_2bit(stage_wrapper.Stage_Wrapper):
         out_dir = self.strip_name(in_names['.fa'][0]) #default output directory
         out_names = {'.2bit':[]}        
         for i in in_names['.fa']:
-            out_names['.2bit'] += [out_dir+self.strip_in_ext(i,'.fa')+out_exts[0]]
+            out_names['.2bit'] += [self.strip_in_ext(i,'.fa')+out_exts[0]]
         #[2a]build command args
 
         faToTwoBit = self.software_path+'/faToTwoBit'
@@ -72,7 +72,7 @@ class fa_to_2bit(stage_wrapper.Stage_Wrapper):
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
                 print("sucessfull........")
-                self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
+                self.db_stop(run_id,{'output':output},'',True)
                 return results   #return a list of names
             else:
                 print("failure...........")
