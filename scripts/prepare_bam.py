@@ -34,7 +34,8 @@ fq comma-sep file path list
 [EX PE] --fqs ~/data/sample1_FWD.fq,~/data/sample1_REV.fq"""
 parser.add_argument('-f', '--fqs',type=str, help=fqs_help)
 parser.add_argument('-b', '--bam',type=str, help='bam file path')
-parser.add_argument('-p','--cpus',type=str, help='number of cpus for alignment and sorting, ect')
+parser.add_argument('-P','--cpus',type=str, help='number of cpus for alignment and sorting, ect')
+parser.add_argument('-M','--mem',type=str, help='ram in GB units to use for processing per cpu')
 args = parser.parse_args()
 
 #read the database configuration file
@@ -109,6 +110,10 @@ if args.cpus is not None:
     cpus = int(args.cpus)
 else:
     cpus = 1
+if args.mem is not None:
+    mem = int(args.mem)
+else:
+    mem = 4
     
 #take in bam file(s) run
 with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
@@ -142,7 +147,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
                               'SM':[SM]})
     else:
         if args.algorithm == 'mem': #standard 75+bp illuminam PE read
-            base = su.get_common_string_left(reads).rsplit('/')[-1] #look for the finished sorted bam file
+            base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
             if not os.path.exists(directory+base+'.sam'):
                 if SM is None: SM = base
                 #alignment, mapping and add read groups
@@ -159,9 +164,12 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
                 st = stage.Stage('picard_sam_convert',dbc)
                 outs = st.run(run_id,{'.sam':[directory+base+'.sam']})
         elif args.algorithm == 'piped_mem':
+            base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
+            if SM is None: SM = base
             st = stage.Stage('fq_to_bam_piped',dbc)
             bwa_mem_params = st.get_params()
             bwa_mem_params['-t']['value'] = cpus
+            bwa_mem_params['-m']['value'] = mem
             st.set_params(bwa_mem_params)
             outs = st.run(run_id,{'.fa':[ref_fa_path],'.fq':reads,
                                   'platform_id':['illumina'],

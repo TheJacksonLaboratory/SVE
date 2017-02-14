@@ -43,8 +43,10 @@ class fq_to_bam_piped(stage_wrapper.Stage_Wrapper):
             out_name = out_name.rstrip('_')
         if inputs.has_key('SM'):
             SM = inputs['SM'][0]
+            print('found SM tag = %s'%SM)
         else:
             SM = stripped_name
+            print('missing a SM tag, using %s'%SM)
             
         #[2]build command args
         #:::TO DO::: ALLOW THE USER TO GENERATE AND ENTER RG
@@ -54,7 +56,7 @@ class fq_to_bam_piped(stage_wrapper.Stage_Wrapper):
         bwa = self.software_path+'/bwa-master/bwa' #latest release
         samtools = self.software_path+'/samtools-1.3/samtools'
         java   = self.software_path+'/jre1.8.0_51/bin/java'
-        mem    = '-Xmx32g'
+        mem    = '-Xmx%sg'%str(self.get_params()['-m']['value'])
         picard = self.software_path+'/picard-tools-2.5.0/picard.jar' #latest release here
         sample = stripped_name+'RG'
         #'@RG\tID:H7AGF.2\tLB:Solexa-206008\tPL:illumina\tPU:H7AGFADXX131213.2\tSM:HG00096\tCN:BI'
