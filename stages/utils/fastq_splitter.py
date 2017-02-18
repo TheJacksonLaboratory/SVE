@@ -2,6 +2,7 @@
 import argparse
 import os
 import time
+import itertools as it
 import subprocess32 as subprocess
 import multiprocessing as mp
 import pysam #will read regular fastq or read fq.gz files
@@ -89,7 +90,7 @@ def pipe_writer(in_f,out_p,s):
                     p.write(line)
                 x += 1
         print('wrote all data into pipe %s'%out_p)
-    return True
+    return 'W.%s.%s'%(i,j)
 
 #read in from a single pipe, TO DO read from two pipes...    
 def pipe_reader(P,i,j):
@@ -100,48 +101,54 @@ def pipe_reader(P,i,j):
         with open(out,'a') as f:
             x,values = 0,[]
             print('opened file %s'%out)
-            for line in p:
+            for line in p: #could try t puse pysam here too:::::::::::::
                 print line,
                 values += [line]
                 if x%4==3:
                     f.write(''.join(values))
                     values = []
-                x += 1
-    return True
+                x += 1     #could try to use pysam here too:::::::::::::
+    return 'R.%s.%s'%(i,j)
 
-#this is the old working splitter code that made files.....    
-#def splitter(fastq_file,out_dir):
-#    start = time.time()
-#    x,f,base_name = 0,{},fastq_file.rsplit('/')[-1].rsplit('.fq')[0] #or .fq.gz
-#    for i in range(split): f[i] = open(out_dir+'/'+base_name+'.'+str(i)+'.fq','a')
-#    with pysam.FastxFile(fastq_file) as in_fq:
-#        for entry in in_fq: #[1] get the fastq records
-#            values = ['+' if v is None else v for v in [entry.name,entry.sequence,entry.comment,entry.quality]]
-#            f[x%split].write('\n'.join(values)+'\n')
-#            x += 1
-#    for i in range(split): f[i].close()
-#    stop = time.time()
-#    return [fastq_file,stop-start]
-
+#Now try to get the /1 and /2 data stream...
+def paired_fastq_pipe_reader(P,i):
+    out = P[i][0].rsplit('.pipe.')[0]+'.%s.fq'%i #paired coding
+    print('reading from pipe %s'%P[i][0])
+    with open(P[i][0],'r') as p1:
+        print('past the blocking read for pipe %s'%P[i][0])
+        print('reading from pipe %s'%P[i][0])
+        with open(P[i][1],'r') as p2:
+            print('past the blocking read for pipe %s'%P[i][1])
+            with open(out,'a') as f:
+                x,values = 0,{0:[],1:[]}
+                print('opened file %s'%out)
+                for lines in it.izip(*[p1,p2]):
+                    values[0] += [lines[0]]
+                    values[1] += [lines[1]]
+                    if x%4==3: #you could actual check the read stubs here for a match and throw an error if needed
+                        f.write(''.join(values[0]+values[1]))
+                        values[0],values[1] = [],[]
+                    x += 1     #could try to use pysam here too:::::::::::::
+    return 'R.%s'%i    
+    
 #|| by number of fastq files presented
 if __name__ == '__main__':
     print('found %s fastq files'%len(fastq_files))
     F = make_pipes(fastq_files[0],split,out_dir)
     
     print('starting process forking and IPC')
-    p = mp.Pool(processes=2)
-    for i in F:
-        for j in F[i]:
-            print('dispatching writer %s'%F[i][j])
+    p,y = mp.Pool(processes=12),0#multiple of 3 here now (R1,W1)...
+    for i in F:        #now lets try one reader for every two write pipes:
+        for j in F[i]: #fq1_pipe + fq2_pipe => paired_fastq_pipe_reader
+            print('dispatching pipe writer %s'%F[i][j])
             p.apply_async(pipe_writer,
                           args=(fastq_files[j],F[i][j],i),
                           callback=collect_results)
-            time.sleep(0.25)
-            print('dispatching reader %s'%F[i][j])
-            p.apply_async(pipe_reader,
-                          args=(F,i,j),
-                          callback=collect_results)
-            time.sleep(0.25)
+            time.sleep(0.1)
+        print('dispatching pipe reader %s'%F[i])
+        p.apply_async(paired_fastq_pipe_reader,
+                      args=(F,i),
+                      callback=collect_results)
     p.close()
     p.join() #should now all be blocking until a reader flushes thme out?
     print('all processes have been joined!!!')
