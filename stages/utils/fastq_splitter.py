@@ -31,23 +31,13 @@ def collect_results(result):
 #we are assuming that there is a pair of fastq files here for bwa mem input
 #make 2xsplit number of output pipes avaible to the system
 def make_pipes(fq,split,out_dir):
-    P,base_name,output = {},fq.rsplit('/')[-1].rsplit('.')[0],''
+    P,base_name,output = {},fq.rsplit('/')[-1].rsplit('.')[0].rsplit('_')[0],''
     for i in range(split):
         for j in range(2):
             if P.has_key(i):
                 P[i][j] = out_dir+'/'+base_name+'.pipe.%s.'%j+str(i)
             else:
                 P[i] = {j:out_dir+'/'+base_name+'.pipe.%s.'%j+str(i)}
-#            if os.path.exists(P[i][j]):
-#                try:
-#                    subprocess.check_output(' '.join(['rm',P[i][j]]),
-#                                            stderr=subprocess.STDOUT,shell=True)
-#                except Exception as E: pass
-#            try:
-#                output += subprocess.check_output(' '.join(['mkfifo', P[i][j]]),
-#                                                  stderr=subprocess.STDOUT,shell=True)
-#            except Exception as E: output += str(E)
-#    if verbose: print(output)
     return P
     
 #take down the pipes
@@ -103,7 +93,7 @@ def pipe_writer(in_f,out_p,s):
 
 #read in from a single pipe, TO DO read from two pipes...    
 def pipe_reader(P,i,j):
-    out = P[i][j].rsplit('.pipe.')[-1]+'%s.%s.fq'%(i,j)
+    out = P[i][j].rsplit('.pipe.')[0]+'.%s.%s.fq'%(j,i)
     print('reading from pipe %s'%P[i][j])
     with open(P[i][j],'r') as p:
         print('past the blocking read for pipe %s'%P[i][j])
