@@ -12,13 +12,13 @@ parser = argparse.ArgumentParser(description=des)
 parser.add_argument('-f', '--fastq',type=str, help='single fastq or comma separated\t[None]')
 parser.add_argument('-s', '--split_index',type=int, help='splitting index\t[4]')
 args = parser.parse_args()
-fastqs,split = args.fastq.split(','),args.split_factor
+fastqs,split = args.fastq.split(','),args.split_index
 if not all([os.path.exists(f) for f in fastqs]): raise IOError
 #main iterator reads in two file handles and outputs interleved
 with pysam.FastxFile(fastqs[0],'rb') as f1:
     with pysam.FastxFile(fastqs[1],'rb') as f2:
         x,values = 0, []
-        for reads in it.izp(*[f1,f2]):
+        for reads in it.izip(*[f1,f2]):
             if (x+split)%4==0: #default 4 lines of fastq format
                 for i in range(2):
                     values += [reads[i].name,reads[i].sequence,

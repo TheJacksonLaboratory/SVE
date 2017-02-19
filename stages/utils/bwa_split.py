@@ -19,7 +19,7 @@ split       = args.split_factor
 if os.path.exists(out_dir): subprocess.call(['rm','-rf',out_dir])
 os.makedirs(out_dir)
 software = os.path.dirname(os.path.abspath(__file__))+'/../../../' #/software/SVE/stages/utils/../../../
-router        = software+'/SVE/stages/utils/fastq_router.py'
+route         = software+'/SVE/stages/utils/fastq_route.py'
 bwa_mem       = software+'/bwa-master/bwa mem' 
 samtools_view = software+'/samtools-1.3/samtools view'
 #--------------------------------------------------------------
@@ -31,10 +31,11 @@ def collect_results(result):
 #one of the split values to assemble...
 def fastq_bwa_mem_piped(fastqs,i,out_dir,ref_path):
     output = ''
-    bam = out_dir+'/'+fastqs[0].rsplit('/')[-1].rsplit('.fq')[0]+'.%s.bam'%i
-    piped_mem = [router,'-f',','.join(fastqs),'-s','|',
-                 bwa_mem,'-M','-p',ref_path,'|',   #-t for threads
-                 samtools_view,'-Sb','-','>',bam]  #-@ for threads here
+    bam = out_dir+'/'+fastqs[0].rsplit('/')[-1].rsplit('.fq')[0].rsplit('_')[0]+'.%s.bam'%i
+    piped_mem = [bwa_mem,'-M','-t 4',ref_path,
+                 '<(%s -f %s -s %s)'%(route,fastqs[0],i),
+                 '<(%s -f %s -s %s)'%(route,fastqs[1],i),
+                 '|',samtools_view,'-Sb','-','-@ 4','>',bam]  #-@ for threads here
     try:#bwa mem call here-------------------------------------------
         output += subprocess.check_output(' '.join(piped_mem),
                                           stderr=subprocess.STDOUT,
@@ -46,6 +47,7 @@ def fastq_bwa_mem_piped(fastqs,i,out_dir,ref_path):
     
 #|| by number of fastq files presented
 if __name__ == '__main__':
+    start = time.time()
     print('found %s fastq files'%len(fastq_files))
     p = mp.Pool(processes=split)
     for i in range(split):
@@ -55,7 +57,10 @@ if __name__ == '__main__':
                        callback=collect_results)
     p.close()
     p.join()
+    #now you can merge, mark duplicates, sort and index...
     print('all processes have been joined!!!')
     for i in result_list: print(i)
+    stop = time.time()
+    print('total time was %s sec'%round(stop-start,0))
 #---------------------------------------------------------------------------------------------------------------
 #/software/SVE/stages/utils/bwa_split.py -r /data/human_g1k_v37_decoy/human_g1k_v37_decoy.fa -f /data/fastq/test_1.fq.gz,/data/fastq/test_2.fq.gz -o /data/test/ -s 4    
