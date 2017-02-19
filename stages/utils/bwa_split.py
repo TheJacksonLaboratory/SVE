@@ -49,21 +49,20 @@ def make_pipes(fq,split,out_dir):
 #do one pipe at a time, but can open multiple files
 #file reading on f, pipe writting on p s is the modulatoing offset
 def pipe_writer(in_f,out_p,s):
-    x,types = 0,[]
+    x,lines = 0,[]
     with pysam.FastxFile(in_f,'rb') as f: #can read compressed inputs
         print('opening: in_f=%s\tout_p=%s\ts=%s'%(in_f,out_p,s))
         with open(out_p,'w',0) as p:
             print('%s past blocking W call'%out_p)
-            p.write('\n')
             for entry in f: #[1] get the fastq records
                 if (x+s)%4==0: #this is the jump index for number of fastq rows
                     line = '\n'.join(['+' if v is None else v for v in \
                              [entry.name,entry.sequence,
                               entry.comment,entry.quality]])+'\n'
-                    types += [type(t) for t in [entry.name,entry.sequence,entry.comment,entry.quality]]
                     p.write(line)
+                    lines += [line]
                 x += 1
-    return types
+    return lines
 
 def pipe_reader(P,i,ref_path):
     out,output = P[i][0].rsplit('.pipe.')[0]+'.%s.fq'%i,None
@@ -82,7 +81,7 @@ def pipe_reader(P,i,ref_path):
                         f.write(''.join(values[0]+values[1]))
                         values[0],values[1] = [],[]
                     x += 1
-    return 'finished writing and %s have been released'%P[i]
+    return ['finished writing and %s have been released'%P[i]]
                 
 #No try to get bwa mem working on these pipes...
 def fastq_bwa_pipe_reader(P,i,ref_path):
@@ -94,14 +93,14 @@ def fastq_bwa_pipe_reader(P,i,ref_path):
                                           shell=True,executable='/bin/bash')
     except Exception as E:
         output += str(E) #error on the call-------------------------
-    return output
+    return [output]
     
 #|| by number of fastq files presented
 if __name__ == '__main__':
     print('found %s fastq files'%len(fastq_files))
     F = make_pipes(fastq_files[0],split,out_dir)
     
-    p = mp.Pool(processes=3*split)
+    p = mp.Pool(processes=3)
     print('starting process forking and IPC')
     for i in F:
         #now lets try one reader for every two write pipes:
@@ -111,8 +110,6 @@ if __name__ == '__main__':
                           args=(fastq_files[j],F[i][j],i),
                           callback=collect_results)
             time.sleep(0.25)
-    time.sleep(0.5)
-    for i in F:
         print('dispatching pipe reader %s'%F[i])
         p.apply_async(fastq_bwa_pipe_reader,
                        args=(F,i,ref_path),
