@@ -88,26 +88,27 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
 host = socket.gethostname()
 directory = path('~/'+host+'/') #users base home folder as default plus hostname
 
-if args.stages is not None:
+if args.stages is not None and len(args.stages.split(','))>0:
     sids = []
     with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
         stage_meta = su.get_stage_meta()
         sids = su.get_stage_name_id(stage_meta)
-#if args.meta_call.upper()=='ALL':
-#need to check the stage_id and that type like 'variant%'
     try: #get just the callers name:stage_id
         staging = {c:sids[c] for c in args.stages.split(',')}
         print('processing with : %s'%(sorted(staging.keys()),))
     except Exception:
         print('unknown processor name used as input argument: %s'%args.stages)
-        print('availble stages are:\n------------------------------\n%s\n' % '\n'.join(sorted(sids.keys())))
+        print('available stages are:\n------------------------------\n%s\n' % '\n'.join(sorted(sids.keys())))
         raise KeyError
 else:
     stage_meta = su.get_stage_meta()
     sids = su.get_stage_name_id(stage_meta)
     print('missing value for caller stage_id list')
     print('availble stages are:\n------------------------------\n%s\n' % '\n'.join(sorted(sids.keys())))
-    raise AttributeError
+    print('runing default stage_id list')
+    default_stages = ['breakdancer','breakseq','cnvnator','hydra',
+                      'delly','lumpy','genome_strip','gatk_haplo']
+    staging = {c:sids for c in default_stages}
 
 if args.out_dir is not None:    #optional reroute
     directory = args.out_dir

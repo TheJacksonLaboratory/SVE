@@ -16,6 +16,7 @@ import cram2bam
 import cram2bam_split_all
 import delly
 import fq_to_bam_piped
+import fq_to_bam_split
 import fa_to_2bit
 import gatk_haplo
 import genome_strip

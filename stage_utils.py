@@ -54,5 +54,3 @@ def get_common_string_left(L):
         S = L[0][0:j]
     if len(L)==1: S = L
     return S
-    
-        

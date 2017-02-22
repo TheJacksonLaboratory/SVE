@@ -20,22 +20,24 @@ def path(path):
 
 #[1]parse command arguments
 des = """
-Processes .fq reads into a .bam file given a reference sequence as input"""
+Processes Illumina PE .fq reads into a .bam file given a reference .fa file as input.
+[Note] mem, piped_mem, piped_split sub-pipelines assume reads > 75bp in length"""
 parser = argparse.ArgumentParser(description=des)
-parser.add_argument('-a','--algorithm', type=str, help='aln|mem|piped_mem')
-parser.add_argument('-g', '--replace_rg',action='store_true', help='replace reads groups')
-parser.add_argument('-m', '--mark_duplicates',action='store_true', help='mark duplicate reads')
-parser.add_argument('-s', '--sample',type=str, help='sample name')
-parser.add_argument('-o', '--out_dir', type=str, help='output directory to store resulting files')
-parser.add_argument('-r', '--ref', type=str, help='fasta reference file path')
-parser.add_argument('-d','--database',type=str, help='database configuration file')
+parser.add_argument('-a','--algorithm', type=str, help='aln|mem|piped_mem|piped_split|speed_seq\t[piped_split]')
+parser.add_argument('-g', '--replace_rg',action='store_true', help='replace reads groups\t[False]')
+parser.add_argument('-m', '--mark_duplicates',action='store_true', help='mark duplicate reads\t[False]')
+parser.add_argument('-s', '--sample',type=str, help='sample name\t[input]')
+parser.add_argument('-o', '--out_dir', type=str, help='output directory to store resulting files\t[None]')
+parser.add_argument('-r', '--ref', type=str, help='fasta reference file path\t[None]')
+parser.add_argument('-d','--database',type=str, help='database configuration file\t[SVE/data]')
 fqs_help = """
-fq comma-sep file path list
+fq comma-sep file path list\t[None]
 [EX PE] --fqs ~/data/sample1_FWD.fq,~/data/sample1_REV.fq"""
 parser.add_argument('-f', '--fqs',type=str, help=fqs_help)
-parser.add_argument('-b', '--bam',type=str, help='bam file path')
-parser.add_argument('-P','--cpus',type=str, help='number of cpus for alignment and sorting, ect')
-parser.add_argument('-M','--mem',type=str, help='ram in GB units to use for processing per cpu')
+parser.add_argument('-b', '--bam',type=str, help='bam file path\t[None]')
+parser.add_argument('-P','--cpus',type=str, help='number of cpus for alignment and sorting, ect\t[1]')
+parser.add_argument('-T','--threads',type=str, help='number of threads per CPU\t[4]')
+parser.add_argument('-M','--mem',type=str, help='ram in GB units to use for processing per cpu/thread unit\t[4]')
 args = parser.parse_args()
 
 #read the database configuration file
@@ -94,7 +96,9 @@ if args.fqs is not None:
 else:
     print('no fqs pattern found')
     reads = []
-
+if not all([os.path.exists(r) for r in reads]):
+    print('fastq files not found!')
+    raise IOError
 if args.bam is not None:
     bam = args.bam
 else:
@@ -110,10 +114,18 @@ if args.cpus is not None:
     cpus = int(args.cpus)
 else:
     cpus = 1
+if args.threads is not None:
+    threads = args.threads
+else:
+    threads = 4
 if args.mem is not None:
     mem = int(args.mem)
 else:
     mem = 4
+if args.algorithm is not None:
+    algorithm = args.algorithm
+else:
+    algorithm = 'piped_split'
     
 #take in bam file(s) run
 with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
@@ -139,14 +151,14 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
        st = stage.Stage('picard_mark_duplicates',dbc)
        outs = st.run(run_id,{'.bam':[bam]})
     if args.replace_rg: #set to do one at a time only for now...
-        base = bam.rsplit('/')[-1].rsplit('.')[0]
+        base = bam.rsplit('/')[-1].rsplit('.')[0].rsplit('_')[0].rsplit('-')
         if SM is None: SM = base
         st = stage.Stage('picard_replace_rg',dbc)
         outs = st.run(run_id,{'.bam':[bam],
                               'platform_id':['illumina'],
                               'SM':[SM]})
     else:
-        if args.algorithm == 'mem': #standard 75+bp illuminam PE read
+        if algorithm == 'mem': #standard 75+bp illuminam PE read
             base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
             if not os.path.exists(directory+base+'.sam'):
                 if SM is None: SM = base
@@ -163,7 +175,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
                 #picard sam to bam, sort, mark duplicates and index
                 st = stage.Stage('picard_sam_convert',dbc)
                 outs = st.run(run_id,{'.sam':[directory+base+'.sam']})
-        elif args.algorithm == 'piped_mem':
+        elif algorithm == 'piped_mem':
             base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
             if SM is None: SM = base
             st = stage.Stage('fq_to_bam_piped',dbc)
@@ -175,7 +187,20 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
                                   'platform_id':['illumina'],
                                   'SM':[SM],
                                   'out_dir':[directory]})
-        elif args.algorithm == 'aln':
+        elif algorithm == 'piped_split':
+            base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
+            if SM is None: SM = base
+            st = stage.Stage('fq_to_bam_split',dbc)
+            bwa_split_params = st.get_params()
+            bwa_split_params['-s']['value'] = cpus
+            bwa_split_params['-t']['value'] = threads
+            bwa_split_params['-m']['value'] = mem
+            st.set_params(bwa_split_params)
+            outs = st.run(run_id,{'.fa':[ref_fa_path],'.fq':reads,
+                                  'platform_id':['illumina'],
+                                  'SM':[SM],
+                                  'out_dir':[directory]})
+        elif algorithm == 'aln':
             #index gapped/ungapped alnment files
             st = stage.Stage('bwa_aln',dbc)
             bwa_aln_params = st.get_params()
