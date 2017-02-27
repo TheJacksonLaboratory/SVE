@@ -9,6 +9,7 @@ import os
 import sys
 import glob
 import socket
+import time
 relink = os.path.dirname(os.path.abspath(__file__))+'/../'
 sys.path.append(relink) #go up one in the modules
 import stage_utils as su
@@ -35,9 +36,9 @@ fq comma-sep file path list\t[None]
 [EX PE] --fqs ~/data/sample1_FWD.fq,~/data/sample1_REV.fq"""
 parser.add_argument('-f', '--fqs',type=str, help=fqs_help)
 parser.add_argument('-b', '--bam',type=str, help='bam file path\t[None]')
-parser.add_argument('-P','--cpus',type=str, help='number of cpus for alignment and sorting, ect\t[1]')
-parser.add_argument('-T','--threads',type=str, help='number of threads per CPU\t[4]')
-parser.add_argument('-M','--mem',type=str, help='ram in GB units to use for processing per cpu/thread unit\t[4]')
+parser.add_argument('-P','--cpus',type=int, help='number of cpus for alignment and sorting, ect\t[1]')
+parser.add_argument('-T','--threads',type=int, help='number of threads per CPU\t[4]')
+parser.add_argument('-M','--mem',type=int, help='ram in GB units to use for processing per cpu/thread unit\t[4]')
 args = parser.parse_args()
 
 #read the database configuration file
@@ -125,7 +126,7 @@ else:
 if args.algorithm is not None:
     algorithm = args.algorithm
 else:
-    algorithm = 'piped_split'
+    algorithm = 'speed_seq'
     
 #take in bam file(s) run
 with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
@@ -145,19 +146,24 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
     stage_meta = su.get_stage_meta()
     ids = su.get_stage_name_id(stage_meta)
     
-    #:::TO DO::: make args the pick which stage -s bwa_mem,samtools_sort,picard_replace_rg,samtools_index
-    #:::TO DO::: defailt is all
     if args.mark_duplicates:
-       st = stage.Stage('picard_mark_duplicates',dbc)
-       outs = st.run(run_id,{'.bam':[bam]})
+        d_start = time.time()
+        st = stage.Stage('picard_mark_duplicates',dbc)
+        outs = st.run(run_id,{'.bam':[bam]})
+        d_stop = time.time()
+        print('SVE:picard_mark_duplicates time was % hours'%round((d_stop-d_start)/(60**2),1))
     if args.replace_rg: #set to do one at a time only for now...
+        r_start = time.time()
         base = bam.rsplit('/')[-1].rsplit('.')[0].rsplit('_')[0].rsplit('-')
         if SM is None: SM = base
         st = stage.Stage('picard_replace_rg',dbc)
         outs = st.run(run_id,{'.bam':[bam],
                               'platform_id':['illumina'],
                               'SM':[SM]})
+        r_stop = time.time()
+        print('SVE:picard_replace_rg time was %s sec'%round((r_stop-r_start)/(60**2),1))
     else:
+        a_start = time.time()
         if algorithm == 'mem': #standard 75+bp illuminam PE read
             base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
             if not os.path.exists(directory+base+'.sam'):
@@ -200,6 +206,18 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
                                   'platform_id':['illumina'],
                                   'SM':[SM],
                                   'out_dir':[directory]})
+        elif algorithm == 'speed_seq':
+            base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
+            if SM is None: SM = base
+            st = stage.Stage('speedseq_align',dbc)
+            speedseq_params = st.get_params()
+            speedseq_params['-t']['value'] = threads
+            speedseq_params['-m']['value'] = mem
+            st.set_params(speedseq_params)
+            outs = st.run(run_id,{'.fa':[ref_fa_path],'.fq':reads,
+                                  'platform_id':['illumina'],
+                                  'SM':[SM],
+                                  'out_dir':[directory]})
         elif algorithm == 'aln':
             #index gapped/ungapped alnment files
             st = stage.Stage('bwa_aln',dbc)
@@ -228,4 +246,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
             st = stage.Stage('mrfast_divet')
             outs = st.run(run_id,{'.fa': [base+'node_data/'+ref_base+'.fa'],
                                   'L.fq':[l+'.fq'],'R.fq':[r+'.fq']}) #same as r
-            #print(outs)""" 
+            #print(outs)"""
+            
+        a_stop = time.time()
+        print('SVE:BAM:%s was completed in %s hours'%(algorithm,round((a_stop-a_start)/(60.0**2),4)))

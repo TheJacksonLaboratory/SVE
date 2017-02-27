@@ -4,7 +4,8 @@
     "name":"speedseq_align",
     "version":"2.1.1",
     "wrapper":"speedseq_align",
-    "in_ext":".bam",
+    "in_ext":".fa,.fq",
     "out_ext":".bam",
-    "param_map":{"-b":{"type":"bool","min":true,"max":false,"steps":1}}
+    "param_map":{"-t":{"type":"int","min":1,"max":32,"steps":32},
+                 "-m":{"type":"int","min":1,"max":256,"steps":256}}
 }

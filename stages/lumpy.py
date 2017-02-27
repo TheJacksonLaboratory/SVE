@@ -54,8 +54,9 @@ class lumpy(stage_wrapper.Stage_Wrapper):
         PERL = self.software_path+'/vcftools_0.1.12b/perl'
         if os.environ.has_key('PERL5LIB'):
             PERL += ':'+os.environ['PERL5LIB']
-        sv_call   = [lumpy,'-B',]+ [','.join(in_names['.bam'])]+\
+        sv_call   = [lumpy,'-B']+ [','.join(in_names['.bam'])]+\
                      ['-m 4','-T',out_dir+'temp','-P','-o',out_names['.calls']] #more work on params
+        #sv_fast can do a version that checks for matching .bam, .split.bam and .disc.bam triples (prior samblasted)
         sort_vcf  = [vcfsort,out_names['.calls'],'>',out_names['.vcf']]        
         self.db_start(run_id,in_names['.bam'][0])        
         #[3a]execute the command here----------------------------------------------------

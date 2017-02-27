@@ -27,4 +27,4 @@ with pysam.FastxFile(fastqs[0],'rb') as f1:
                 print('\n'.join(values)+'\n') #could do name check assertion here
                 values = []
             x += 1
-sys.exit()
+#sys.exit()
