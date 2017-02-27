@@ -69,17 +69,21 @@ docker pull timothyjamesbecker/sve
 The first step is to align FASTQ paired end reads to a reference genome.  The 1000 Genomes phase 3 reference fasta is currently sugested and tested against: http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz  (Hg38 and mm10 are planned)
 ```bash
 docker run -v /data:/data timothyjamesbecker/sve /software/SVE/scripts/prepare_bam.py\
--a piped_mem\
 -r /data/human_g1k_v37_decoy/human_g1k_v37_decoy.fa\
 -f /data/sample1/sample1_1.fq,/data/sample1/sample1_2.fq\
 -o /data/bams/\
--p 4
+-P 4\
+-T 6\
+-M 2\
+-a piped_split
 ```
--a or --algorithm selects between the ```bash bwa aln, bwa mem and bwa mem | samtools view -Sb -``` workflows. The default is the highest performing that also produces the compressed BAM directly: piped_mem.<br>
+-a or --algorithm selects between the ```bash bwa aln, bwa mem and bwa mem | samtools view -Sb -``` workflows. The default is a high performing || bwa mem variation that also produces the compressed BAM directly and then uses sambamba for duplicate marking: piped_split. -P, -T and -M are used with this pipeline to utilize all processors and all memory of a server or workstation class system. -P 4 -T 6 -M 2 will use up to P*T=24 cores with P*(M+g)=42GB where g is the standard bwa mem memory footprint which scales to the size of the genome used as reference.<br>
 -r or --ref is a fasta reference path.  The files should already have indecies produced.  You can perfrom these steps by using the optional script /software/SVE/scripts/prepare_ref.py described below/<br>
 -f or --fqs is a comma seperated list of the FASTQ files you wish to align and map to the reference FASTA file listed with the -r argument.<br>
 -o or --out_dir is the output directory that you wish to put intermediary files such as the unsorted (by coordinate) BAM files.  If this directory does not exist, a new directory will be generated in the files system and then files will be written to this location.<br>
--p or --cpus is the number of threads/cpus allocated to the alignment and mapping step which is passed to any section that is multithread or multiprocessor aware.<br>
+-P or --cpus is the number of cpus allocated to the alignment and mapping step which is passed to any sections that are multiprocessor aware.<br>
+-T or --threads is the number of threads per cpu, for the fastest pipelines, this will result in P*T cores used at > 95% utilization during alignment.<br>
+-M or --mem is the amount of RAM allocated per cpu/thread until, so the upper bound on a human genome is around P*T*M~48GB
 -h or --help provides the latest build options.
 
 ####(2) Structural Variation Calling on Bam files and generation of VCF files
@@ -88,12 +92,12 @@ docker run -v /data:/data timothyjamesbecker/sve /software/SVE/scripts/variant_p
 -r /data/human_g1k_v37_decoy/human_g1k_v37_decoy.fa\
 -b /data/bams/sample1.bam\
 -o /data/vcfs/\
--s breakdancer,breakseq,cnmops,cnvnator,delly,hydra,lumpy
+-s breakdancer,gatk_haplo,delly,lumpy,cnvnator
 ```
 -r or --ref is a fasta reference path.  The files should already have indecies produced.  You can perfrom these steps by using the optional script /software/SVE/scripts/prepare_ref.py described below/<br>
 -b or --bams is the coordinate sorted and index BAM files that was generated in step (1) by the prepare_bam.py script<br>
 -o or --out_dir is the output directory that you wish to put intermediary files such as FASTA assembly and partitioned BAM and BED files.  If this directory does not exist, a new directory will be generated in the files system and then files will be written to this location.<br>
--s a comma seperated listing of Structural Varaition calling pipelines you wish to invoke in series.  This workflow will continue through the list even if one caller fails until each caller pipeline has either finished returning a success or failed returning the failure status. If the -s argument list is left out, the currently supported names of caller will be displayed to assit the user.<br>
+-s a comma seperated listing of Structural Varaition calling pipelines you wish to invoke in series or the default of 'all' will run all callers in series.  This workflow will continue through the list even if one caller fails until each caller pipeline has either finished returning a success or failed returning the failure status. If the -s argument list is left out, the current default set of callers will run.<br>
 ```bash
 unknown processor name used as input argument: ham
 availble stages are:
