@@ -1,6 +1,6 @@
 
 ##Structural Variation Engine<br>
-(c) 2016 Timothy Becker<br><br>
+(c) 2017 Timothy Becker & Wan-Ping Lee<br><br>
 A python script based execution engine for SV calling that abstracts separate SV calling pipelines into a stage.
 Each stage has a set of configurations for runtime which is stored as a JSON format parameter map.
 Each SV caller stage has access to a set of standard inputs as well as reference specific and SV caller
@@ -19,7 +19,7 @@ docker pull timothyjamesbecker/sve
 
 ###Requirements (non-docker)
 python 2.7.10+, numpy, scipy, subprocess32, paramiko, scp, HTSeq, mysql.connector<br>
-All callers and pre post processing executables will have to be built and tested. See the links provided for each of these.
+All callers and pre post processing executables will have to be built and tested. (All callers are recommeded to be installed in ../SVE; otherewise, modifying self.software_path in SVE/stages/stage_wrapper.py is required.) See the links provided for each of these.
 An automated bash configuration of the python requirements will setup the python distribution for you, but not individual callers or algorithms.<br>
 
 ###Current SV Callers

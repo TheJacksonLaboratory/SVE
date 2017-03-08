@@ -12,6 +12,7 @@ import subprocess32 as subprocess
 sys.path.append('../') #go up one in the modules
 import svedb
 
+
 #function for auto-making svedb stage entries and returning the stage_id
 class Stage_Wrapper(object):
     #path will be where a node should process the data using the in_ext, out_ext
