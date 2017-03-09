@@ -35,7 +35,7 @@ class samtools_snp(stage_wrapper.Stage_Wrapper):
             out_name = self.strip_in_ext(in_names['.bam'],'.bam')+'_S'+str(self.stage_id)+out_ext
         
         #[2a]build command args
-        samtools = self.software_path+'/samtools-1.0/bin/samtools'
+        samtools = self.software_path+'/samtools-1.3/samtools'
         command = [samtools, 'mpileup', '-f', in_names['.fa'], '-v',
                    in_names['.bam'], '-o', out_name]
         for k in self.params:

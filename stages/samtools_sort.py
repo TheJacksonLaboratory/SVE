@@ -31,7 +31,7 @@ class samtools_sort(stage_wrapper.Stage_Wrapper):
         #this one just wants the output prefix in which case it will auto-add .bam...
 
         #[2a]build command args
-        samtools = self.software_path+'/samtools-1.2/samtools'
+        samtools = self.software_path+'/samtools-1.3/samtools'
         command = [samtools,'sort','-T',in_names['.bam'].rsplit('/')[-1]+'sort',
                    '-O','bam','-o',out_name+'sorted'+out_ext,in_names['.bam']]     
         #[2b]make start entry which is a new staged_run row

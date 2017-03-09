@@ -30,7 +30,7 @@ class samtools_index(stage_wrapper.Stage_Wrapper):
         out_name = self.strip_in_ext(in_names['.bam'],'.bam')+out_ext
 
         #[2a]build command args
-        samtools = self.software_path+'/samtools-1.2/samtools'
+        samtools = self.software_path+'/samtools-1.3/samtools'
         command = [samtools,'index','-b',in_names['.bam']]
 #        for k in self.params:
 #            param = self.params[k]
