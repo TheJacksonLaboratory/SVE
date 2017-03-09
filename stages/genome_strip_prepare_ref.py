@@ -89,7 +89,8 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         #reused paths and files...
         sv = self.software_path+'/svtoolkit'
         classpath = sv+'/lib/SVToolkit.jar:'+sv+'/lib/gatk/GenomeAnalysisTK.jar:'+sv+'/lib/gatk/Queue.jar'
-        java = 'java -Xmx4g'
+        #java = 'java -Xmx4g'
+	java = self.software_path + '/jre1.8.0_51/bin/java -Xmx4g'
         cgm  = 'org.broadinstitute.sv.apps.ComputeGenomeMask'    
         ref  = in_names['.fa']
 
@@ -98,7 +99,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         #cp the reference....
         copy = ['cp',ref,out_names['.fa']]
         print(copy)
-        indexref = ['bwa index',out_names['.fa']]
+        indexref = [self.software_path+'/bwa-master/bwa index',out_names['.fa']]
         print(indexref)
         picard = self.software_path+'/picard-tools-2.5.0/picard.jar'
         dictbuild = [java,'-jar',picard,'CreateSequenceDictionary',
