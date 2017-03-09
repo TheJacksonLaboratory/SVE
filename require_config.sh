@@ -24,12 +24,12 @@ python-dev \
 python-pip \
 && apt-get clean
 
-cd ../
-git clone https://github.com/mysql/mysql-connector-python.git
-cd mysql-connector-python
-python ./setup.py build
-sudo python ./setup.py install
-cd /
+#cd ../
+#git clone https://github.com/mysql/mysql-connector-python.git
+#cd mysql-connector-python
+#python ./setup.py build
+#sudo python ./setup.py install
+#cd ../
 
 pip install --upgrade pip
 pip install --user -I argeparse
