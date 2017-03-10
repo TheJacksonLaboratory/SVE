@@ -37,11 +37,12 @@ class picard_sam_convert(stage_wrapper.Stage_Wrapper):
         picard = software+'/picard-tools-2.5.0/picard.jar'
         sort   =  [java,mem,'-jar',picard,'SortSam','I=',in_name['.sam'],
                    'O=',out_name+'.sorted.sam','SORT_ORDER=coordinate']                  #can delete .sam after this step
+	convert= [java,mem,'-jar',picard,'SamFormatConverter','I=',out_name+'.sorted.sam','O=',out_name+'.sorted.bam']
         mark   =  [java,mem,'-jar',picard,'MarkDuplicates','I=',out_name+'.sorted.bam',
                    'O=',out_name+'.bam','METRICS_FILE=',out_name+'.picard.metrics.txt']  #delete .sorted.bam after this steps
         index  = [java,mem,'-jar',picard,'BuildBamIndex','I=',out_name+'.bam']  #no .bam.bai here ?
         rename = ['mv',out_name+'.bai',out_name+'.bam.bai']        
-        clean = ['rm',out_name+'.sorted.bam',in_name['.sam']]
+        clean = ['rm',in_name['.sam'],out_name+'.sorted.sam',out_name+'.sorted.bam']
         #[2b]make start entry which is a new staged_run row
         self.command = sort
         print(self.get_command_str())
@@ -51,6 +52,7 @@ class picard_sam_convert(stage_wrapper.Stage_Wrapper):
         output,err = '',{}
         try:
             output += subprocess.check_output(sort,stderr=subprocess.STDOUT)
+            output += subprocess.check_output(convert,stderr=subprocess.STDOUT)
             output += subprocess.check_output(mark,stderr=subprocess.STDOUT)
             output += subprocess.check_output(index,stderr=subprocess.STDOUT)
             output += subprocess.check_output(rename,stderr=subprocess.STDOUT)
