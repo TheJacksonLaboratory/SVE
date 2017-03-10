@@ -178,10 +178,6 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
                                       'SM':[SM],
                                       'out_dir':[directory]})
  
-            	#picard conversion and RG additions needed for gatk VC...
-            	st = stage.Stage('picard_sam_convert',dbc)
-            	outs = st.run(run_id,{'.sam':[l+ids['bwa_sampe']+'.sam']})
-
             if not os.path.exists(directory+base+'.bam'): #look for the finished sorted bam file
                 #picard sam to bam, sort, mark duplicates and index
                 st = stage.Stage('picard_sam_convert',dbc)

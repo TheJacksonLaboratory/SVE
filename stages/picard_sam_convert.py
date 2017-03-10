@@ -36,7 +36,7 @@ class picard_sam_convert(stage_wrapper.Stage_Wrapper):
         mem    = '-Xmx32g'
         picard = software+'/picard-tools-2.5.0/picard.jar'
         sort   =  [java,mem,'-jar',picard,'SortSam','I=',in_name['.sam'],
-                   'O=',out_name+'.sorted.bam','SORT_ORDER=coordinate']                  #can delete .sam after this step
+                   'O=',out_name+'.sorted.sam','SORT_ORDER=coordinate']                  #can delete .sam after this step
         mark   =  [java,mem,'-jar',picard,'MarkDuplicates','I=',out_name+'.sorted.bam',
                    'O=',out_name+'.bam','METRICS_FILE=',out_name+'.picard.metrics.txt']  #delete .sorted.bam after this steps
         index  = [java,mem,'-jar',picard,'BuildBamIndex','I=',out_name+'.bam']  #no .bam.bai here ?
