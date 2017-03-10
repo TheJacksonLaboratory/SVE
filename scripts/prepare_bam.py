@@ -178,7 +178,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
                                       'SM':[SM],
                                       'out_dir':[directory]})
  
-            if not os.path.exists(directory+base+'.bam'): #look for the finished sorted bam file
+            #if not os.path.exists(directory+base+'.bam'): #look for the finished sorted bam file
                 #picard sam to bam, sort, mark duplicates and index
                 st = stage.Stage('picard_sam_convert',dbc)
                 outs = st.run(run_id,{'.sam':[directory+base+'.sam']})

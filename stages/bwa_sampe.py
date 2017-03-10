@@ -74,10 +74,10 @@ class bwa_sampe(stage_wrapper.Stage_Wrapper):
             results = [out_name]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("bwa sampe sucessfull........")
                 return [out_name+out_ext]
             else:
-                print("failure...........")
+                print("bwa sampe failure...........")
                 return False
         else:
             self.db_stop(run_id,{'output':output},err['message'],False)

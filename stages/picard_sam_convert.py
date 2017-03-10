@@ -36,8 +36,7 @@ class picard_sam_convert(stage_wrapper.Stage_Wrapper):
         mem    = '-Xmx32g'
         picard = software+'/picard-tools-2.5.0/picard.jar'
         sort   =  [java,mem,'-jar',picard,'SortSam','I=',in_name['.sam'],
-                   'O=',out_name+'.sorted.sam','SORT_ORDER=coordinate']                  #can delete .sam after this step
-	convert= [java,mem,'-jar',picard,'SamFormatConverter','I=',out_name+'.sorted.sam','O=',out_name+'.sorted.bam']
+                   'O=',out_name+'.sorted.bam','SORT_ORDER=coordinate']                  #can delete .sam after this step
         mark   =  [java,mem,'-jar',picard,'MarkDuplicates','I=',out_name+'.sorted.bam',
                    'O=',out_name+'.bam','METRICS_FILE=',out_name+'.picard.metrics.txt']  #delete .sorted.bam after this steps
         index  = [java,mem,'-jar',picard,'BuildBamIndex','I=',out_name+'.bam']  #no .bam.bai here ?
@@ -52,7 +51,6 @@ class picard_sam_convert(stage_wrapper.Stage_Wrapper):
         output,err = '',{}
         try:
             output += subprocess.check_output(sort,stderr=subprocess.STDOUT)
-            output += subprocess.check_output(convert,stderr=subprocess.STDOUT)
             output += subprocess.check_output(mark,stderr=subprocess.STDOUT)
             output += subprocess.check_output(index,stderr=subprocess.STDOUT)
             output += subprocess.check_output(rename,stderr=subprocess.STDOUT)
