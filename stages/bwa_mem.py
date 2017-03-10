@@ -88,10 +88,10 @@ class bwa_mem(stage_wrapper.Stage_Wrapper):
             results = [out_names['.sam']]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("bwa mem sucessfull........")
                 return [out_names['.sam']]
             else:
-                print("failure...........")
+                print("bwa mem failure...........")
                 return False
         else:
             self.db_stop(run_id,{'output':output},err['message'],False)

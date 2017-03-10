@@ -81,13 +81,14 @@ class picard_sam_convert(stage_wrapper.Stage_Wrapper):
         #[3b]check results--------------------------------------------------
         if err == {}:
             self.db_stop(run_id,{'output':output},'',True)
-            results = [out_name]
+            results = [out_name+'.bam']
+            print results
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("picard_sam_convert sucessfull........")
                 return results   #return a list of names
             else:
-                print("failure...........")
+                print("picard_sam_convert failure...........")
                 return False
         else:
             self.db_stop(run_id,{'output':output},err['message'],False)
