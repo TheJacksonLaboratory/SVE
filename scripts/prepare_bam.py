@@ -171,7 +171,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
                 #alignment, mapping and add read groups
                 st = stage.Stage('bwa_mem',dbc)
                 bwa_mem_params = st.get_params()
-                bwa_mem_params['-t']['value'] = cpus
+                bwa_mem_params['-t']['value'] = threads
                 st.set_params(bwa_mem_params)
                 outs = st.run(run_id,{'.fa':[ref_fa_path],'.fq':reads,
                                       'platform_id':['illumina'],
@@ -222,7 +222,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
             #index gapped/ungapped alnment files
             st = stage.Stage('bwa_aln',dbc)
             bwa_aln_params = st.get_params()
-            bwa_aln_params['-t']['value'] = cpus
+            bwa_aln_params['-t']['value'] = threads
             st.set_params(bwa_aln_params)
             #this is more of the cascading code we want to use:::::::::::::::::::::::::::::::::::::::
             #fix the JSON so that outs has more or less the cascaded file you want to pass into the next stage
