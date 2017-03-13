@@ -1,6 +1,4 @@
 #!/bin/bash
-#For JAX helix
-module load python/2.7.3
 
 apt-get update \
 apt-get install -y \
