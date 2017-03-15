@@ -31,7 +31,8 @@ class bwa_index(stage_wrapper.Stage_Wrapper):
 
         #[2]build command args
         bwa = self.software_path+'/bwa-master/bwa'
-        command = [bwa,'aln','-t','12',in_names['.fa'],in_names['.fq'],'-f',out_name]
+        threads = str(self.get_params()['-t']['value'])
+        command = [bwa,'aln','-t',threads,in_names['.fa'],in_names['.fq'],'-f',out_name]
         
         #[1a]make start entry which is a new staged_run row  
         self.command = command
@@ -68,10 +69,10 @@ class bwa_index(stage_wrapper.Stage_Wrapper):
             results = [out_name]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("bwa aln sucessfull........")
                 return [out_name+out_ext]
             else:
-                print("failure...........")
+                print("bwa aln failure...........")
                 return False
         else:
             self.db_stop(run_id,{'output':output},err['message'],False)

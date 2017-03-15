@@ -187,7 +187,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
             if SM is None: SM = base
             st = stage.Stage('fq_to_bam_piped',dbc)
             bwa_mem_params = st.get_params()
-            bwa_mem_params['-t']['value'] = cpus
+            bwa_mem_params['-t']['value'] = threads
             bwa_mem_params['-m']['value'] = mem
             st.set_params(bwa_mem_params)
             outs = st.run(run_id,{'.fa':[ref_fa_path],'.fq':reads,
