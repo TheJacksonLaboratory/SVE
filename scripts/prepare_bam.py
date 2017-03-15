@@ -22,9 +22,9 @@ def path(path):
 #[1]parse command arguments
 des = """
 Processes Illumina PE .fq reads into a .bam file given a reference .fa file as input.
-[Note] mem, piped_mem, piped_split sub-pipelines assume reads > 75bp in length"""
+[Note] mem, sub-pipelines assume reads > 75bp in length"""
 parser = argparse.ArgumentParser(description=des)
-parser.add_argument('-a','--algorithm', type=str, help='aln|mem|piped_mem|piped_split|speed_seq\t[piped_split]')
+parser.add_argument('-a','--algorithm', type=str, help='aln|mem|speed_seq\t[piped_split]')
 parser.add_argument('-g', '--replace_rg',action='store_true', help='replace reads groups\t[False]')
 parser.add_argument('-m', '--mark_duplicates',action='store_true', help='mark duplicate reads\t[False]')
 parser.add_argument('-s', '--sample',type=str, help='sample name\t[input]')
@@ -164,25 +164,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
         print('SVE:picard_replace_rg time was %s sec'%round((r_stop-r_start)/(60**2),1))
     else:
         a_start = time.time()
-        if algorithm == 'mem': #standard 75+bp illuminam PE read
-            base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
-            if not os.path.exists(directory+base+'.sam'):
-                if SM is None: SM = base
-                #alignment, mapping and add read groups
-                st = stage.Stage('bwa_mem',dbc)
-                bwa_mem_params = st.get_params()
-                bwa_mem_params['-t']['value'] = threads
-                st.set_params(bwa_mem_params)
-                outs = st.run(run_id,{'.fa':[ref_fa_path],'.fq':reads,
-                                      'platform_id':['illumina'],
-                                      'SM':[SM],
-                                      'out_dir':[directory]})
- 
-            #if not os.path.exists(directory+base+'.bam'): #look for the finished sorted bam file
-                #picard sam to bam, sort, mark duplicates and index
-                st = stage.Stage('picard_sam_convert',dbc)
-                outs = st.run(run_id,{'.sam':[directory+base+'.sam']})
-        if algorithm == 'piped_mem':
+        if algorithm == 'mem':
             base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
             if SM is None: SM = base
             st = stage.Stage('fq_to_bam_piped',dbc)
@@ -190,19 +172,6 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
             bwa_mem_params['-t']['value'] = threads
             bwa_mem_params['-m']['value'] = mem
             st.set_params(bwa_mem_params)
-            outs = st.run(run_id,{'.fa':[ref_fa_path],'.fq':reads,
-                                  'platform_id':['illumina'],
-                                  'SM':[SM],
-                                  'out_dir':[directory]})
-        elif algorithm == 'piped_split':
-            base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
-            if SM is None: SM = base
-            st = stage.Stage('fq_to_bam_split',dbc)
-            bwa_split_params = st.get_params()
-            bwa_split_params['-s']['value'] = cpus
-            bwa_split_params['-t']['value'] = threads
-            bwa_split_params['-m']['value'] = mem
-            st.set_params(bwa_split_params)
             outs = st.run(run_id,{'.fa':[ref_fa_path],'.fq':reads,
                                   'platform_id':['illumina'],
                                   'SM':[SM],
