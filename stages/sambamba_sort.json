@@ -1,0 +1,10 @@
+{
+    "stage_id":28,
+    "type":"utility",
+    "name":"sambamba_sort",
+    "version":"0.6.6",
+    "wrapper":"sambamba_sort",
+    "in_ext":".bam",
+    "out_ext":".bam",
+    "param_map":{}
+}

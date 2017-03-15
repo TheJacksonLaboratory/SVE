@@ -1,0 +1,10 @@
+{
+    "stage_id":26,
+    "type":"utility",
+    "name":"sambamba_index",
+    "version":"0.6.6",
+    "wrapper":"sambamba_index",
+    "in_ext":".bam",
+    "out_ext":".bam.bai",
+    "param_map":{}
+}
