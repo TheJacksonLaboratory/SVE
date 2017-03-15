@@ -182,7 +182,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
                 #picard sam to bam, sort, mark duplicates and index
                 st = stage.Stage('picard_sam_convert',dbc)
                 outs = st.run(run_id,{'.sam':[directory+base+'.sam']})
-        elif algorithm == 'piped_mem':
+        if algorithm == 'piped_mem':
             base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
             if SM is None: SM = base
             st = stage.Stage('fq_to_bam_piped',dbc)
@@ -224,6 +224,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
             st = stage.Stage('bwa_aln',dbc)
             bwa_aln_params = st.get_params()
             bwa_aln_params['-t']['value'] = threads
+            bwa_aln_params['-m']['value'] = mem
             st.set_params(bwa_aln_params)
             #this is more of the cascading code we want to use:::::::::::::::::::::::::::::::::::::::
             #fix the JSON so that outs has more or less the cascaded file you want to pass into the next stage
@@ -233,14 +234,23 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
                 #print('stage d params: '+str(st.params))
             #paired end alignment :::TO DO::: need to update bwa_sampe to add the read groups                      
             st = stage.Stage('bwa_sampe',dbc)
-            l,r = reads[0].strip('.fq'),reads[1].strip('.fq')
+            st.set_params(bwa_aln_params)
+            l,r = reads[0],reads[1]
+
+            l_index = reads[0].rfind('.fq')
+            if l_index == -1: l_index = reads[0].rfind('.fastq')
+            if l_index > 0: l = reads[0][0:l_index]
+
+            r_index = reads[1].rfind('.fq')
+            if r_index == -1: r_index = reads[1].rfind('.fastq')
+            if r_index > 0: r = reads[1][0:r_index]
             outs = st.run(run_id,{'.fa':[ref_fa_path],
-                                  '.fq':[l+'.fq',r+'.fq'],
+                                  '.fq':reads,
                                   '.sai':[l+'.sai',r+'.sai']}) 
             
             #picard conversion and RG additions needed for gatk VC...
-            st = stage.Stage('picard_sam_convert',dbc)
-            outs = st.run(run_id,{'.sam':[l+ids['bwa_sampe']+'.sam']})
+            #st = stage.Stage('picard_sam_convert',dbc)
+            #outs = st.run(run_id,{'.sam':[l+ids['bwa_sampe']+'.sam']})
     
             """
             #divet conversion

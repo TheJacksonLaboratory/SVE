@@ -97,6 +97,9 @@ class Stage_Wrapper(object):
 
     def strip_in_ext(self,name,ext):
         i = name.rfind(ext)
+        if ext == '.fq' and i == -1: i = name.rfind('.fastq')
+        if ext == '.fa' and i == -1: i = name.rfind('.fasta')
+
         if i > 0: return name[0:i]
         else: return name
     
