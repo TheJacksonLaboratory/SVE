@@ -32,10 +32,10 @@ class picard_mark_duplicates(stage_wrapper.Stage_Wrapper):
         #[2a]build command args
         software = self.software_path
         java   = software+'/jre1.8.0_51/bin/java'
-        mem    = '-Xmx32g'
+        mem    = '-Xmx%sg'%str(self.get_params()['-m']['value'])
         picard = software+'/picard-tools-2.5.0/picard.jar'
         mark   =  [java,mem,'-jar',picard,'MarkDuplicates','I='+in_name['.bam'],
-                   'O='+out_name+'.bam','METRICS_FILE='+out_name+'.picard.metrics.txt',
+                   'O='+out_name,'METRICS_FILE='+out_name+'.picard.metrics.txt',
                    'MAX_RECORDS_IN_RAM='+str(250000*16)]
         
         #[2b]make start entry which is a new staged_run row
@@ -47,8 +47,8 @@ class picard_mark_duplicates(stage_wrapper.Stage_Wrapper):
         output,err = '',{}
         try:
             output = subprocess.check_output(mark,stderr=subprocess.STDOUT)
-            clean  = ['mv',self.strip_in_ext(in_name['.bam'],'.bam')+'.bai',out_name]
-            output = subprocess.check_output(clean,stderr=subprocess.STDOUT)
+            #clean  = ['mv',self.strip_in_ext(in_name['.bam'],'.bam')+'.bai',out_name]
+            #output = subprocess.check_output(clean,stderr=subprocess.STDOUT)
         #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
@@ -77,7 +77,7 @@ class picard_mark_duplicates(stage_wrapper.Stage_Wrapper):
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
                 print("sucessfull........")
-                return results   #return a list of names
+                return out_name   #return a list of names
             else:
                 print("failure...........")
                 return False

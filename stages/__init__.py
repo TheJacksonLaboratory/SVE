@@ -30,6 +30,8 @@ import picard_mark_duplicates
 import picard_merge
 import picard_replace_rg
 import picard_sam_convert
+import sambamba_index
+import sambamba_sort
 import samtools_merge
 import samtools_view
 import samtools_sort

@@ -55,10 +55,10 @@ class fq_to_bam_piped(stage_wrapper.Stage_Wrapper):
         threads = str(self.get_params()['-t']['value'])
         bwa = self.software_path+'/bwa-master/bwa' #latest release
         samtools = self.software_path+'/samtools-1.3/samtools'
-        java   = self.software_path+'/jre1.8.0_51/bin/java'
+        #java   = self.software_path+'/jre1.8.0_51/bin/java'
 	sambamba = self.software_path+'/sambamba_v0.6.6'
-        mem    = '-Xmx%sg'%str(self.get_params()['-m']['value'])
-        picard = self.software_path+'/picard-tools-2.5.0/picard.jar' #latest release here
+        #mem    = '-Xmx%sg'%str(self.get_params()['-m']['value'])
+        #picard = self.software_path+'/picard-tools-2.5.0/picard.jar' #latest release here
         sample = stripped_name+'RG'
         #'@RG\tID:H7AGF.2\tLB:Solexa-206008\tPL:illumina\tPU:H7AGFADXX131213.2\tSM:HG00096\tCN:BI'
         RG = r'\t'.join(["'@RG",'ID:'+sample,'LB:'+'Solexa'+sample,'PL:'+inputs['platform_id'][0],
@@ -66,30 +66,12 @@ class fq_to_bam_piped(stage_wrapper.Stage_Wrapper):
         bwa_mem = [bwa,'mem','-M','-t',threads,'-R',RG,in_names['.fa']]+in_names['.fq']+['|']
         view = [samtools,'view','-Sb','-','>',out_name+'.bam']
         
-#        sort = [samtools,'sort','-m','2G','-@',threads,'-T',out_dir+stripped_name+'_sort_',
-#                '-O','bam',out_name+'.bam','>',out_name+'.sorted.bam']
+        sort = [sambamba,'sort',
+                '-o',out_name+'.sorted.bam',
+                '-l','5',
+                '-t',threads,
+                out_name+'.bam']
                 
-
-#        sort   =  [java,mem,'-jar',picard,'SortSam','I='+out_name+'.bam',
-#                   'O=',out_name+'.sorted.bam','SORT_ORDER=coordinate',
-#                   'TMP_DIR='+out_dir+'/sort/','MAX_RECORDS_IN_RAM='+str(250000*16),
-#                   'VALIDATION_STRINGENCY=LENIENT','COMPRESSION_LEVEL=5']
-
-        sort   =  [sambamba,'sort',
-                   '-o',out_name+'.sorted.bam',
-                   '-l','5',
-                   '-t',threads,
-                   out_name+'.bam']
-                
-        mark   =  [java,mem,'-jar',picard,'MarkDuplicates','I='+out_name+'.sorted.bam',
-                   'O='+out_name+'.bam','METRICS_FILE='+out_name+'.picard.metrics.txt',
-                   'MAX_RECORDS_IN_RAM='+str(250000*16)] #delete .sorted.bam after this steps
-#        index  = [java,mem,'-jar',picard,'BuildBamIndex','I='+out_name+'.bam',
-#                  'O='+out_name+'.bam.bai']  #no .bam.bai here ?     
-        index  =  [sambamba,'index','-t',threads,out_name+'.bam']
-        clean = ['rm','-rf',out_name+'.sorted.bam',
-                 out_name+'.sorted.bam.bai',
-                 out_name+'.picard.metrics.txt'] #clean just the sorted bam file when done
         #[2b]make start entry which is a new staged_run row
         #[1a]make start entry which is a new staged_run row  
         self.command = bwa_mem+view
@@ -99,17 +81,12 @@ class fq_to_bam_piped(stage_wrapper.Stage_Wrapper):
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
-            #if not os.path.exists(out_name+'.bam'):
             output += subprocess.check_output(' '.join(bwa_mem+view),stderr=subprocess.STDOUT,shell=True)
-            #if not os.path.exists(out_name+'.bam.bai'):
-                #if not os.path.exists(out_name+'.sorted.bam'):
-            print (str(sort))
             output += subprocess.check_output(' '.join(sort),stderr=subprocess.STDOUT,shell=True)
-            output += subprocess.check_output(' '.join(mark),stderr=subprocess.STDOUT,shell=True)
-            output += subprocess.check_output(' '.join(clean),stderr=subprocess.STDOUT,shell=True)
-            output += subprocess.check_output(' '.join(index),stderr=subprocess.STDOUT,shell=True)
-            #if not os.path.exists(out_name+'.bam.bai'):
-            #    output += subprocess.check_output(' '.join(index),stderr=subprocess.STDOUT,shell=True) #clean up the inputs now
+            move = ['mv',out_name+'.sorted.bam',out_name+'.bam']
+            output += subprocess.check_output(' '.join(move),stderr=subprocess.STDOUT,shell=True)
+            move = ['mv',out_name+'.sorted.bam.bai',out_name+'.bam.bai']
+            output += subprocess.check_output(' '.join(move),stderr=subprocess.STDOUT,shell=True)
         #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
@@ -140,7 +117,7 @@ class fq_to_bam_piped(stage_wrapper.Stage_Wrapper):
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
                 print("sucessfull........")
-                return results   #return a list of names
+                return out_name+'.bam'   #return a list of names
             else:
                 print("failure...........")
                 return False

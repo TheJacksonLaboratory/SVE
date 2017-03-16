@@ -11,5 +11,7 @@
                  "-n":{"type":"int","min":3,"max":20,"steps":1},
                  "-N":{"type":"int","min":10,"max":20,"steps":1},
                  "-c":{"type":"float","min":0.00001,"max":0.0001,"steps":10},
-                 "-s":{"type":"bool","min":false,"max":true,"steps":1}}
+                 "-s":{"type":"bool","min":false,"max":true,"steps":1},
+                 "-t":{"type":"int","min":1,"max":32, "steps":32},
+                 "-m":{"type":"int","min":1,"max":256,"steps":256}}
 }

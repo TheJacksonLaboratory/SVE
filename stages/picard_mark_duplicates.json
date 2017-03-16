@@ -6,5 +6,6 @@
     "wrapper":"picard_mark_duplicates",
     "in_ext":".bam",
     "out_ext":".dedup.bam",
-    "param_map":{}
+    "param_map":{"-t":{"type":"int","min":1,"max":32, "steps":32},
+                 "-m":{"type":"int","min":1,"max":256,"steps":256}}
 }

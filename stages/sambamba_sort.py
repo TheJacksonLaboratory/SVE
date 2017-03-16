@@ -10,71 +10,29 @@ class sambamba_sort(stage_wrapper.Stage_Wrapper):
     #stage_id should be pre-registered with db, set to None will require getting
     #a new stage_id from the  db by writing and registering it in the stages table
     def __init__(self,wrapper,dbc,retrieve,upload,params):
-        #inheritance of base class stage_wrapper    
+        #inheritance of base class stage_wrapper
         stage_wrapper.Stage_Wrapper.__init__(self,wrapper,dbc,retrieve,upload,params)
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
-        return 0  
-    
+        return 0
+
     #override this function in each wrapper...
     #bwa sampe ref.fa L.sai R.sai L.fq R.fq -f out.sam
-    def run(self,run_id,inputs):
-        #workflow is to run through the stage correctly and then check for error handles
-    
-        #[1a]get input names and output names setup
-        in_name  = {'.bam':inputs['.bam'][0]}
-        out_ext = self.split_out_exts()[0]
-        out_preffix = self.strip_in_ext(in_name['.bam'],'.bam') #just a temp ext
-        
-        #[2a]build command args
-        threads = str(self.get_params()['-t']['value'])
+
+    def run(input,output,threads):
         sambamba = self.software_path+'/sambamba_v0.6.6'
-        command = [sambamba,sort,'-o',out_preffix+'.sorted.bam','-l','5','-t',threads,in_name]
-        
-        #[2b]make start entry which is a new staged_run row
-        self.command = command
-        print(self.get_command_str())
-        self.db_start(run_id,in_name['.bam'])
-        
+        command = [sambamba,sort,'-o',outout,'-l','5','-t',threads,inout]
+
         #[3a]execute the command here----------------------------------------------------
-        output,err = '',{}
-        try:
-            output = subprocess.check_output(command,stderr=subprocess.STDOUT)
-        #catch all errors that arise under normal call behavior
-        except subprocess.CalledProcessError as E:
-            print('call error: '+E.output)        #what you would see in the term
-            err['output'] = E.output
-            #the python exception issues (shouldn't have any...
-            print('message: '+E.message)          #?? empty
-            err['message'] = E.message
-            #return codes used for failure....
-            print('code: '+str(E.returncode))     #return 1 for a fail in art?
-            err['code'] = E.returncode
-        except OSError as E:
-            print('os error: '+E.strerror)        #what you would see in the term
-            err['output'] = E.strerror
-            #the python exception issues (shouldn't have any...
-            print('message: '+E.message)          #?? empty
-            err['message'] = E.message
-            #the error num
-            print('code: '+str(E.errno))
-            err['code'] = E.errno
-        print('output:\n'+output)
-        
+        output = subprocess.check_output(command,stderr=subprocess.STDOUT)
         #[3b]check results--------------------------------------------------
-        if err == {}:
-            self.db_stop(run_id,{'output':output},'',True)
-            results = [out_preffix+'.sorted.bam']
-            #for i in results: print i
-            if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
-                return results   #return a list of names
-            else:
-                print("failure...........")
-                return False
+        if os.path.exists(output):
+            print("sambamba sort sucessfull........")
+            return output   #return output file
         else:
-            self.db_stop(run_id,{'output':output},err['message'],False)
-            return None
+            print("sambamba sort failure...........")
+            return False
+

@@ -15,9 +15,28 @@ sys.path.append(relink) #go up one in the modules
 import stage_utils as su
 import svedb
 import stage
+import subprocess32 as subprocess
 
 def path(path):
     return os.path.abspath(path)[:-1]
+
+def Dedup_Sort(in_bam, mem, threads):
+    # Mark duplications
+    st = stage.Stage('picard_mark_duplicates',dbc)
+    params = st.get_params()
+    params['-t']['value'] = threads
+    params['-m']['value'] = mem
+    st.set_params(params)
+    dedup_bam = st.run(run_id,{'.bam':[sorted_bam]})
+    if (dedup_bam == False):
+        print "ERROR: picard_mark_duplicates fails"
+    else:
+        subprocess.call(["mv",dedup_bam,sorted_bam])
+        # Sort bam
+        st = stage.Stage('sambamba_index',dbc)
+        st.set_params(params)
+        st.run(run_id,{'.bam':[sorted_bam]})
+
 
 #[1]parse command arguments
 des = """
@@ -167,10 +186,12 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
             bwa_mem_params['-t']['value'] = threads
             bwa_mem_params['-m']['value'] = mem
             st.set_params(bwa_mem_params)
-            outs = st.run(run_id,{'.fa':[ref_fa_path],'.fq':reads,
+            # outs will receive ".sorted.bam"
+            sorted_bam = st.run(run_id,{'.fa':[ref_fa_path],'.fq':reads,
                                   'platform_id':['illumina'],
                                   'SM':[SM],
                                   'out_dir':[directory]})
+            Dedup_Sort(sorted_bam, mem, threads)
         elif algorithm == 'speed_seq':
             base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
             if SM is None: SM = base
@@ -184,44 +205,16 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
                                   'SM':[SM],
                                   'out_dir':[directory]})
         elif algorithm == 'aln':
-            #index gapped/ungapped alnment files
             st = stage.Stage('bwa_aln',dbc)
             bwa_aln_params = st.get_params()
             bwa_aln_params['-t']['value'] = threads
             bwa_aln_params['-m']['value'] = mem
             st.set_params(bwa_aln_params)
-            #this is more of the cascading code we want to use:::::::::::::::::::::::::::::::::::::::
-            #fix the JSON so that outs has more or less the cascaded file you want to pass into the next stage
-            for read in reads:
-                outs = st.run(run_id,{'.fa':[ref_fa_path],
-                                      '.fq':[read]})
-                #print('stage d params: '+str(st.params))
-            #paired end alignment :::TO DO::: need to update bwa_sampe to add the read groups                      
-            st = stage.Stage('bwa_sampe',dbc)
-            st.set_params(bwa_aln_params)
-            l,r = reads[0],reads[1]
-
-            l_index = reads[0].rfind('.fq')
-            if l_index == -1: l_index = reads[0].rfind('.fastq')
-            if l_index > 0: l = reads[0][0:l_index]
-
-            r_index = reads[1].rfind('.fq')
-            if r_index == -1: r_index = reads[1].rfind('.fastq')
-            if r_index > 0: r = reads[1][0:r_index]
-            outs = st.run(run_id,{'.fa':[ref_fa_path],
+            # outs will receive ".sorted.bam"
+            sorted_bam = st.run(run_id,{'.fa':[ref_fa_path],
                                   '.fq':reads,
-                                  '.sai':[l+'.sai',r+'.sai']}) 
-            
-            #picard conversion and RG additions needed for gatk VC...
-            #st = stage.Stage('picard_sam_convert',dbc)
-            #outs = st.run(run_id,{'.sam':[l+ids['bwa_sampe']+'.sam']})
-    
-            """
-            #divet conversion
-            st = stage.Stage('mrfast_divet')
-            outs = st.run(run_id,{'.fa': [base+'node_data/'+ref_base+'.fa'],
-                                  'L.fq':[l+'.fq'],'R.fq':[r+'.fq']}) #same as r
-            #print(outs)"""
+                                  'out_dir':[directory]})
+            Dedup_Sort(sorted_bam, mem, threads)
             
         a_stop = time.time()
         print('SVE:BAM:%s was completed in %s hours'%(algorithm,round((a_stop-a_start)/(60.0**2),4)))

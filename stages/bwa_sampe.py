@@ -3,6 +3,7 @@ import sys
 import subprocess32 as subprocess
 sys.path.append('../') #go up one in the modules
 import stage_wrapper
+import stage_utils as su
 
 #function for auto-making svedb stage entries and returning the stage_id
 class bwa_sampe(stage_wrapper.Stage_Wrapper):
@@ -25,9 +26,28 @@ class bwa_sampe(stage_wrapper.Stage_Wrapper):
         #workflow is to run through the stage correctly and then check for error handles
     
         #[1b]
-        in_names  = {'.fa':inputs['.fa'][0],'.fq':inputs['.fq'],'.sai':inputs['.sai']}
+        in_names  = {'.fa':inputs['.fa'][0],'.fq':inputs['.fq'],}
         out_ext = self.split_out_exts()[0]
-        out_name = self.strip_in_ext(in_names['.fq'][0],'.fq')[:-1]+'_S'+str(self.stage_id)
+
+        #add tigra.ctg.fa bam by allowing a single '.fa' input key
+        if len(in_names['.fq']) == 2: csl = su.get_common_string_left(in_names['.fq'])
+        else:                         csl = in_names['.fq'][0]
+        stripped_name = self.strip_path(csl)
+        self.strip_in_ext(stripped_name,'.fq')
+
+        if inputs.has_key('out_dir'):
+            out_dir = inputs['out_dir'][0]
+            out_name = out_dir+stripped_name
+            out_name = out_name.rstrip('_')
+        else: #untested...
+            right = in_names['.fa'][0].rsplit('/')[-1]
+            out_dir = in_names['.fq'][0].replace(right,'')
+            cascade = self.strip_in_ext(in_names['.fq'][0],'.fq')
+            out_name = cascade
+            out_name = out_name.rstrip('_')
+
+        if not os.path.exists(out_dir): os.makedirs(out_dir)
+
 
         threads = str(self.get_params()['-t']['value'])
         bwa = self.software_path+'/bwa-master/bwa' #latest release
@@ -39,14 +59,15 @@ class bwa_sampe(stage_wrapper.Stage_Wrapper):
      
 
         #[2]build command args
-        sampe = [bwa,'sampe',in_names['.fa']]
-        sampe += in_names['.sai']+in_names['.fq']
-        for k in self.params:
-            param = self.params[k]
-            if param['type']=='bool': command += [k]
-            else:                     command += [k, str(param['value'])]  
+        aln1 = [bwa,'aln','-t',threads,in_names['.fa'],in_names['.fq'][0],'-f',out_name+'_1.sai']
+        aln2 = [bwa,'aln','-t',threads,in_names['.fa'],in_names['.fq'][1],'-f',out_name+'_2.sai']
+        sampe = [bwa,'sampe',in_names['.fa'],out_name+'_1.sai',out_name+'_2.sai',in_names['.fq'][0],in_names['.fq'][1]]+['|']
+        #for k in self.params:
+        #    param = self.params[k]
+        #    if param['type']=='bool': command += [k]
+        #    else:                     command += [k, str(param['value'])]  
         
-        view = ['|',samtools,'view','-Sb','-','-o',out_name+'.bam']
+        view = [samtools,'view','-Sb','-','-o',out_name+'.bam']
    
         sort   =  [sambamba,'sort','-o',out_name+'.sorted.bam','-l','5','-t',threads,out_name+'.bam']
 
@@ -60,18 +81,20 @@ class bwa_sampe(stage_wrapper.Stage_Wrapper):
                 out_name+'.sorted.bam.bai',
                 out_name+'.picard.metrics.txt'] #clean just the sorted bam file when done
         #[1a]make start entry which is a new staged_run row
-        self.command = sampe + view
+        self.command = aln1
         print(self.get_command_str())
-        self.db_start(run_id,in_names['.fq'])
+        self.db_start(run_id,in_names['.fq'][0])
         
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
-            output = subprocess.check_output(sampe+view,stderr=subprocess.STDOUT)
+            output += subprocess.check_output(' '.join(aln1),stderr=subprocess.STDOUT,shell=True)
+            output += subprocess.check_output(' '.join(aln2),stderr=subprocess.STDOUT,shell=True)
+            output += subprocess.check_output(' '.join(sampe+view),stderr=subprocess.STDOUT,shell=True)
             output += subprocess.check_output(' '.join(sort),stderr=subprocess.STDOUT,shell=True)
             output += subprocess.check_output(' '.join(mark),stderr=subprocess.STDOUT,shell=True)
-            output += subprocess.check_output(' '.join(clean),stderr=subprocess.STDOUT,shell=True)
-            output += subprocess.check_output(' '.join(index),stderr=subprocess.STDOUT,shell=True)
+            output += subprocess.check_output(clean,stderr=subprocess.STDOUT,shell=True)
+            output += subprocess.check_output(index,stderr=subprocess.STDOUT,shell=True)
         #catch all errors that arise under normal behavior
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)             #what you would see in the term
