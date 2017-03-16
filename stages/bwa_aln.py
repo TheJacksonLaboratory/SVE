@@ -57,7 +57,10 @@ class bwa_sampe(stage_wrapper.Stage_Wrapper):
         #[2]build command args
         aln1 = [bwa,'aln','-t',threads,in_names['.fa'],in_names['.fq'][0],'-f',out_name+'_1.sai']
         aln2 = [bwa,'aln','-t',threads,in_names['.fa'],in_names['.fq'][1],'-f',out_name+'_2.sai']
-        sampe = [bwa,'sampe',in_names['.fa'],out_name+'_1.sai',out_name+'_2.sai',in_names['.fq'][0],in_names['.fq'][1]]+['|']
+        #'@RG\tID:H7AGF.2\tLB:Solexa-206008\tPL:illumina\tPU:H7AGFADXX131213.2\tSM:HG00096\tCN:BI'
+        RG = r'\t'.join(["'@RG",'ID:'+sample,'LB:'+'Solexa'+sample,'PL:'+inputs['platform_id'][0],
+                         'PU:'+sample,'SM:'+SM+"'"])
+        sampe = [bwa,'sampe','-r',RG,in_names['.fa'],out_name+'_1.sai',out_name+'_2.sai',in_names['.fq'][0],in_names['.fq'][1]]+['|']
         #for k in self.params:
         #    param = self.params[k]
         #    if param['type']=='bool': command += [k]

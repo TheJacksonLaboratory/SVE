@@ -178,42 +178,29 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
         print('SVE:picard_replace_rg time was %s sec'%round((r_stop-r_start)/(60**2),1))
     else:
         a_start = time.time()
+        base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
+        if SM is None: SM = base
+        aligner_params = {'.fa':[ref_fa_path],'.fq':reads,'platform_id':['illumina'],'SM':[SM],'out_dir':[directory]}
+        # Set the stage's parameters
+        st = stage.Stage('fq_to_bam_piped',dbc)
+        aligner_stage_params = st.get_params()
+        aligner_stage_params['-t']['value'] = threads
+        aligner_stage_params['-m']['value'] = mem
         if algorithm == 'mem':
-            base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
-            if SM is None: SM = base
             st = stage.Stage('fq_to_bam_piped',dbc)
-            bwa_mem_params = st.get_params()
-            bwa_mem_params['-t']['value'] = threads
-            bwa_mem_params['-m']['value'] = mem
-            st.set_params(bwa_mem_params)
+            st.set_params(aligner_stage_params)
             # outs will receive ".sorted.bam"
-            sorted_bam = st.run(run_id,{'.fa':[ref_fa_path],'.fq':reads,
-                                  'platform_id':['illumina'],
-                                  'SM':[SM],
-                                  'out_dir':[directory]})
+            sorted_bam = st.run(run_id,aligner_params)
             Dedup_Sort(sorted_bam, mem, threads)
         elif algorithm == 'speed_seq':
-            base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
-            if SM is None: SM = base
             st = stage.Stage('speedseq_align',dbc)
-            speedseq_params = st.get_params()
-            speedseq_params['-t']['value'] = threads
-            speedseq_params['-m']['value'] = mem
-            st.set_params(speedseq_params)
-            outs = st.run(run_id,{'.fa':[ref_fa_path],'.fq':reads,
-                                  'platform_id':['illumina'],
-                                  'SM':[SM],
-                                  'out_dir':[directory]})
+            st.set_params(aligner_stage_params)
+            outs = st.run(run_id,aligner_params)
         elif algorithm == 'aln':
             st = stage.Stage('bwa_aln',dbc)
-            bwa_aln_params = st.get_params()
-            bwa_aln_params['-t']['value'] = threads
-            bwa_aln_params['-m']['value'] = mem
-            st.set_params(bwa_aln_params)
+            st.set_params(aligner_stage_params)
             # outs will receive ".sorted.bam"
-            sorted_bam = st.run(run_id,{'.fa':[ref_fa_path],
-                                  '.fq':reads,
-                                  'out_dir':[directory]})
+            sorted_bam = st.run(run_id,aligner_params)
             Dedup_Sort(sorted_bam, mem, threads)
             
         a_stop = time.time()
