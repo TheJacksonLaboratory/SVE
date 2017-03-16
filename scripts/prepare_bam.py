@@ -55,7 +55,7 @@ fq comma-sep file path list\t[None]
 [EX PE] --fqs ~/data/sample1_FWD.fq,~/data/sample1_REV.fq"""
 parser.add_argument('-f', '--fqs',type=str, help=fqs_help)
 parser.add_argument('-b', '--bam',type=str, help='bam file path\t[None]')
-parser.add_argument('-T','--threads',type=int, help='number of threads per CPU\t[4]')
+parser.add_argument('-t','--threads',type=int, help='number of threads per CPU\t[4]')
 parser.add_argument('-M','--mem',type=int, help='ram in GB units to use for processing per cpu/thread unit\t[4]')
 args = parser.parse_args()
 
