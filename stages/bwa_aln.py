@@ -46,6 +46,14 @@ class bwa_sampe(stage_wrapper.Stage_Wrapper):
             out_name = cascade
             out_name = out_name.rstrip('_')
 
+        if inputs.has_key('SM'):
+            SM = inputs['SM'][0]
+            print('found SM tag = %s'%SM)
+        else:
+            SM = stripped_name
+            print('missing a SM tag, using %s'%SM)
+
+
         if not os.path.exists(out_dir): os.makedirs(out_dir)
 
 
@@ -58,6 +66,7 @@ class bwa_sampe(stage_wrapper.Stage_Wrapper):
         aln1 = [bwa,'aln','-t',threads,in_names['.fa'],in_names['.fq'][0],'-f',out_name+'_1.sai']
         aln2 = [bwa,'aln','-t',threads,in_names['.fa'],in_names['.fq'][1],'-f',out_name+'_2.sai']
         #'@RG\tID:H7AGF.2\tLB:Solexa-206008\tPL:illumina\tPU:H7AGFADXX131213.2\tSM:HG00096\tCN:BI'
+        sample = stripped_name+'RG'
         RG = r'\t'.join(["'@RG",'ID:'+sample,'LB:'+'Solexa'+sample,'PL:'+inputs['platform_id'][0],
                          'PU:'+sample,'SM:'+SM+"'"])
         sampe = [bwa,'sampe','-r',RG,in_names['.fa'],out_name+'_1.sai',out_name+'_2.sai',in_names['.fq'][0],in_names['.fq'][1]]+['|']
