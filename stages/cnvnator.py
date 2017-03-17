@@ -44,8 +44,8 @@ class cnvnator(stage_wrapper.Stage_Wrapper):
         #[2a]build command args
         
         #split the ref seq into seperate chroms...
-        cnvnator = self.software_path+'/cnvnator_0.3/cnvnator'
-        cnv2vcf  = self.software_path+'/cnvnator_0.3/cnvnator2VCF.pl'
+        cnvnator = self.software_path+'/CNVnator_v0.3.3/src/cnvnator'
+        cnv2vcf  = self.software_path+'/CNVnator_v0.3.3/cnvnator2VCF.pl'
 
         chrom_l  = sr.get_fasta_seq_names(in_names['.fa'][0]) #by reading the larger ref
         #[self.strip_in_ext(self.strip_path(i),'.fa') for i in in_names['.fa']] #by using the input list
