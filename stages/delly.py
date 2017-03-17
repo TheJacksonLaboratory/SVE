@@ -43,8 +43,8 @@ class delly(stage_wrapper.Stage_Wrapper):
         
         #add load libs parameters for OPEN_MP to do || processing        
         #will have to make some connection changes here
-        delly = self.software_path+'/delly-0.7.2/delly_MP_0.7.2' #updated binary
-        excl  = self.software_path+'/delly-0.7.2/excludeTemplates/human.hg19.excl.tsv'#need to match reference
+        delly = self.software_path+'/delly/src/delly' #updated binary
+        excl  = self.software_path+'/delly/excludeTemplates/human.hg38.excl.tsv'#need to match reference
         vcfs  = {'del':sub_dir+'del.vcf','dup':sub_dir+'dup.vcf',
                  'inv':sub_dir+'inv.vcf','tra':sub_dir+'tra.vcf',
                  'ins': sub_dir + 'ins.vcf'}
@@ -148,14 +148,14 @@ class delly(stage_wrapper.Stage_Wrapper):
             results = [out_names['.vcf']]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("delly sucessfull........")
                 self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
                 return results   #return a list of names
             else:
-                print("failure...........")
+                print("delly failure...........")
                 self.db_stop(run_id,{'output':output},'',False)
                 return False
         else:
-            print("failure...........")
+            print("delly failure...........")
             self.db_stop(run_id,{'output':output},err['message'],False)
             return None
