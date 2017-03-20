@@ -40,8 +40,8 @@ class gatk_haplo(stage_wrapper.Stage_Wrapper):
             out_names = {'.vcf'  :cascade+'_S'+str(self.stage_id)+out_exts[0]} 
         
         #[2a]build command args
-        java = self.software_path+'/jre1.8.0_25/bin/java'
-        gatk = self.software_path+'/GATK_3.6/GenomeAnalysisTK.jar'
+        java = self.software_path+'/jre1.8.0_51/bin/java'
+        gatk = self.software_path+'/GATK_3.7/GenomeAnalysisTK.jar'
         command = [java,'-Xmx12g','-jar',gatk,'-T','HaplotypeCaller',
                    '-R',in_names['.fa'],'-I'] + in_names['.bam']
         #add this param function
@@ -86,14 +86,14 @@ class gatk_haplo(stage_wrapper.Stage_Wrapper):
             results = [out_names['.vcf']]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("GATK sucessfull........")
                 self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
                 return results   #return a list of names
             else:
-                print("failure...........")
+                print("GATK failure...........")
                 self.db_stop(run_id,{'output':output},'',False)
                 return False
         else:
-            print("failure...........")
+            print("GATK failure...........")
             self.db_stop(run_id,{'output':output},err['message'],False)
             return None

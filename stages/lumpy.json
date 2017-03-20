@@ -2,7 +2,7 @@
     "stage_id":18,
     "type":"variant caller",
     "name":"lumpy",
-    "version":"0.2.11",
+    "version":"0.2.13",
     "wrapper":"lumpy",
     "in_ext":".bam",
     "out_ext":".calls,.vcf",

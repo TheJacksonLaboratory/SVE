@@ -6,6 +6,5 @@
     "wrapper":"gatk_haplo",
     "in_ext":".fa,.bam",
     "out_ext":".vcf,.vcf.idx",
-    "param_map":{"-stand_call_conf":{"type":"int","min":30,"max":100,"steps":20},
-                 "-stand_emit_conf":{"type":"int","min":10,"max":100,"steps":45}}
+    "param_map":{"-stand_call_conf":{"type":"int","min":30,"max":100,"steps":20}}
 }
