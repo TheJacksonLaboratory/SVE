@@ -47,15 +47,14 @@ class hydra(stage_wrapper.Stage_Wrapper):
         if not os.path.exists(sub_dir): os.makedirs(sub_dir)
         
         #[a]use to run several sub scripts via command line/seperate process
-        python = self.software_path+'/anaconda/bin/python'        
+        python = 'python'
         hydra  = self.software_path+'/Hydra/'
         hydra_to_vcf = self.software_path+'/SVE/stages/utils/hydra_to_vcf.py'
         #ENV
         PATH = hydra+'bin:'+hydra+'scripts:'+\
-               self.software_path+'/samtools-0.1.19:'+\
-               self.software_path+'/anaconda/bin:'+\
-               os.environ['PATH']        
-        
+               self.software_path+'/samtools-1.3:'+\
+               os.environ['PATH']
+
         #[0] stub file generation        
         bams = sub_dir+'/bam.stub'
         bam_names = '\n'.join(['sample%s'%i+'\t'+in_names['.bam'][i] for i in range(len(in_names['.bam']))])
@@ -75,20 +74,22 @@ class hydra(stage_wrapper.Stage_Wrapper):
         #[3] run hydra router
         #hydra-router -config config.hydra.txt -routedList routed-files.txt
         routed_bams = sub_dir+'bam.routed'
-        route   =  ['cd',sub_dir+';','hydra-router',
+        route   =  ['hydra-router',
                     '-config',cfg,'-routedList',routed_bams]
         
         #[4] assemble SV breakpoint clusters
         #sh scripts/assemble-routed-files.sh routed-files-test.txt config.hydra.txt 1
         #assemble-routed-files.sh <config file> <routed file list file> <number of processes> <punt parameter>
         #punt should be 5x the average read depth over all samples
-        assemble =['cd',sub_dir+';','assemble-routed-files.sh',
+        assemble_command = hydra + 'scripts/assemble-routed-files.sh'
+        assemble =[assemble_command,
                    cfg,routed_bams,str(1),str(60)]
         
         #[5] merge SV assembly files
         #sh scripts/combine-assembled-files.sh /full/path/to/assembled/files/ all.assembled
         asm = sub_dir+'all.assembled'
-        merge = ['combine-assembled-files.sh',sub_dir, asm]
+        merge_command = hydra + 'scripts/combine-assembled-files.sh'
+        merge = [merge_command,'.', asm]
         
         #[6] finalize SV breakpoints
         #scripts/forceOneClusterPerPairMem.py -i all.assembled -o all.sv-calls
@@ -126,6 +127,7 @@ class hydra(stage_wrapper.Stage_Wrapper):
             output += subprocess.check_output(' '.join(make_cfg),
                                               stderr=subprocess.STDOUT,shell=True,
                                               env={'PATH':PATH})+'\n'
+
                                               
             for k in ['sample%s'%i for i in range(len(in_names['.bam']))]:
                 print('extracting discordants for %s'%k)
@@ -161,20 +163,18 @@ class hydra(stage_wrapper.Stage_Wrapper):
             print('computing hydra frequencies')
             print(' '.join(freqs))
             output += subprocess.check_output(' '.join(freqs),
-                                              stderr=subprocess.STDOUT,shell=True,
-                                              env={'PATH':PATH})+'\n'
+                                              stderr=subprocess.STDOUT,shell=True)+'\n'
                                               
             print('converting hydra to vcf format')
             print(' '.join(bkpt2vcf))
             output += subprocess.check_output(' '.join(bkpt2vcf),
-                                              stderr=subprocess.STDOUT,shell=True,
-                                              env={'PATH':PATH})+'\n'
+                                              stderr=subprocess.STDOUT,shell=True)+'\n'
                                               
             print('copying files and cleaning sub directory')
             output += subprocess.check_output(' '.join(copy),
-                                              stderr=subprocess.STDOUT,shell=True,
-                                              env={'PATH':PATH})
-            print('copy is complete')
+                                              stderr=subprocess.STDOUT,shell=True)+'\n'
+            output += subprocess.check_output(' '.join(clean),
+                                              stderr=subprocess.STDOUT,shell=True)+'\n'
             #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
@@ -206,8 +206,7 @@ class hydra(stage_wrapper.Stage_Wrapper):
         print(' '.join(bkpts))
         try:
             output = subprocess.check_output(' '.join(bkpts),
-                                              stderr=subprocess.STDOUT,shell=True,
-                                              env={'PATH':PATH})+'\n'
+                                              stderr=subprocess.STDOUT,shell=True)+'\n'
             #if os.path.exists(out_names['.vcf']):
             #    output += subprocess.check_output(' '.join(clean),
             #                                      stderr=subprocess.STDOUT,shell=True)
@@ -241,14 +240,14 @@ class hydra(stage_wrapper.Stage_Wrapper):
             results = [out_names['.vcf']]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("hydra sucessfull........")
                 self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
                 return results   #return a list of names
             else:
-                print("failure...........")
+                print("hydra failure...........")
                 self.db_stop(run_id,{'output':output},'',False)
                 return False
         else:
-            print("failure...........")
+            print("hydra failure...........")
             self.db_stop(run_id,{'output':output},err['message'],False)
             return None
