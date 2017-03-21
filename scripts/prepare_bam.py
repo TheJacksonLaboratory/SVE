@@ -50,6 +50,7 @@ parser.add_argument('-s', '--sample',type=str, help='sample name\t[input]')
 parser.add_argument('-o', '--out_dir', type=str, help='output directory to store resulting files\t[None]')
 parser.add_argument('-r', '--ref', type=str, help='fasta reference file path\t[None]')
 parser.add_argument('-d','--database',type=str, help='database configuration file\t[SVE/data]')
+parser.add_argument('-A','--realign',action='store_true', help='Realign')
 fqs_help = """
 fq comma-sep file path list\t[None]
 [EX PE] --fqs ~/data/sample1_FWD.fq,~/data/sample1_REV.fq"""
@@ -159,23 +160,35 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
     
     stage_meta = su.get_stage_meta()
     ids = su.get_stage_name_id(stage_meta)
-    
-    if args.mark_duplicates:
-        d_start = time.time()
-        st = stage.Stage('picard_mark_duplicates',dbc)
-        outs = st.run(run_id,{'.bam':[bam]})
-        d_stop = time.time()
-        print('SVE:picard_mark_duplicates time was % hours'%round((d_stop-d_start)/(60**2),1))
-    if args.replace_rg: #set to do one at a time only for now...
-        r_start = time.time()
-        base = bam.rsplit('/')[-1].rsplit('.')[0].rsplit('_')[0].rsplit('-')
-        if SM is None: SM = base
-        st = stage.Stage('picard_replace_rg',dbc)
-        outs = st.run(run_id,{'.bam':[bam],
-                              'platform_id':['illumina'],
-                              'SM':[SM]})
-        r_stop = time.time()
-        print('SVE:picard_replace_rg time was %s sec'%round((r_stop-r_start)/(60**2),1))
+   
+    if args.bam is not None:
+        if args.realign:
+            a_start = time.time()
+            aligner_params = {'.fa':[ref_fa_path],'.bam':bam,'out_dir':[directory]}
+            st = stage.Stage('speedseq_realign',dbc)
+            aligner_stage_params = st.get_params()
+            aligner_stage_params['-t']['value'] = threads
+            aligner_stage_params['-m']['value'] = mem
+            st.set_params(aligner_stage_params)
+            outs = st.run(run_id,aligner_params)
+            a_stop = time.time()
+            print('SVE:picard_mark_duplicates time was % hours'%round((a_stop-a_start)/(60**2),1))
+        if args.mark_duplicates:
+            d_start = time.time()
+            st = stage.Stage('picard_mark_duplicates',dbc)
+            outs = st.run(run_id,{'.bam':[bam]})
+            d_stop = time.time()
+            print('SVE:picard_mark_duplicates time was % hours'%round((d_stop-d_start)/(60**2),1))
+        if args.replace_rg: #set to do one at a time only for now...
+            r_start = time.time()
+            base = bam.rsplit('/')[-1].rsplit('.')[0].rsplit('_')[0].rsplit('-')
+            if SM is None: SM = base
+            st = stage.Stage('picard_replace_rg',dbc)
+            outs = st.run(run_id,{'.bam':[bam],
+                                  'platform_id':['illumina'],
+                                  'SM':[SM]})
+            r_stop = time.time()
+            print('SVE:picard_replace_rg time was %s sec'%round((r_stop-r_start)/(60**2),1))
     else:
         a_start = time.time()
         base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]

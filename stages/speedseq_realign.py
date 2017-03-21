@@ -25,20 +25,18 @@ class speedseq_realign(stage_wrapper.Stage_Wrapper):
     def run(self,run_id,inputs):
         #workflow is to run through the stage correctly and then check for error handles
         #[1b]
-        in_names  = {'.fa':inputs['.fa'][0],'.fq':inputs['.fq']}
-        out_ext = self.split_out_exts()[0]
+        in_names  = {'.fa':inputs['.fa'][0],'.bam':inputs['.bam']}
         #add tigra.ctg.fa bam by allowing a single '.fa' input key
-        if len(in_names['.fq']) == 2: csl = su.get_common_string_left(in_names['.fq'])
-        else:                         csl = in_names['.fq'][0]
-        stripped_name = self.strip_path(csl)
+        stripped_name = self.strip_path(in_names['.bam'])
+        stripped_name = self.strip_in_ext(stripped_name,'.bam')
         if inputs.has_key('out_dir'):
             out_dir = inputs['out_dir'][0]
             out_name = out_dir+stripped_name
             out_name = out_name.rstrip('_')
         else: #untested...
             right = in_names['.fa'][0].rsplit('/')[-1]
-            out_dir = in_names['.fq'][0].replace(right,'')
-            cascade = self.strip_in_ext(in_names['.fq'][0],'.fq')
+            out_dir = in_names['.bam'].replace(right,'')
+            cascade = self.strip_in_ext(in_names['.bam'],'.bam')
             out_name = cascade
             out_name = out_name.rstrip('_')
         if inputs.has_key('SM'):
@@ -51,52 +49,24 @@ class speedseq_realign(stage_wrapper.Stage_Wrapper):
         if not os.path.exists(out_dir): os.makedirs(out_dir)
         #if not os.path.exists(out_dir+'/sort/'): os.makedirs(out_dir+'/sort/')
         threads = str(self.get_params()['-t']['value'])
-        bwa = self.software_path+'/bwa-master/bwa' #latest release
-        samtools = self.software_path+'/samtools-1.3/samtools'
-        java   = self.software_path+'/jre1.8.0_51/bin/java'
-        mem    = '-Xmx32g'
-        picard = self.software_path+'/picard-tools-2.5.0/picard.jar' #latest release here
-        sample = stripped_name+'RG'
+        mem = str(self.get_params()['-m']['value'])
+        speedseq = self.software_path+'/speedseq/bin/speedseq'
+
         #'@RG\tID:H7AGF.2\tLB:Solexa-206008\tPL:illumina\tPU:H7AGFADXX131213.2\tSM:HG00096\tCN:BI'
-        RG = r'\t'.join(["'@RG",'ID:'+sample,'LB:'+'Solexa'+sample,'PL:'+inputs['platform_id'][0],
-                         'PU:'+sample,'SM:'+SM+"'"])
-        bwa_mem = [bwa,'mem','-M','-t',threads,'-R',RG,in_names['.fa']]+in_names['.fq']+['|']
-        view = [samtools,'view','-Sb','-','>',out_name+'.bam']
         
-#        sort = [samtools,'sort','-m','2G','-@',threads,'-T',out_dir+stripped_name+'_sort_',
-#                '-O','bam',out_name+'.bam','>',out_name+'.sorted.bam']
-                
-        sort   =  [java,mem,'-jar',picard,'SortSam','I='+out_name+'.bam',
-                   'O=',out_name+'.sorted.bam','SORT_ORDER=coordinate',
-                   'TMP_DIR='+out_dir+'/sort/','MAX_RECORDS_IN_RAM='+str(250000*16),
-                   'VALIDATION_STRINGENCY=LENIENT','COMPRESSION_LEVEL=5']
-                
-        mark   =  [java,mem,'-jar',picard,'MarkDuplicates','I='+out_name+'.sorted.bam',
-                   'O='+out_name+'.bam','METRICS_FILE='+out_name+'.picard.metrics.txt',
-                   'MAX_RECORDS_IN_RAM='+str(250000*16)] #delete .sorted.bam after this steps
-        index  = [java,mem,'-jar',picard,'BuildBamIndex','I='+out_name+'.bam',
-                  'O='+out_name+'.bam.bai']  #no .bam.bai here ?     
-        clean = ['rm','-rf',out_name+'.sorted.bam',out_name+'.picard.metrics.txt',
-                 out_dir+'/sort'] #clean just the sorted bam file when done
+        realign = [speedseq,'realign','-t',threads,'-M',mem,'-o',out_name,in_names['.fa'],in_names['.bam']]
         #[2b]make start entry which is a new staged_run row
         #[1a]make start entry which is a new staged_run row  
-        self.command = bwa_mem+view
+        self.command = realign
         print(self.get_command_str())
-        self.db_start(run_id,in_names['.fq'][0])
+        self.db_start(run_id,in_names['.bam'][0])
         
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
-            if not os.path.exists(out_name+'.bam'):
-                output += subprocess.check_output(' '.join(bwa_mem+view),stderr=subprocess.STDOUT,shell=True)
-            if not os.path.exists(out_name+'.bam.bai'):
-                if not os.path.exists(out_name+'.sorted.bam'):
-                    output += subprocess.check_output(' '.join(sort),stderr=subprocess.STDOUT,shell=True)
-                output += subprocess.check_output(' '.join(mark),stderr=subprocess.STDOUT,shell=True)
-                output += subprocess.check_output(' '.join(clean),stderr=subprocess.STDOUT,shell=True)
-                output += subprocess.check_output(' '.join(index),stderr=subprocess.STDOUT,shell=True)
-            if not os.path.exists(out_name+'.bam.bai'):
-                output += subprocess.check_output(' '.join(index),stderr=subprocess.STDOUT,shell=True) #clean up the inputs now
+            print('starting speedseq re-alignment')
+            print(' '.join(realign))
+            output += subprocess.check_output(' '.join(realign),stderr=subprocess.STDOUT,shell=True) #clean up the inputs now
         #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
@@ -126,10 +96,10 @@ class speedseq_realign(stage_wrapper.Stage_Wrapper):
             results = [out_name+'.bam']
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("speedseq realign sucessfull........")
                 return results   #return a list of names
             else:
-                print("failure...........")
+                print("speedseq realign failure...........")
                 return False
         else:
             self.db_stop(run_id,{'output':output},err['message'],False)
