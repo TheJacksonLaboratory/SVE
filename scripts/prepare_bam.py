@@ -43,7 +43,7 @@ des = """
 Processes Illumina PE .fq reads into a .bam file given a reference .fa file as input.
 [Note] mem, sub-pipelines assume reads > 75bp in length"""
 parser = argparse.ArgumentParser(description=des)
-parser.add_argument('-a','--algorithm', type=str, help='aln|mem|speed_seq\t[piped_split]')
+parser.add_argument('-a','--algorithm', type=str, help='aln|mem|speed_seq')
 parser.add_argument('-g', '--replace_rg',action='store_true', help='replace reads groups\t[False]')
 parser.add_argument('-m', '--mark_duplicates',action='store_true', help='mark duplicate reads\t[False]')
 parser.add_argument('-s', '--sample',type=str, help='sample name\t[input]')

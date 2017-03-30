@@ -41,15 +41,16 @@ class breakdancer(stage_wrapper.Stage_Wrapper):
             out_names = {'.calls' :cascade+'_S'+str(self.stage_id)+out_exts[0],
                          '.vcf' :cascade+'_S'+str(self.stage_id)+out_exts[1]}  
         #[2a]build command args
-        #PATH = os.environ['PATH'] 
+#        PATH = os.environ['PATH'] 
 #        PATH = os.path.dirname(os.path.abspath('~'))+'/software/perl/bin:'+os.environ['PATH']
+#        PATH = self.software_path+'/breakdancer-1.4.5/perl/GD-2.46:'+'/software/perl/bin:'+os.environ['PATH']
 #        PERL5LIB = os.path.dirname(os.path.abspath('~'))+'/software/perl/lib/site_perl/5.20.1:'+\
 #                   os.path.dirname(os.path.abspath('~'))+'/software/perl/lib/5.20.1'#+os.environ['PERL5LIB']
         cfg    = out_dir+"bd_confg.txt" #new version 1.1.2 working!
 #        perl   = os.path.dirname(os.path.abspath('~'))+'/software/perl/bin/perl'
         config = self.software_path+'/breakdancer-1.4.5/perl/bam2cfg.pl'        
-        breakd = self.software_path+'/breakdancer-1.4.5/bin/breakdancer-max'
-        configure = ['perl',config,'-q','30','-n','10000'] + in_names['.bam']+['>',cfg]
+        breakd = self.software_path+'/breakdancer-1.4.5/build/bin/breakdancer-max'
+        configure = ['perl','-l /home/leew/tools/perl_lib',config,'-q','30','-n','10000'] + in_names['.bam']+['>',cfg]
         sv_call   = [breakd, cfg,'>', out_names['.calls']]
         
 #        breakdancer_max $OUT$BAM2CFG > $OUT$BD
@@ -59,6 +60,7 @@ class breakdancer(stage_wrapper.Stage_Wrapper):
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
+            print "%s"%configure
             output += subprocess.check_output(' '.join(configure),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
             output += subprocess.check_output(' '.join(sv_call),
