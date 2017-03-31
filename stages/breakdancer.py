@@ -46,6 +46,7 @@ class breakdancer(stage_wrapper.Stage_Wrapper):
 #        PATH = self.software_path+'/breakdancer-1.4.5/perl/GD-2.46:'+'/software/perl/bin:'+os.environ['PATH']
 #        PERL5LIB = os.path.dirname(os.path.abspath('~'))+'/software/perl/lib/site_perl/5.20.1:'+\
 #                   os.path.dirname(os.path.abspath('~'))+'/software/perl/lib/5.20.1'#+os.environ['PERL5LIB']
+        PERL5LIB = self.software_path+'/perl_lib' + ':' + os.environ['PERL5LIB']
         cfg    = out_dir+"bd_confg.txt" #new version 1.1.2 working!
 #        perl   = os.path.dirname(os.path.abspath('~'))+'/software/perl/bin/perl'
         config = self.software_path+'/breakdancer-1.4.5/perl/bam2cfg.pl'        
@@ -62,7 +63,7 @@ class breakdancer(stage_wrapper.Stage_Wrapper):
         try:
             print "%s"%configure
             output += subprocess.check_output(' '.join(configure),
-                                              stderr=subprocess.STDOUT,shell=True)+'\n'
+                                              stderr=subprocess.STDOUT,shell=True, env={'PERL5LIB':PERL5LIB})+'\n'
             output += subprocess.check_output(' '.join(sv_call),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
             table = bd.read_breakdancer(out_names['.calls'])

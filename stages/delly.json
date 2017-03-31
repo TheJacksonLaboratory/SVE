@@ -2,7 +2,7 @@
     "stage_id":11,
     "type":"variant caller",
     "name":"delly",
-    "version":"0.6.7",
+    "version":"0.7.6",
     "wrapper":"delly",
     "in_ext":".fa,,.bam",
     "out_ext":".vcf",

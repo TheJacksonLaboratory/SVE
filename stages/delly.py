@@ -48,31 +48,51 @@ class delly(stage_wrapper.Stage_Wrapper):
         vcfs  = {'del':sub_dir+'del.vcf','dup':sub_dir+'dup.vcf',
                  'inv':sub_dir+'inv.vcf','tra':sub_dir+'tra.vcf',
                  'ins': sub_dir + 'ins.vcf'}
-        q = str(self.get_params()['q']['value'])
-        s = str(self.get_params()['s']['value'])
-        del_call = [delly,'-t','DEL','-q',q,'-s',s,
-                    '-x',excl,'-o',vcfs['del'],'-g',in_names['.fa']]+in_names['.bam']
-        dup_call = [delly,'-t','DUP','-q',q,'-s',s,
-                    '-x',excl,'-o',vcfs['dup'],'-g',in_names['.fa']]+in_names['.bam']
-        inv_call = [delly,'-t','INV','-q',q,'-s',s,
-                    '-x',excl,'-o',vcfs['inv'],'-g',in_names['.fa']]+in_names['.bam']
-        tra_call = [delly,'-t','TRA','-q',q,'-s',s,
-                    '-x',excl,'-o',vcfs['tra'],'-g',in_names['.fa']]+in_names['.bam']
-        ins_call = [delly,'-t','INS','-q',q,'-s',s,
-                    '-x',excl,'-o',vcfs['ins'],'-g',in_names['.fa']]+in_names['.bam']
+
+        bcfs  = {'del':sub_dir+'del.bcf','dup':sub_dir+'dup.bcf',
+                 'inv':sub_dir+'inv.bcf','tra':sub_dir+'tra.bcf',
+                 'ins': sub_dir + 'ins.bcf'}
+        #q = str(self.get_params()['q']['value'])
+        #s = str(self.get_params()['s']['value'])
+        del_call = [delly,'call','-t','DEL',
+                    '-x',excl,'-o',bcfs['del'],'-g',in_names['.fa']]+in_names['.bam']
+        dup_call = [delly,'call','-t','DUP',
+                    '-x',excl,'-o',bcfs['dup'],'-g',in_names['.fa']]+in_names['.bam']
+        inv_call = [delly,'call','-t','INV',
+                    '-x',excl,'-o',bcfs['inv'],'-g',in_names['.fa']]+in_names['.bam']
+        tra_call = [delly,'call','-t','TRA',
+                    '-x',excl,'-o',bcfs['tra'],'-g',in_names['.fa']]+in_names['.bam']
+        ins_call = [delly,'call','-t','INS',
+                    '-x',excl,'-o',bcfs['ins'],'-g',in_names['.fa']]+in_names['.bam']
+
+        del_filter = [delly,'filter','-t','DEL','-f','germline','-o',bcfs['del']+'.filter',bcfs['del']]
+        dup_filter = [delly,'filter','-t','DUP','-f','germline','-o',bcfs['dup']+'.filter',bcfs['dup']]
+        inv_filter = [delly,'filter','-t','INV','-f','germline','-o',bcfs['inv']+'.filter',bcfs['inv']]
+        tra_filter = [delly,'filter','-t','TRA','-f','germline','-o',bcfs['tra']+'.filter',bcfs['tra']]
+        ins_filter = [delly,'filter','-t','INS','-f','germline','-o',bcfs['ins']+'.filter',bcfs['ins']]
         self.db_start(run_id,in_names['.bam'][0])        
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try: #should split these up for better robustness...
             output += subprocess.check_output(' '.join(del_call),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
+            output += subprocess.check_output(' '.join(del_filter),
+                                              stderr=subprocess.STDOUT,shell=True)+'\n'
             output += subprocess.check_output(' '.join(dup_call),
-                                              stderr=subprocess.STDOUT,shell=True)+'\n' 
+                                              stderr=subprocess.STDOUT,shell=True)+'\n'
+            output += subprocess.check_output(' '.join(dup_filter),
+                                              stderr=subprocess.STDOUT,shell=True)+'\n'
             output += subprocess.check_output(' '.join(inv_call),
-                                              stderr=subprocess.STDOUT,shell=True)+'\n' 
+                                              stderr=subprocess.STDOUT,shell=True)+'\n'
+            output += subprocess.check_output(' '.join(inv_filter),
+                                              stderr=subprocess.STDOUT,shell=True)+'\n'
             output += subprocess.check_output(' '.join(tra_call),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
+            output += subprocess.check_output(' '.join(tra_filter),
+                                              stderr=subprocess.STDOUT,shell=True)+'\n'
             output += subprocess.check_output(' '.join(ins_call),
+                                              stderr=subprocess.STDOUT,shell=True)+'\n'
+            output += subprocess.check_output(' '.join(ins_filter),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
             #new version has ins_call too, will add
         #catch all errors that arise under normal call behavior
@@ -97,29 +117,35 @@ class delly(stage_wrapper.Stage_Wrapper):
         print('output:\n'+output)
 
         #merge/filter all the calls into one .vcf with vcftools
+        bcftools = self.software_path+'/delly/src/bcftools/bcftools'
+        concat = [bcftools,'concat','-o',out_names['.vcf'],'-O','v',
+                 bcfs['del']+'.filter',bcfs['dup']+'.filter',bcfs['inv']+'.filter',
+                 bcfs['tra']+'.filter',bcfs['ins']+'.filter']
         #bgzip and tabix the files and run vcf-merge on them...
-        tabix = self.software_path+'/tabix-0.2.6/tabix'
-        bgzip = self.software_path+'/tabix-0.2.6/bgzip'
-        PATH = self.software_path+'/tabix-0.2.6:'+ \
-               self.software_path+'/vcftools_0.1.12b/bin:'+os.environ['PATH']
-        PERL = self.software_path+'/vcftools_0.1.12b/perl'
-        if os.environ.has_key('PERL5LIB'):
-            PERL += ':'+os.environ['PERL5LIB']
-        types = [] #base call types that succeeded
-        for k in vcfs:
-            if os.path.exists(vcfs[k]): types+=[vcfs[k].split('.vcf')[0]]
-        print(types)
+        #tabix = self.software_path+'/tabix-0.2.6/tabix'
+        #bgzip = self.software_path+'/tabix-0.2.6/bgzip'
+        #PATH = self.software_path+'/tabix-0.2.6:'+ \
+        #       self.software_path+'/vcftools_0.1.12b/bin:'+os.environ['PATH']
+        #PERL = self.software_path+'/vcftools_0.1.12b/perl'
+        #if os.environ.has_key('PERL5LIB'):
+        #    PERL += ':'+os.environ['PERL5LIB']
+        #types = [] #base call types that succeeded
+        #for k in vcfs:
+        #    if os.path.exists(vcfs[k]): types+=[vcfs[k].split('.vcf')[0]]
+        #print(types)
         try:
             print('merging seperate variant types into a single .vcf file....')
-            for t in types:
-                subprocess.check_output(' '.join([bgzip,t+'.vcf']),
-                                        stderr=subprocess.STDOUT,shell=True,env={'PATH':PATH})
-                subprocess.check_output(' '.join([tabix,'-p','vcf',t+'.vcf.gz']),
-                                        stderr=subprocess.STDOUT,shell=True,env={'PATH':PATH})
+            #for t in types:
+            subprocess.check_output(' '.join(concat),
+                                   stderr=subprocess.STDOUT,shell=True)
+                #subprocess.check_output(' '.join([bgzip,t+'.vcf']),
+                #                        stderr=subprocess.STDOUT,shell=True,env={'PATH':PATH})
+                #subprocess.check_output(' '.join([tabix,'-p','vcf',t+'.vcf.gz']),
+                #                        stderr=subprocess.STDOUT,shell=True,env={'PATH':PATH})
             #merge with vcf-merge or vcf-concat
-            vcfmerge = ['vcf-merge']+[i+'.vcf.gz' for i in types]+['>',out_names['.vcf']]
-            subprocess.check_output(' '.join(vcfmerge), stderr=subprocess.STDOUT,
-                                    shell=True,env={'PATH':PATH,'PERL5LIB':PERL})
+            #vcfmerge = ['vcf-merge']+[i+'.vcf.gz' for i in types]+['>',out_names['.vcf']]
+            #subprocess.check_output(' '.join(vcfmerge), stderr=subprocess.STDOUT,
+            #                        shell=True,env={'PATH':PATH,'PERL5LIB':PERL})
             #now remove the folder...
             subprocess.check_output('rm -rf %s'%sub_dir, stderr=subprocess.STDOUT,shell=True)                        
         #catch all errors that arise under normal call behavior
