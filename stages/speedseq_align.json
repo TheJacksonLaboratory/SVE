@@ -2,7 +2,7 @@
     "stage_id":45,
     "type":"utility",
     "name":"speedseq_align",
-    "version":"2.1.1",
+    "version":"0.1.2",
     "wrapper":"speedseq_align",
     "in_ext":".fa,.fq",
     "out_ext":".bam",

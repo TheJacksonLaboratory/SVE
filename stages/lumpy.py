@@ -50,23 +50,23 @@ class lumpy(stage_wrapper.Stage_Wrapper):
         print(params)
         #[2a]build command args       
         lumpy   = self.software_path+'/lumpy-sv/bin/lumpyexpress'
-        vcfsort = self.software_path+'/vcftools_0.1.12b/bin/vcf-sort'
-        PERL = self.software_path+'/vcftools_0.1.12b/perl'
-        if os.environ.has_key('PERL5LIB'):
-            PERL += ':'+os.environ['PERL5LIB']
+        #vcfsort = self.software_path+'/vcftools_0.1.12b/bin/vcf-sort'
+        #PERL = self.software_path+'/vcftools_0.1.12b/perl'
+        #if os.environ.has_key('PERL5LIB'):
+        #    PERL += ':'+os.environ['PERL5LIB']
         sv_call   = [lumpy,'-B']+ [','.join(in_names['.bam'])]+\
-                     ['-m 4','-T',out_dir+'temp','-P','-o',out_names['.calls']] #more work on params
+                     ['-m 4','-T',out_dir+'temp','-P','-o',out_names['.vcf']] #more work on params
         #sv_fast can do a version that checks for matching .bam, .split.bam and .disc.bam triples (prior samblasted)
-        sort_vcf  = [vcfsort,out_names['.calls'],'>',out_names['.vcf']]        
+        #sort_vcf  = [vcfsort,out_names['.calls'],'>',out_names['.vcf']]        
         self.db_start(run_id,in_names['.bam'][0])        
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
             output += subprocess.check_output(' '.join(sv_call),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
-            output += subprocess.check_output(' '.join(sort_vcf),
-                                              stderr=subprocess.STDOUT,shell=True,
-                                              env={'PERL5LIB':PERL})+'\n'
+            #output += subprocess.check_output(' '.join(sort_vcf),
+            #                                  stderr=subprocess.STDOUT,shell=True,
+            #                                  env={'PERL5LIB':PERL})+'\n'
             #output += subprocess.check_output(' '.join(['rm',out_names['.calls']]),
             #                                  stderr=subprocess.STDOUT,shell=True)+'\n'
             #catch all errors that arise under normal call behavior
