@@ -45,7 +45,7 @@ class speedseq_align(stage_wrapper.Stage_Wrapper):
             SM = inputs['SM'][0]
         else:
             SM = stripped_name
-        sample = stripped_name+'RG'   
+        sample = stripped_name
         #[2]build command args
         if not os.path.exists(out_dir): os.makedirs(out_dir)
         #if not os.path.exists(out_dir+'/sort/'): os.makedirs(out_dir+'/sort/')

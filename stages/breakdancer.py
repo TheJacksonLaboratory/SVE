@@ -61,7 +61,7 @@ class breakdancer(stage_wrapper.Stage_Wrapper):
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
-            print "%s"%configure
+            print(' '.join(configure))
             output += subprocess.check_output(' '.join(configure),
                                               stderr=subprocess.STDOUT,shell=True, env={'PERL5LIB':PERL5LIB})+'\n'
             output += subprocess.check_output(' '.join(sv_call),
