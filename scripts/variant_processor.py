@@ -259,7 +259,7 @@ with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
                 #print the .valid file for debugging-------
                 print('-------------valid file output-----------------')
                 with open(valid) as f: print(f.readlines())
-                outs += st.run(run_id,{'.header':[header],'.valid':[valid],
+                outs = st.run(run_id,{'.header':[header],'.valid':[valid],
                                        '.bam':bams,'out_dir':[directory]})
                 #:::TO DO::: check on last time for validation...
         if verbose: print(outs)

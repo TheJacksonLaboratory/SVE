@@ -55,7 +55,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         SV_DIR = soft+'/svtoolkit'
         SV_TMPDIR = out_dir+'/temp'
         if not os.path.exists(SV_TMPDIR): os.makedirs(SV_TMPDIR)
-        PATH = soft+'/jre1.7.0_72/bin:'+ \
+        PATH = soft+'/jre1.8.0_51/bin:'+ \
                soft+'/svtoolkit/bwa:'+ \
                soft+'/samtools-1.3:'+ \
                soft+'/bcftools-1.3:'+ \
@@ -82,7 +82,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         #reused paths and files...
         sv = self.software_path+'/svtoolkit'
         classpath = sv+'/lib/SVToolkit.jar:'+sv+'/lib/gatk/GenomeAnalysisTK.jar:'+sv+'/lib/gatk/Queue.jar'
-        java  = self.software_path+'/jre1.7.0_72/bin/java -Xmx'+str(RAM)+'g'
+        java  = self.software_path+'/jre1.8.0_51/bin/java -Xmx'+str(RAM)+'g'
         qcmd  = 'org.broadinstitute.gatk.queue.QCommandLine'
         qs    = sv+'/qscript/SVQScript.q'
         gatk  = sv+'/lib/gatk/GenomeAnalysisTK.jar'
@@ -181,7 +181,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         #try writing a bash script and executing that
         with open(rd+'/preprocess.sh','w') as f:
             f.write(s)
-        command = ['chmod','a+x',rd+'/preprocess.sh','&&','cd %s'%rd,'&& pwd && ./preprocess.sh']
+        command = ['sh',rd+'/preprocess.sh']
         output, err = '', {}
         try:
             output = subprocess.check_output(' '.join(command), stderr=subprocess.STDOUT, shell=True,

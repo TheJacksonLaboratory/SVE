@@ -35,7 +35,7 @@ class bam_clean(stage_wrapper.Stage_Wrapper):
         else:
             cascade = self.strip_in_ext(in_names['.header'],'.header') #default path
             out_name = {'.clean.bam' :cascade+'_S'+str(self.stage_id)+out_exts[0]}
-            
+ 
         #[2]build command args
         if not os.path.exists(out_dir): os.makedirs(out_dir)
         
@@ -98,11 +98,11 @@ class bam_clean(stage_wrapper.Stage_Wrapper):
         #[3b]check results--------------------------------------------------
         if err == {}:
             self.db_stop(run_id,{'output':output},'',True)
-            results = [out_name+'.bam']
+            results = [out_name['.clean.bam']]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
                 print("sucessfull........")
-                return results   #return a list of names
+                return [out_name['.clean.bam']]   #return a list of names
             else:
                 print("failure...........")
                 return False
