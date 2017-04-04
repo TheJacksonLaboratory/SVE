@@ -161,8 +161,9 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         
         #[3] gender_map this is for each sample...       
         
-        self.db_start(run_id,out_names['.fa'])        
+        #self.db_start(run_id,out_names['.fa'])        
         #[3a]execute the command here----------------------------------------------------
+        samtools = self.software_path+'/samtools-1.3/samtools'
         output,err = '',{}
         try:
             print('duplicating the reference for genomestrip')
@@ -173,7 +174,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                                                  shell=True,env={'PATH':PATH,'SV_DIR':SV_DIR,'LD_LIBRARY_PATH':LD_LIB})
             if not all([os.path.exists(out_names['.fa']+'.'+suffix) for suffix in ['rbwt','rpac','fai']]):
                 print('samtools faidx indexing for the reference')
-                output += subprocess.check_output(' '.join(['samtools faidx',out_names['.fa']]),stderr=subprocess.STDOUT,
+                output += subprocess.check_output(' '.join([samtools,'faidx',out_names['.fa']]),stderr=subprocess.STDOUT,
                                                  shell=True,env={'PATH':PATH,'SV_DIR':SV_DIR,'LD_LIBRARY_PATH':LD_LIB})
             if not os.path.exists(out_names['.dict']):
                 print('building picardtools dict for genomestrip')
@@ -214,7 +215,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
             sr.write_fasta(seqs,out_names['.fa.svmask.fasta']+out_exts[1])    
             #then index the final
             print('samtools faidx for genome mask')
-            output = subprocess.check_output(' '.join(['samtools faidx',out_names['.fa.svmask.fasta']+out_exts[1]]),
+            output = subprocess.check_output(' '.join([samtools,'faidx',out_names['.fa.svmask.fasta']+out_exts[1]]),
                                              stderr=subprocess.STDOUT,shell=True,
                                              env={'PATH':PATH,'SV_DIR':SV_DIR,'LD_LIBRARY_PATH':LD_LIB})
         #catch all errors that arise under normal call behavior
@@ -240,15 +241,15 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         
         #[3b]check results--------------------------------------------------
         if err == {}:
-            self.db_stop(run_id,{'output':output},'',True)
+            #self.db_stop(run_id,{'output':output},'',True)
             results = [out_names['.fa.svmask.fasta']+out_exts[1]]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("<<<<<<<<<<<<<genome_strip_prepare_ref sucessfull>>>>>>>>>>>>>>>\n")
                 return results   #return a list of names
             else:
-                print("failure...........")
+                print("<<<<<<<<<<<<<genome_strip_prepare_ref failure>>>>>>>>>>>>>>>\n")
                 return False
         else:
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             return None

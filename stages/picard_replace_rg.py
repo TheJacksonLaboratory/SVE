@@ -57,7 +57,7 @@ class picard_replace_rg(stage_wrapper.Stage_Wrapper):
         #[2b]make start entry which is a new staged_run row
         self.command = command
         print(self.get_command_str())
-        self.db_start(run_id,in_name['.bam'])
+        #self.db_start(run_id,in_name['.bam'])
         
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
@@ -88,15 +88,15 @@ class picard_replace_rg(stage_wrapper.Stage_Wrapper):
         
         #[3b]check results--------------------------------------------------
         if err == {}:
-            self.db_stop(run_id,{'output':output},'',True)
+            #self.db_stop(run_id,{'output':output},'',True)
             results = [out_name['.bam']]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("<<<<<<<<<<<<<picard replace RG sucessfull>>>>>>>>>>>>>>>\n")
                 return results   #return a list of names
             else:
-                print("failure...........")
+                print("<<<<<<<<<<<<<picard replace RG failure>>>>>>>>>>>>>>>\n")
                 return False
         else:
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             return None

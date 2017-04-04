@@ -45,7 +45,7 @@ class picard_sam_convert(stage_wrapper.Stage_Wrapper):
         #[2b]make start entry which is a new staged_run row
         self.command = sort
         print(self.get_command_str())
-        self.db_start(run_id,in_name['.sam'])
+        #self.db_start(run_id,in_name['.sam'])
         
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
@@ -78,16 +78,16 @@ class picard_sam_convert(stage_wrapper.Stage_Wrapper):
         
         #[3b]check results--------------------------------------------------
         if err == {}:
-            self.db_stop(run_id,{'output':output},'',True)
+            #self.db_stop(run_id,{'output':output},'',True)
             results = [out_name+'.bam']
             print results
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("picard_sam_convert sucessfull........")
+                print("<<<<<<<<<<<<<picard_sam_convert sucessfull>>>>>>>>>>>>>>>\n")
                 return results   #return a list of names
             else:
-                print("picard_sam_convert failure...........")
+                print("<<<<<<<<<<<<<picard_sam_convert failure>>>>>>>>>>>>>>>\n")
                 return False
         else:
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             return None

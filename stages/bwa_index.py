@@ -36,7 +36,7 @@ class bwa_index(stage_wrapper.Stage_Wrapper):
         #[1a]make start entry which is a new staged_run row
         self.command = command
         print(self.get_command_str())
-        self.db_start(run_id,in_name)
+        #self.db_start(run_id,in_name)
         
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
@@ -65,15 +65,15 @@ class bwa_index(stage_wrapper.Stage_Wrapper):
         
         #[3b]check results--------------------------------------------------
         if err == {}:
-            self.db_stop(run_id,{'output':output},'',True)
+            #self.db_stop(run_id,{'output':output},'',True)
             results = [out_name+i for i in self.split_out_exts()]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("<<<<<<<<<<<<<bwa index sucessfull>>>>>>>>>>>>>>>\n")
                 return results
             else:
-                print("failure...........")
+                print("<<<<<<<<<<<<<bwa index failure>>>>>>>>>>>>>>>\n")
                 return None
         else:
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             return None

@@ -33,7 +33,7 @@ class fa_to_2bit(stage_wrapper.Stage_Wrapper):
         #[2a]build command args
 
         faToTwoBit = self.software_path+'/faToTwoBit'
-        self.db_start(run_id,','.join(in_names['.fa']))        
+        #self.db_start(run_id,','.join(in_names['.fa']))        
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
@@ -71,14 +71,14 @@ class fa_to_2bit(stage_wrapper.Stage_Wrapper):
             results = out_names['.2bit']
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
-                self.db_stop(run_id,{'output':output},'',True)
+                print("<<<<<<<<<<<<<fa_to_2bit sucessfull>>>>>>>>>>>>>>>\n")
+                #self.db_stop(run_id,{'output':output},'',True)
                 return results   #return a list of names
             else:
-                print("failure...........")
-                self.db_stop(run_id,{'output':output},'',False)
+                print("<<<<<<<<<<<<<fa_to_2bit failure>>>>>>>>>>>>>>>\n")
+                #self.db_stop(run_id,{'output':output},'',False)
                 return False
         else:
-            print("failure...........")
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            print("<<<<<<<<<<<<<fa_to_2bit failure>>>>>>>>>>>>>>>\n")
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             return None
