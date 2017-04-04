@@ -79,7 +79,8 @@ class Stage_Wrapper(object):
             self.out_ext   = info['out_ext']   #update these to take CSV
             self.param_map = info['param_map']
             print('loaded param_map from: %s'%json_name)
-            if upload: return self.db_set_stage_info(True)
+            #if upload: return self.db_set_stage_info(True)
+            return True
         return False
         
     def get_host(self):
@@ -129,82 +130,6 @@ class Stage_Wrapper(object):
         if len(L)==1: S = L
         return S
         
-    def db_get_run_info(self,run_id):
-        with svedb.SVEDB(self.srv, self.db, self.uid, self.pwd) as dbo:
-            info = dbo.get_run_info(run_id)
-            self.ref_id   = info['ref_id']
-            self.mut_mag  = info['mut_mag']
-            self.mut_len  = info['mut_len']
-            self.mut_type = info['mut_type']
-            return True
-        return False
-    
-    def db_get_ref_name(self,run_id):
-        with svedb.SVEDB(self.srv, self.db, self.uid, self.pwd) as dbo:
-            try:
-                self.ref_name = dbo.get_ref_name(run_id)
-                return True
-            except IndexError:
-                self.ref_name = 'unkown_genome'
-                print('reference name not avaible from SVEDB using unkown_genome')
-                return False
-
-
-    #get from the svedb given the unique stage_id allowing auto-retrieval
-    #of all fields including the param_map to explore param optimizations
-    def db_get_stage_info(self,wrapper):
-        t,k,info = 'stages',{'stage_id':-1},{} #fail state stage_id = -1
-        with svedb.SVEDB(self.srv, self.db, self.uid, self.pwd) as dbo:
-            k['stage_id'] = dbo.get_stage_id(wrapper)
-            info = dbo.select_row(t,k)
-            self.stage_id  = info['stage_id']
-            self.typ       = info['type']
-            self.name      = info['name']
-            self.version   = info['version']
-            self.wrapper   = info['wrapper']
-            self.in_ext    = info['in_ext']    #update these to take CSV
-            self.out_ext   = info['out_ext']   #update these to take CSV
-            self.param_map = info['param_map']
-            return True
-        return False
-
-    #write a new entry into the svedb using the supplied param_map etc...
-    def db_set_stage_info(self,new_stage=False):
-        with svedb.SVEDB(self.srv, self.db, self.uid, self.pwd) as dbo:
-            if new_stage:
-                dbo.new_stage(self.stage_id,self.typ,self.name,
-                              self.version,self.wrapper,
-                              self.in_ext,self.out_ext,self.param_map)
-            else:
-                dbo.update_stage(self.stage_id,self.typ,self.name,
-                                 self.version,self.wrapper,
-                                 self.in_ext,self.out_ext,self.param_map)
-            return True
-        return False
-    
-    #this is the start of a staged_run which executes this stage
-    def db_start(self,run_id,in_files):
-        if type(in_files) is not list: in_files = [in_files] #make a list if not
-        self.in_files_size = self.total_files_size(in_files)
-        self.in_files = self.trim_in_file(in_files)
-        with svedb.SVEDB(self.srv, self.db, self.uid, self.pwd) as dbo:
-            dbo.new_staged_run(run_id,self.stage_id,self.in_files,self.in_files_size,self.params)
-            return True
-        return False
-        
-    #this is the stop of a stagged_run which should load results and errors and update the done flag    
-    def db_stop(self,run_id,results,errors,done):
-        with svedb.SVEDB(self.srv, self.db, self.uid, self.pwd) as dbo:
-            try:
-                debug = dbo.get_run_info(run_id)['debug']
-            except Exception:
-                debug = False
-            if not debug: results = {} #can turn off results now
-            dbo.update_staged_run(run_id,self.stage_id,self.in_files,results,errors,done)
-            return True
-        return False
-        #search through the input names to see which have the correct in_ext...
-    
     def vcf_to_vca(self,vcf_path):
         vca = []
         try:

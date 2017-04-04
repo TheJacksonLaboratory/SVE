@@ -76,7 +76,7 @@ class fq_to_bam_piped(stage_wrapper.Stage_Wrapper):
         #[1a]make start entry which is a new staged_run row  
         self.command = bwa_mem+view
         print(self.get_command_str())
-        self.db_start(run_id,in_names['.fq'][0])
+        #self.db_start(run_id,in_names['.fq'][0])
         
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
@@ -112,15 +112,15 @@ class fq_to_bam_piped(stage_wrapper.Stage_Wrapper):
         
         #[3b]check results--------------------------------------------------
         if err == {}:
-            self.db_stop(run_id,{'output':output},'',True)
+            #self.db_stop(run_id,{'output':output},'',True)
             results = [out_name+'.bam']
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("<<<<<<<<<<<<<bwa mem sucessfull>>>>>>>>>>>>>>>\n")
                 return out_name+'.bam'   #return a list of names
             else:
-                print("failure...........")
+                print("<<<<<<<<<<<<<bwa mem failure>>>>>>>>>>>>>>>\n")
                 return False
         else:
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             return None

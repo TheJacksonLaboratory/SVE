@@ -30,9 +30,9 @@ class sambamba_sort(stage_wrapper.Stage_Wrapper):
         output = subprocess.check_output(command,stderr=subprocess.STDOUT)
         #[3b]check results--------------------------------------------------
         if os.path.exists(output):
-            print("sambamba sort sucessfull........")
+            print("<<<<<<<<<<<<<sambamba sort sucessfull>>>>>>>>>>>>>>>\n")
             return output   #return output file
         else:
-            print("sambamba sort failure...........")
+            print("<<<<<<<<<<<<<sambamba sort failure>>>>>>>>>>>>>>>\n")
             return False
 

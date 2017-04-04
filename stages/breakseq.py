@@ -68,7 +68,8 @@ class breakseq(stage_wrapper.Stage_Wrapper):
         try:
             print(" ".join(call))
             output += subprocess.check_output(' '.join(call),
-                                              stderr=subprocess.STDOUT,shell=True)
+                                              stderr=subprocess.STDOUT,shell=True,
+                                              env={'PYTHONPATH':'/home/leew/tools/breakseq2-2.2'})
             output += subprocess.check_output(' '.join(decomp),
                                               stderr=subprocess.STDOUT,shell=True)
             output += subprocess.check_output(' '.join(copy),

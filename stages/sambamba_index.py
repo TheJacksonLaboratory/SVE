@@ -28,8 +28,8 @@ class sambamba_index(stage_wrapper.Stage_Wrapper):
         output = subprocess.check_output(command,stderr=subprocess.STDOUT)
 
         if os.path.exists(input_bam+'.bai'):
-            print("sambamba index sucessfull........")
+            print("<<<<<<<<<<<<<sambamba index sucessfull>>>>>>>>>>>>>>>\n")
             return input_bam+'.bai'   #return output file
         else:
-            print("sambamba index failure...........")
+            print("<<<<<<<<<<<<<sambamba index failure>>>>>>>>>>>>>>>\n")
             return False

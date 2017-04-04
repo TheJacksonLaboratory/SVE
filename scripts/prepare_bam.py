@@ -62,6 +62,7 @@ args = parser.parse_args()
 
 #read the database configuration file
 dbc = {'srv':'','db':'','uid':'','pwd':''}
+"""
 if args.database is not None:
     with open(args.database, 'r') as f:
         params = f.read().split('\n') #newline seperated configuration file
@@ -98,6 +99,7 @@ else:
         print('invalid database configuration')
         print('running the SVE without the SVEDB')
         pass
+"""
 
 host = socket.gethostname()
 directory = path('~/'+host+'/') #users base home folder as default plus hostname
@@ -144,77 +146,80 @@ else:
     algorithm = 'speed_seq'
     
 #take in bam file(s) run
-with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
-    dbo.embed_schema()
-    print('\n<<<<<<<<<<<<<USING HOST %s>>>>>>>>>>>>>>>=\n')%host
-    print('using reference name = %s'%refbase)
-    ref_id = -1
-    try:
-        ref_id = dbo.get_ref_id(refbase)
-    except IndexError:
-        print('unkown reference: run starting with -1')
-    print('using ref_id=%s'%str(ref_id))
-    dbo.new_run('illumina',host,ref_id)
-    run_id = dbo.get_max_key('runs')
-    print('starting run_id = %s'%run_id)
-    
-    stage_meta = su.get_stage_meta()
-    ids = su.get_stage_name_id(stage_meta)
+#with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
+#    dbo.embed_schema()
+print('\n<<<<<<<<<<<<<USING HOST %s>>>>>>>>>>>>>>>=\n')%host
+print('using reference name = %s'%refbase)
+ref_id = -1
+"""
+try:
+    ref_id = dbo.get_ref_id(refbase)
+except IndexError:
+    print('unkown reference: run starting with -1')
+
+print('using ref_id=%s'%str(ref_id))
+dbo.new_run('illumina',host,ref_id)
+run_id = dbo.get_max_key('runs')
+print('starting run_id = %s'%run_id)
+"""
+run_id = 0
+stage_meta = su.get_stage_meta()
+ids = su.get_stage_name_id(stage_meta)
    
-    if args.bam is not None:
-        if args.realign:
-            a_start = time.time()
-            aligner_params = {'.fa':[ref_fa_path],'.bam':bam,'out_dir':[directory]}
-            st = stage.Stage('speedseq_realign',dbc)
-            aligner_stage_params = st.get_params()
-            aligner_stage_params['-t']['value'] = threads
-            aligner_stage_params['-m']['value'] = mem
-            st.set_params(aligner_stage_params)
-            outs = st.run(run_id,aligner_params)
-            a_stop = time.time()
-            print('SVE:picard_mark_duplicates time was % hours'%round((a_stop-a_start)/(60**2),1))
-        if args.mark_duplicates:
-            d_start = time.time()
-            st = stage.Stage('picard_mark_duplicates',dbc)
-            outs = st.run(run_id,{'.bam':[bam]})
-            d_stop = time.time()
-            print('SVE:picard_mark_duplicates time was % hours'%round((d_stop-d_start)/(60**2),1))
-        if args.replace_rg: #set to do one at a time only for now...
-            r_start = time.time()
-            base = bam.rsplit('/')[-1].rsplit('.')[0].rsplit('_')[0].rsplit('-')
-            if SM is None: SM = base
-            st = stage.Stage('picard_replace_rg',dbc)
-            outs = st.run(run_id,{'.bam':[bam],
-                                  'platform_id':['illumina'],
-                                  'SM':[SM]})
-            r_stop = time.time()
-            print('SVE:picard_replace_rg time was %s sec'%round((r_stop-r_start)/(60**2),1))
-    else:
-        a_start = time.time()
-        base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
+if args.bam is not None:
+    if args.mark_duplicates:
+        d_start = time.time()
+        st = stage.Stage('picard_mark_duplicates',dbc)
+        outs = st.run(run_id,{'.bam':[bam]})
+        d_stop = time.time()
+        print('SVE:picard_mark_duplicates time was % hours'%round((d_stop-d_start)/(60**2),1))
+    if args.replace_rg: #set to do one at a time only for now...
+        r_start = time.time()
+        base = bam.rsplit('/')[-1].rsplit('.')[0].rsplit('_')[0].rsplit('-')
         if SM is None: SM = base
-        aligner_params = {'.fa':[ref_fa_path],'.fq':reads,'platform_id':['illumina'],'SM':[SM],'out_dir':[directory]}
-        # Set the stage's parameters
-        st = stage.Stage('fq_to_bam_piped',dbc)
+        st = stage.Stage('picard_replace_rg',dbc)
+        outs = st.run(run_id,{'.bam':[bam],
+                              'platform_id':['illumina'],
+                              'SM':[SM]})
+        r_stop = time.time()
+        print('SVE:picard_replace_rg time was %s sec'%round((r_stop-r_start)/(60**2),1))
+    if args.realign:
+        a_start = time.time()
+        aligner_params = {'.fa':[ref_fa_path],'.bam':bam,'out_dir':[directory]}
+        st = stage.Stage('speedseq_realign',dbc)
         aligner_stage_params = st.get_params()
         aligner_stage_params['-t']['value'] = threads
         aligner_stage_params['-m']['value'] = mem
-        if algorithm == 'mem':
-            st = stage.Stage('fq_to_bam_piped',dbc)
-            st.set_params(aligner_stage_params)
-            # outs will receive ".sorted.bam"
-            sorted_bam = st.run(run_id,aligner_params)
-            Dedup_Sort(sorted_bam, mem, threads)
-        elif algorithm == 'speed_seq':
-            st = stage.Stage('speedseq_align',dbc)
-            st.set_params(aligner_stage_params)
-            outs = st.run(run_id,aligner_params)
-        elif algorithm == 'aln':
-            st = stage.Stage('bwa_aln',dbc)
-            st.set_params(aligner_stage_params)
-            # outs will receive ".sorted.bam"
-            sorted_bam = st.run(run_id,aligner_params)
-            Dedup_Sort(sorted_bam, mem, threads)
-            
+        st.set_params(aligner_stage_params)
+        outs = st.run(run_id,aligner_params)
         a_stop = time.time()
-        print('SVE:BAM:%s was completed in %s hours'%(algorithm,round((a_stop-a_start)/(60.0**2),4)))
+        print('SVE:picard_mark_duplicates time was % hours'%round((a_stop-a_start)/(60**2),1))
+else:
+    a_start = time.time()
+    base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
+    if SM is None: SM = base
+    aligner_params = {'.fa':[ref_fa_path],'.fq':reads,'platform_id':['illumina'],'SM':[SM],'out_dir':[directory]}
+    # Set the stage's parameters
+    st = stage.Stage('fq_to_bam_piped',dbc)
+    aligner_stage_params = st.get_params()
+    aligner_stage_params['-t']['value'] = threads
+    aligner_stage_params['-m']['value'] = mem
+    if algorithm == 'mem':
+        st = stage.Stage('fq_to_bam_piped',dbc)
+        st.set_params(aligner_stage_params)
+        # outs will receive ".sorted.bam"
+        sorted_bam = st.run(run_id,aligner_params)
+        Dedup_Sort(sorted_bam, mem, threads)
+    elif algorithm == 'speed_seq':
+        st = stage.Stage('speedseq_align',dbc)
+        st.set_params(aligner_stage_params)
+        outs = st.run(run_id,aligner_params)
+    elif algorithm == 'aln':
+        st = stage.Stage('bwa_aln',dbc)
+        st.set_params(aligner_stage_params)
+        # outs will receive ".sorted.bam"
+        sorted_bam = st.run(run_id,aligner_params)
+        Dedup_Sort(sorted_bam, mem, threads)
+            
+    a_stop = time.time()
+    print('SVE:BAM:%s was completed in %s hours'%(algorithm,round((a_stop-a_start)/(60.0**2),4)))
