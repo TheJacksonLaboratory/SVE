@@ -49,7 +49,7 @@ parser.add_argument('-m', '--mark_duplicates',action='store_true', help='mark du
 parser.add_argument('-s', '--sample',type=str, help='sample name\t[input]')
 parser.add_argument('-o', '--out_dir', type=str, help='output directory to store resulting files\t[None]')
 parser.add_argument('-r', '--ref', type=str, help='fasta reference file path\t[None]')
-parser.add_argument('-d','--database',type=str, help='database configuration file\t[SVE/data]')
+#parser.add_argument('-d','--database',type=str, help='database configuration file\t[SVE/data]')
 parser.add_argument('-A','--realign',action='store_true', help='Realign')
 fqs_help = """
 fq comma-sep file path list\t[None]
