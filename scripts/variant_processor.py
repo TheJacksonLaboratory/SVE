@@ -36,14 +36,15 @@ parser.add_argument('-s','--stages',type=str, help='stage name list')
 parser.add_argument('-c','--chroms',type=str, help='chrom name list')
 parser.add_argument('-p','--partitions',type=int, help='number of partitions or ||L')
 parser.add_argument('--debug',action='store_true',help='save result/error data to db')
-parser.add_argument('-d','--database',type=str, help='database configuration file')
-parser.add_argument('-e','--erase_db',action='store_true',help='reset and clear the schema bound db')
+#parser.add_argument('-d','--database',type=str, help='database configuration file')
+#parser.add_argument('-e','--erase_db',action='store_true',help='reset and clear the schema bound db')
 #
 parser.add_argument('-v','--verbose',action='store_true',help='be verbose with caller stdout/stderr')
 args = parser.parse_args()
 
 #read the database configuration file
 dbc = {'srv':'','db':'','uid':'','pwd':''}
+"""
 if args.database is not None:
     with open(args.database, 'r') as f:
         params = f.read().split('\n') #newline seperated configuration file
@@ -84,7 +85,7 @@ else:
 #db clearing option
 with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
     if args.erase_db: dbo.new()  # reset db if needed
-
+"""
 host = socket.gethostname()
 directory = path('~/'+host+'/') #users base home folder as default plus hostname
 
@@ -112,6 +113,7 @@ else:
 
 if args.out_dir is not None:    #optional reroute
     directory = args.out_dir
+    if directory[:-1] != '/'; directory += '/'
 if not os.path.exists(directory): os.makedirs(directory)
 
 if args.bams is not None:
