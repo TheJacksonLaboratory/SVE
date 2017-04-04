@@ -113,7 +113,7 @@ else:
 
 if args.out_dir is not None:    #optional reroute
     directory = args.out_dir
-    if directory[:-1] != '/'; directory += '/'
+    if directory[:-1] != '/': directory += '/'
 if not os.path.exists(directory): os.makedirs(directory)
 
 if args.bams is not None:
@@ -183,233 +183,221 @@ if args.verbose is not None:
 #[3] start DB and execute the Pipeline
 
 #take in bam file(s) run
-with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
-    dbo.embed_schema()
-    print('\n<<<<<<<<<<<<<USING HOST %s>>>>>>>>>>>>>>>=\n')%host
-    print('using reference name = %s'%refbase)
-    ref_id = -1
-    try:
-        ref_id = dbo.get_ref_id(refbase)
-    except IndexError:
-        print('unkown reference: run starting with -1')
-    print('using ref_id=%s'%str(ref_id))
-    dbo.new_run('illumina',host,ref_id,debug=args.debug)
-    run_id = dbo.get_max_key('runs')
-    print('starting run_id = %s'%run_id)
-    
-    print('processing bam list')
-    print(bams)
+#with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
+#dbo.embed_schema()
+print('\n<<<<<<<<<<<<<USING HOST %s>>>>>>>>>>>>>>>=\n')%host
+print('using reference name = %s'%refbase)
+ref_id = -1
+"""
+try:
+    ref_id = dbo.get_ref_id(refbase)
+except IndexError:
+    print('unkown reference: run starting with -1')
+print('using ref_id=%s'%str(ref_id))
+dbo.new_run('illumina',host,ref_id,debug=args.debug)
+run_id = dbo.get_max_key('runs')
+print('starting run_id = %s'%run_id)
+"""
 
-    if staging.has_key('cram2bam'):
-        st = stage.Stage('cram2bam',dbc)
-        outs = st.run(run_id,{'.fa':[ref_fa_path],'.cram':bams,'out_dir':[directory]})
-        if verbose: print(outs)
+run_id = 0    
+print('processing bam list')
+print(bams)
+
+if staging.has_key('cram2bam'):
+    st = stage.Stage('cram2bam',dbc)
+    outs = st.run(run_id,{'.fa':[ref_fa_path],'.cram':bams,'out_dir':[directory]})
+    if verbose: print(outs)
     
-    if staging.has_key('cram2bam_split_all'):
-        st = stage.Stage('cram2bam_split_all',dbc)
-        split_params = st.get_params()
-        split_params['p']['value'] = 1
-        st.set_params(split_params)
-        outs = st.run(run_id,{'.fa':[ref_fa_path],'.cram':bams,
-                              'chroms':chroms,'out_dir':[directory]})
-        if verbose: print(outs)
+if staging.has_key('cram2bam_split_all'):
+    st = stage.Stage('cram2bam_split_all',dbc)
+    split_params = st.get_params()
+    split_params['p']['value'] = 1
+    st.set_params(split_params)
+    outs = st.run(run_id,{'.fa':[ref_fa_path],'.cram':bams,
+                          'chroms':chroms,'out_dir':[directory]})
+    if verbose: print(outs)
     
-    #good for QC or for auto estimating RD,RL
-    #leaving RD callers blank with imply bam_stats first
-    #bam_stats will imply bam_clean to ensure full SV compatibilty, IE GATK, GenomeSTRiP will fail...
-    if staging.has_key('bam_clean') or staging.has_key('bam_stats') or\
-       staging.has_key('cnmops') and auto_RD_RL or \
-       staging.has_key('cnvnator') and auto_RD_RL or \
-       staging.has_key('genome_strip') and auto_RD_RL or \
-       staging.has_key('breakseq') and auto_RD_RL:
-        #check for the *_S3 files first
-        in_stats = glob.glob(directory+'*_S'+sids['bam_stats'])
-        h,v = False,False
+#good for QC or for auto estimating RD,RL
+#leaving RD callers blank with imply bam_stats first
+#bam_stats will imply bam_clean to ensure full SV compatibilty, IE GATK, GenomeSTRiP will fail...
+if staging.has_key('bam_clean') or staging.has_key('bam_stats') or\
+   staging.has_key('cnmops') and auto_RD_RL or \
+   staging.has_key('cnvnator') and auto_RD_RL or \
+   staging.has_key('genome_strip') and auto_RD_RL or \
+   staging.has_key('breakseq') and auto_RD_RL:
+    #check for the *_S3 files first
+    in_stats = glob.glob(directory+'*_S'+sids['bam_stats'])
+    h,v = False,False
+    for i in range(len(in_stats)):
+        if in_stats[i].endswith('.header'): h = True
+        if in_stats[i].endswith('.valid'):  v = True 
+    if h and v: #have the stats files already generated run bam_clean
+        st = stage.Stage('bam_clean',dbc)
+        bam_clean_params = st.get_params()
+        bam_clean_params['-t'] = 4 #default threads
+        st.set_params(bam_clean_params)
+        outs = st.run(run_id,{'.header':[in_stats[0]],'.valid':[in_stats[1]],
+                              '.bam':bams,'out_dir':[directory]})
+    else:
+        print('---------------running stats and conditional cleaning-------------------')
+        st = stage.Stage('bam_stats',dbc)
+        outs = st.run(run_id,{'.bam':bams,'out_dir':[directory]})
+        try: #pull out the positions here
+            RD = int(round(float(outs.split('\n')[2].split(' = ')[-1]),0))                #average depth
+            RL = int(round(float(outs.split('\n')[25].split(':')[-1].split('\t')[-1]),0)) #average length
+        except Exception as E:
+            print(E)
+            print('--------------RD,RL not determined, setting default values-----------------')
+            RD,RL = 30,100
+        st = stage.Stage('bam_clean',dbc)
+        in_stats = glob.glob(directory+'*'+sids['bam_stats']+'.header') +\
+                   glob.glob(directory+'*'+sids['bam_stats']+'.valid')
+        header,valid = [],[]
         for i in range(len(in_stats)):
-            if in_stats[i].endswith('.header'): h = True
-            if in_stats[i].endswith('.valid'):  v = True 
-        if h and v: #have the stats files already generated run bam_clean
-            st = stage.Stage('bam_clean',dbc)
+            if in_stats[i].endswith('.header'): header = in_stats[i]
+            if in_stats[i].endswith('.valid'):  valid  = in_stats[i]
+        if len(header)>0 and len(valid)>0: #run bam_clean
             bam_clean_params = st.get_params()
             bam_clean_params['-t'] = 4 #default threads
+            bam_clean_params['-m'] = 8 #default memory
             st.set_params(bam_clean_params)
-            outs = st.run(run_id,{'.header':[in_stats[0]],'.valid':[in_stats[1]],
-                                  '.bam':bams,'out_dir':[directory]})
-        else:
-            print('---------------running stats and conditional cleaning-------------------')
-            st = stage.Stage('bam_stats',dbc)
-            outs = st.run(run_id,{'.bam':bams,'out_dir':[directory]})
-            try: #pull out the positions here
-                RD = int(round(float(outs.split('\n')[2].split(' = ')[-1]),0))                #average depth
-                RL = int(round(float(outs.split('\n')[25].split(':')[-1].split('\t')[-1]),0)) #average length
-            except Exception as E:
-                print(E)
-                print('--------------RD,RL not determined, setting default values-----------------')
-                RD,RL = 30,100
-            st = stage.Stage('bam_clean',dbc)
-            in_stats = glob.glob(directory+'*'+sids['bam_stats']+'.header') +\
-                       glob.glob(directory+'*'+sids['bam_stats']+'.valid')
-            header,valid = [],[]
-            for i in range(len(in_stats)):
-                if in_stats[i].endswith('.header'): header = in_stats[i]
-                if in_stats[i].endswith('.valid'):  valid  = in_stats[i]
-            if len(header)>0 and len(valid)>0: #run bam_clean
-                bam_clean_params = st.get_params()
-                bam_clean_params['-t'] = 4 #default threads
-                bam_clean_params['-m'] = 8 #default memory
-                st.set_params(bam_clean_params)
-                #print the .valid file for debugging-------
-                print('-------------valid file output-----------------')
-                with open(valid) as f: print(f.readlines())
-                outs = st.run(run_id,{'.header':[header],'.valid':[valid],
-                                       '.bam':bams,'out_dir':[directory]})
-                #:::TO DO::: check on last time for validation...
-        if verbose: print(outs)
+            #print the .valid file for debugging-------
+            print('-------------valid file output-----------------')
+            with open(valid) as f: print(f.readlines())
+            outs = st.run(run_id,{'.header':[header],'.valid':[valid],
+                                   '.bam':bams,'out_dir':[directory]})
+            #:::TO DO::: check on last time for validation...
+    if verbose: print(outs)
 
-    if staging.has_key('bam2cram'):
-        st = stage.Stage('bam2cram',dbc)
-        outs = st.run(run_id,{'.fa':[ref_fa_path],'.bam':bams,'out_dir':[directory]})
-        if verbose: print(outs)
+if staging.has_key('bam2cram'):
+    st = stage.Stage('bam2cram',dbc)
+    outs = st.run(run_id,{'.fa':[ref_fa_path],'.bam':bams,'out_dir':[directory]})
+    if verbose: print(outs)
     
-    if staging.has_key('bam_split_all'):
-        st = stage.Stage('bam_split_all',dbc)
-        outs = st.run(run_id,{'.bam':bams,'chroms':chroms,'out_dir':[directory]})
-        if verbose: print(outs)
+if staging.has_key('bam_split_all'):
+    st = stage.Stage('bam_split_all',dbc)
+    outs = st.run(run_id,{'.bam':bams,'chroms':chroms,'out_dir':[directory]})
+    if verbose: print(outs)
             
-    if staging.has_key('bam_split_simple'):
-        st = stage.Stage('bam_split_simple',dbc)
-        outs = st.run(run_id,{'.bam':bams,'chroms':chroms,'out_dir':[directory]})
-        if verbose: print(outs)
+if staging.has_key('bam_split_simple'):
+    st = stage.Stage('bam_split_simple',dbc)
+    outs = st.run(run_id,{'.bam':bams,'chroms':chroms,'out_dir':[directory]})
+    if verbose: print(outs)
     
-    if staging.has_key('samtools_index'):
-        st = stage.Stage('samtools_index',dbc)
-        outs = st.run(run_id,{'.bam':bams})
-        if verbose: print(outs)
+if staging.has_key('samtools_index'):
+    st = stage.Stage('samtools_index',dbc)
+    outs = st.run(run_id,{'.bam':bams})
+    if verbose: print(outs)
             
-    if staging.has_key('samtools_merge'):
-        st = stage.Stage('samtools_merge',dbc)
-        outs = st.run(run_id,{'.bam':bams,'out_dir':[directory]})
-        if verbose: print(outs)
+if staging.has_key('samtools_merge'):
+    st = stage.Stage('samtools_merge',dbc)
+    outs = st.run(run_id,{'.bam':bams,'out_dir':[directory]})
+    if verbose: print(outs)
             
-    if staging.has_key('picard_merge'):
-        st = stage.Stage('picard_merge',dbc)
-        outs = st.run(run_id,{'.bam':bams,'out_dir':[directory]})
-        if verbose: print(outs)
+if staging.has_key('picard_merge'):
+    st = stage.Stage('picard_merge',dbc)
+    outs = st.run(run_id,{'.bam':bams,'out_dir':[directory]})
+    if verbose: print(outs)
         
-    if staging.has_key('lumpy'):
-        #lumpy    
-        st = stage.Stage('lumpy',dbc)
-        outs = st.run(run_id, {'.bam':bams,'out_dir':[directory]})
-        if verbose: print(outs)
+if staging.has_key('lumpy'):
+    #lumpy    
+    st = stage.Stage('lumpy',dbc)
+    outs = st.run(run_id, {'.bam':bams,'out_dir':[directory]})
+    if verbose: print(outs)
 
-    if staging.has_key('cnmops'):
-        st = stage.Stage('cnmops',dbc)
-        cnmops_params = st.get_params()
-        cnmops_params['window']['value'] = ru.expected_window(depth=RD,length=RL,target=100)
-        if len(bams)<=1:
-            cnmops_params['mode']['value']   = 3  
-        elif len(bams)==2:
-            cnmops_params['mode']['value']   = 1
-        else:
-            cnmops_params['mode']['value']   = 0
-        cnmops_params['normal']['value'] = 3      #poisson normalization
-        cnmops_params['cir_seg']['value'] = True
-        cnmops_params['cores']['value']  = 1      #bibc threads
-        st.set_params(cnmops_params)
-        outs = st.run(run_id, {'.fa':[ref_fa_path],'.bam':bams,'out_dir':[directory]})    
-        if verbose: print(outs)
-    
-    if staging.has_key('delly'):     
-        #delly
-        st = stage.Stage('delly',dbc)
-        outs = st.run(run_id, {'.fa':[ref_fa_path],'.bam':bams,'out_dir':[directory]})
-        if verbose: print(outs)
-    
-    if staging.has_key('breakdancer'):
-        #breakdancer
-        st = stage.Stage('breakdancer',dbc)
-#        bd_params = st.get_params()
-#        bd_params['-l']['value'] = True
-#        st.set_params(bd_params)
-        outs = st.run(run_id, {'.fa':[ref_fa_path],'.bam':bams,'out_dir':[directory]})
-        if verbose: print(outs)    
+if staging.has_key('cnmops'):
+    st = stage.Stage('cnmops',dbc)
+    cnmops_params = st.get_params()
+    cnmops_params['window']['value'] = ru.expected_window(depth=RD,length=RL,target=100)
+    if len(bams)<=1:
+        cnmops_params['mode']['value']   = 3  
+    elif len(bams)==2:
+        cnmops_params['mode']['value']   = 1
+    else:
+        cnmops_params['mode']['value']   = 0
+    cnmops_params['normal']['value'] = 3      #poisson normalization
+    cnmops_params['cir_seg']['value'] = True
+    cnmops_params['cores']['value']  = 1      #bibc threads
+    st.set_params(cnmops_params)
+    outs = st.run(run_id, {'.fa':[ref_fa_path],'.bam':bams,'out_dir':[directory]})    
+    if verbose: print(outs)
 
-    if staging.has_key('breakseq'):
-        #breakseq
-        brkptlib_path = '/'.join(ref_fa_path.rsplit('/')[0:-1])+'/'+refbase+sids['breakseq']
+if staging.has_key('delly'):     
+    #delly
+    st = stage.Stage('delly',dbc)
+    outs = st.run(run_id, {'.fa':[ref_fa_path],'.bam':bams,'out_dir':[directory]})
+    if verbose: print(outs)
+ 
+if staging.has_key('breakdancer'):
+    #breakdancer
+    st = stage.Stage('breakdancer',dbc)
+    bd_params = st.get_params()
+    bd_params['-l']['value'] = True
+    st.set_params(bd_params)
+    outs = st.run(run_id, {'.fa':[ref_fa_path],'.bam':bams,'out_dir':[directory]})
+    if verbose: print(outs)    
+
+if staging.has_key('breakseq'):
+    #breakseq
+    brkptlib_path = '/'.join(ref_fa_path.rsplit('/')[0:-1])+'/'+refbase+sids['breakseq']
 #        print(brkptlib_path)
-        #check that it exists and swap it out if need be....
-        st = stage.Stage('breakseq',dbc)
-        bs_params = st.get_params()
-        bs_params['window']['value']   = 2*RL
-        bs_params['junction']['value'] = 4*RL
-        st.set_params(bs_params)
-        outs = st.run(run_id, {'.fa':[ref_fa_path],'.gff':[brkptlib_path+'.brkptlib.gff'],
-                               '.bam':bams,'out_dir':[directory]})
-        if verbose: print(outs)
+    #check that it exists and swap it out if need be....
+    st = stage.Stage('breakseq',dbc)
+    bs_params = st.get_params()
+    bs_params['window']['value']   = 2*RL
+    bs_params['junction']['value'] = 4*RL
+    st.set_params(bs_params)
+    outs = st.run(run_id, {'.fa':[ref_fa_path],'.gff':[brkptlib_path+'.brkptlib.gff'],
+                           '.bam':bams,'out_dir':[directory]})
+    if verbose: print(outs)
     
-    if staging.has_key('hydra'):
-        #hydra multi
-        st = stage.Stage('hydra',dbc)
-        outs = st.run(run_id, {'.fa':[ref_fa_path],'.bam':bams,'out_dir':[directory]})
-        if args.verbose: print(outs)
+if staging.has_key('hydra'):
+   #hydra multi
+    st = stage.Stage('hydra',dbc)
+    outs = st.run(run_id, {'.fa':[ref_fa_path],'.bam':bams,'out_dir':[directory]})
+    if args.verbose: print(outs)
   
-    if staging.has_key('cnvnator'):
-        #file dump issue related to paramiko ENV variable and the root system in cnvnator
-        #cnvnator VC
-        st = stage.Stage('cnvnator',dbc)
-        cnvnator_params = st.get_params()    #automatically get the depth and length
-        cnvnator_params['window']['value'] = ru.expected_window(depth=RD,length=RL,target=100)
-        st.set_params(cnvnator_params)
-        outs = st.run(run_id, {'.fa':[ref_fa_path],'.bam':bams,'out_dir':[directory]})
-        if verbose: print(outs)
+if staging.has_key('cnvnator'):
+    #file dump issue related to paramiko ENV variable and the root system in cnvnator
+    #cnvnator VC
+    st = stage.Stage('cnvnator',dbc)
+    cnvnator_params = st.get_params()    #automatically get the depth and length
+    cnvnator_params['window']['value'] = ru.expected_window(depth=RD,length=RL,target=100)
+    st.set_params(cnvnator_params)
+    outs = st.run(run_id, {'.fa':[ref_fa_path],'.bam':bams,'out_dir':[directory]})
+    if verbose: print(outs)
     
-    if staging.has_key('genome_strip'):
-        #genomestrip
-        gs_ref_path = '/'.join(ref_fa_path.rsplit('/')[0:-1])+'/'+refbase+sids['genome_strip_prepare_ref']
-        st = stage.Stage('genome_strip',dbc)
-        outs = st.run(run_id, {'.fa':[gs_ref_path+'.fa'],
-                               '.fa.svmask.fasta':[gs_ref_path+'.fa.svmask.fasta'],
-                               '.ploidymap.txt':  [gs_ref_path+'.ploidymap.txt'],
-                               '.rdmask.bed': [gs_ref_path+'.rdmask.bed'],
-                               '.gcmask.fasta': [gs_ref_path+'.gcmask.fasta'],
-                               '.bam':bams,'out_dir':[directory]})
-        if verbose: print(outs)
+if staging.has_key('genome_strip'):
+    #genomestrip
+    gs_ref_path = '/'.join(ref_fa_path.rsplit('/')[0:-1])+'/'+refbase+sids['genome_strip_prepare_ref']
+    st = stage.Stage('genome_strip',dbc)
+    outs = st.run(run_id, {'.fa':[gs_ref_path+'.fa'],
+                           '.fa.svmask.fasta':[gs_ref_path+'.fa.svmask.fasta'],
+                           '.ploidymap.txt':  [gs_ref_path+'.ploidymap.txt'],
+                           '.rdmask.bed': [gs_ref_path+'.rdmask.bed'],
+                           '.gcmask.fasta': [gs_ref_path+'.gcmask.fasta'],
+                           '.bam':bams,'out_dir':[directory]})
+    if verbose: print(outs)
 
-    if staging.has_key('gatk_haplo'):
-        #gatk Haplotyper VC
-        st = stage.Stage('gatk_haplo',dbc)
-        outs = st.run(run_id,{'.fa':[ref_fa_path],'.bam':bams,'out_dir':[directory]})
-        if verbose: print(outs)
-        #gatk VairantReCalibration using dbsnp, known:Hapmap, 1Kgenomes, etc...
+if staging.has_key('gatk_haplo'):
+    #gatk Haplotyper VC
+    st = stage.Stage('gatk_haplo',dbc)
+    outs = st.run(run_id,{'.fa':[ref_fa_path],'.bam':bams,'out_dir':[directory]})
+    if verbose: print(outs)
+    #gatk VairantReCalibration using dbsnp, known:Hapmap, 1Kgenomes, etc...
     
-    if staging.has_key('tigra') and targets is not None:
-        st = stage.Stage('tigra',dbc)
-        tigra_params = st.get_params()     #automatically get the depth and length
-        tigra_params['p']['value'] = 1     #cpus for sorting, leave at 1  
-        tigra_params['F']['value'] = 0     #bedIntersect flanking bp
-        tigra_params['L']['value'] = 1000  #bp away from the breakpoint
-        tigra_params['A']['value'] = 1000  #bp into the breakpoint
-        tigra_params['Q']['value'] = 2     #min quality
-        tigra_params['P']['value'] = 1000  #max read depth
-        tigra_params['H']['value'] = 200   #max nodes
-        st.set_params(tigra_params)
-        outs = st.run(run_id,{'.fa':[ref_fa_path],'.bam':bams,
+if staging.has_key('tigra') and targets is not None:
+    st = stage.Stage('tigra',dbc)
+    tigra_params = st.get_params()     #automatically get the depth and length
+    tigra_params['p']['value'] = 1     #cpus for sorting, leave at 1  
+    tigra_params['F']['value'] = 0     #bedIntersect flanking bp
+    tigra_params['L']['value'] = 1000  #bp away from the breakpoint
+    tigra_params['A']['value'] = 1000  #bp into the breakpoint
+    tigra_params['Q']['value'] = 2     #min quality
+    tigra_params['P']['value'] = 1000  #max read depth
+    tigra_params['H']['value'] = 200   #max nodes
+    st.set_params(tigra_params)
+    outs = st.run(run_id,{'.fa':[ref_fa_path],'.bam':bams,
                               '.calls':targets,'.vcf':targets,'out_dir':[directory]})
-        if verbose: print(outs)
-#    need to clear out the directory when completed here...
-#    
-#    if callers.has_key('variationhunter'):
-    #variation hunter
-#    st = stage.Stage('variationhunter',dbc)
-#    outs = st.run(1,{'.DIVET.vh': [base+'node_data/'+host+'/'+ref_base+'_R1_CTRL_S26.DIVET.vh',
-#                                   base+'node_data/'+host+'/'+ref_base+'_R1_CASE_S26.DIVET.vh']})
-    #pindel
-    
-    #svseq2
-    
-    #gindel
-    
-    #svelter
-
+    if verbose: print(outs)
 #now you can run FusorSV for one sample if needed                       

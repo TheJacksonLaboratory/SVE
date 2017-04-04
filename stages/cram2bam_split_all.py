@@ -77,7 +77,7 @@ class cram2bam_split_all(stage_wrapper.Stage_Wrapper):
         cram2sam  = [samtools,'view','-T',in_names['.fa'],'-Sh', in_names['.cram']] #read from in
         sam2bam   = [samtools,'view','-bh','%s','-o','%s']
 
-        self.db_start(run_id,in_names['.cram'])
+        #self.db_start(run_id,in_names['.cram'])
         output,err = '',{}
         #[3a]execute the command here----------------------------------------------------
         try:
@@ -135,15 +135,15 @@ class cram2bam_split_all(stage_wrapper.Stage_Wrapper):
         #print(self.get_command_str())
         #[3b]check results--------------------------------------------------
         if err == {}:
-            self.db_stop(run_id,{'output':output},'',True)
+            #self.db_stop(run_id,{'output':output},'',True)
             results = H #this needs to have all .bam files
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("<<<<<<<<<<<<<cram2bam_split_all sucessfull>>>>>>>>>>>>>>>")
                 return results   #return a list of names
             else:
-                print("failure...........")
+                print("<<<<<<<<<<<<<cram2bam_split_all failure>>>>>>>>>>>>>>>")
                 return False
         else:
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             return None

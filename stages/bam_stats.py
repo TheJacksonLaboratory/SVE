@@ -98,7 +98,7 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
         #[2b]make start entry which is a new staged_run row
         self.command = summary
         print(self.get_command_str())
-        self.db_start(run_id,in_names['.bam'])
+        #self.db_start(run_id,in_names['.bam'])
         
         #[3a]execute the command here----------------------------------------------------           
         output,err,has_rg = '',{},True
@@ -181,17 +181,17 @@ class bam_stats(stage_wrapper.Stage_Wrapper):
         
         #[3b]check results--------------------------------------------------
         if err == {}:
-            self.db_stop(run_id,{'output':output},'',True)
+            #self.db_stop(run_id,{'output':output},'',True)
             results = [out_name+'.cov',out_name+'.header',out_name+'.summary']
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("<<<<<<<<<<<<<bam stats sucessfull>>>>>>>>>>>>>>>\n")
                 return results   #return a list of names
             else:
-                print("failure...........")
+                print("<<<<<<<<<<<<<bam stats failure>>>>>>>>>>>>>>>\n")
                 return False
         else:
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             print("failure...........")
             print(output)
             print(err)

@@ -41,7 +41,7 @@ class bam_split_simple(stage_wrapper.Stage_Wrapper):
         #cut out a headerless sam file that includes anything to do with chr A
         cut  = [samtools,'view','-bh', in_names['.bam'],'%s','-o','%s']
         idx  = [samtools,'index','%s']
-        self.db_start(run_id,in_names['.bam'])
+        #self.db_start(run_id,in_names['.bam'])
         commands,cut_names,output,err = '',[],'',{}
         print('using chrom list: %s'%in_names['chroms'])
         for i in in_names['chroms']:
@@ -78,15 +78,15 @@ class bam_split_simple(stage_wrapper.Stage_Wrapper):
         #print(self.get_command_str())
         #[3b]check results--------------------------------------------------
         if err == {}:
-            self.db_stop(run_id,{'output':output},'',True)
+            #self.db_stop(run_id,{'output':output},'',True)
             results = cut_names #this needs to have all .bam files
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("<<<<<<<<<<<<<bam_split_simple sucessfull>>>>>>>>>>>>>>>\n")
                 return results   #return a list of names
             else:
-                print("failure...........")
+                print("<<<<<<<<<<<<<bam_split_simple failure>>>>>>>>>>>>>>>\n")
                 return False
         else:
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             return None

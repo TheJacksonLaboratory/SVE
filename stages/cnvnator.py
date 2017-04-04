@@ -26,8 +26,9 @@ class cnvnator(stage_wrapper.Stage_Wrapper):
     
         #[1a]get input names and output names setup
         in_names = {'.fa': inputs['.fa'], '.bam': inputs['.bam']}
-        if self.db_get_ref_name(run_id): ref_name = self.ref_name        
-        else: ref_name = in_names['.fa'][0].rsplit('/')[-1].rsplit('.')[0]
+        #if self.db_get_ref_name(run_id): ref_name = self.ref_name        
+        #else: ref_name = in_names['.fa'][0].rsplit('/')[-1].rsplit('.')[0]
+        ref_name = in_names['.fa'][0].rsplit('/')[-1].rsplit('.')[0]
         
         out_exts = self.split_out_exts()
         if inputs.has_key('out_dir'):
@@ -70,16 +71,22 @@ class cnvnator(stage_wrapper.Stage_Wrapper):
         #self.command = extr+hist+stats+sig+call+conv
         #print(self.get_command_str())
         
-        self.db_start(run_id,in_names['.bam'][0])
+        #self.db_start(run_id,in_names['.bam'][0])
         
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
+            print (" ".join(extr))
             output += subprocess.check_output(' '.join(extr),stderr=subprocess.STDOUT, shell=True)+'\n'
+            print (" ".join(hist))
             output += subprocess.check_output(' '.join(hist),stderr=subprocess.STDOUT, shell=True)+'\n'
+            print (" ".join(stats))
             output += subprocess.check_output(' '.join(stats),stderr=subprocess.STDOUT, shell=True)+'\n'
+            print (" ".join(sig))
             output += subprocess.check_output(' '.join(sig),stderr=subprocess.STDOUT, shell=True)+'\n'
+            print (" ".join(call))
             output += subprocess.check_output(' '.join(call),stderr=subprocess.STDOUT, shell=True)+'\n'
+            print (" ".join(conv))
             output += subprocess.check_output(' '.join(conv),stderr=subprocess.STDOUT, shell=True)+'\n'
             output += subprocess.check_output('rm %s %s %s'%(out_names['.calls'],
                                                              out_names['.root']+'.tree.root',
@@ -111,14 +118,14 @@ class cnvnator(stage_wrapper.Stage_Wrapper):
             results = [out_names['.vcf']]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
-                self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
+                print("<<<<<<<<<<<<<cnvnator sucessfull>>>>>>>>>>>>>>>\n")
+                #self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
                 return results   #return a list of names
             else:
-                print("failure...........")
-                self.db_stop(run_id,{'output':output},'',False)
+                print("<<<<<<<<<<<<<cnvnator failure>>>>>>>>>>>>>>>\n")
+                #self.db_stop(run_id,{'output':output},'',False)
                 return False
         else:
-            print("failure...........")
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            print("<<<<<<<<<<<<<cnvnator failure>>>>>>>>>>>>>>>")
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             return None

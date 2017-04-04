@@ -42,7 +42,7 @@ class bam2cram(stage_wrapper.Stage_Wrapper):
         #cut out a headerless sam file that includes anything to do with chr A
         bam  =  [samtools,'view','-T', in_names['.fa'],'-bh',in_names['.cram'],'-o',out_names['.cram.bam']]
         index = [samtools,'index',out_names['.cram.bam']]
-        self.db_start(run_id,in_names['.cram'])
+        #self.db_start(run_id,in_names['.cram'])
         output,err = '',{}
             #[3a]execute the command here----------------------------------------------------
         try:
@@ -71,15 +71,15 @@ class bam2cram(stage_wrapper.Stage_Wrapper):
         #print(self.get_command_str())
         #[3b]check results--------------------------------------------------
         if err == {}:
-            self.db_stop(run_id,{'output':output},'',True)
+            #self.db_stop(run_id,{'output':output},'',True)
             results = [out_names['.cram.bam']] #this needs to have all .bam files
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("<<<<<<<<<<<<<cram2bamsucessfull>>>>>>>>>>>>>>>\n")
                 return results   #return a list of names
             else:
-                print("failure...........")
+                print("<<<<<<<<<<<<<cram2bam failure>>>>>>>>>>>>>>>\n")
                 return False
         else:
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             return None
