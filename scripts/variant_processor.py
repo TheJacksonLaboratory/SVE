@@ -339,7 +339,7 @@ if staging.has_key('breakdancer'):
 
 if staging.has_key('breakseq'):
     #breakseq
-    brkptlib_path = '/'.join(ref_fa_path.rsplit('/')[0:-1])+'/'+refbase+sids['breakseq']
+    #brkptlib_path = '/'.join(ref_fa_path.rsplit('/')[0:-1])+'/'+refbase+sids['breakseq']
 #        print(brkptlib_path)
     #check that it exists and swap it out if need be....
     st = stage.Stage('breakseq',dbc)
@@ -347,7 +347,7 @@ if staging.has_key('breakseq'):
     bs_params['window']['value']   = 2*RL
     bs_params['junction']['value'] = 4*RL
     st.set_params(bs_params)
-    outs = st.run(run_id, {'.fa':[ref_fa_path],'.gff':[brkptlib_path+'.brkptlib.gff'],
+    outs = st.run(run_id, {'.fa':[ref_fa_path],
                            '.bam':bams,'out_dir':[directory]})
     if verbose: print(outs)
     

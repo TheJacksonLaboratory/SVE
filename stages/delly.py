@@ -65,34 +65,24 @@ class delly(stage_wrapper.Stage_Wrapper):
         ins_call = [delly,'call','-t','INS',
                     '-x',excl,'-o',bcfs['ins'],'-g',in_names['.fa']]+in_names['.bam']
 
-        del_filter = [delly,'filter','-t','DEL','-f','germline','-o',bcfs['del']+'.filter.bcf',bcfs['del']]
-        dup_filter = [delly,'filter','-t','DUP','-f','germline','-o',bcfs['dup']+'.filter.bcf',bcfs['dup']]
-        inv_filter = [delly,'filter','-t','INV','-f','germline','-o',bcfs['inv']+'.filter.bcf',bcfs['inv']]
-        tra_filter = [delly,'filter','-t','TRA','-f','germline','-o',bcfs['tra']+'.filter.bcf',bcfs['tra']]
-        ins_filter = [delly,'filter','-t','INS','-f','germline','-o',bcfs['ins']+'.filter.bcf',bcfs['ins']]
-        self.db_start(run_id,in_names['.bam'][0])        
+        #self.db_start(run_id,in_names['.bam'][0])        
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try: #should split these up for better robustness...
+            print (" ".join(del_call))
             output += subprocess.check_output(' '.join(del_call),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
-            output += subprocess.check_output(' '.join(del_filter),
-                                              stderr=subprocess.STDOUT,shell=True)+'\n'
+            print (" ".join(dup_call))
             output += subprocess.check_output(' '.join(dup_call),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
-            output += subprocess.check_output(' '.join(dup_filter),
-                                              stderr=subprocess.STDOUT,shell=True)+'\n'
+            print (" ".join(inv_call))
             output += subprocess.check_output(' '.join(inv_call),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
-            output += subprocess.check_output(' '.join(inv_filter),
-                                              stderr=subprocess.STDOUT,shell=True)+'\n'
+            print (" ".join(tra_call))
             output += subprocess.check_output(' '.join(tra_call),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
-            output += subprocess.check_output(' '.join(tra_filter),
-                                              stderr=subprocess.STDOUT,shell=True)+'\n'
+            print (" ".join(ins_call))
             output += subprocess.check_output(' '.join(ins_call),
-                                              stderr=subprocess.STDOUT,shell=True)+'\n'
-            output += subprocess.check_output(' '.join(ins_filter),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
             #new version has ins_call too, will add
         #catch all errors that arise under normal call behavior
@@ -118,35 +108,13 @@ class delly(stage_wrapper.Stage_Wrapper):
 
         #merge/filter all the calls into one .vcf with vcftools
         bcftools = self.software_path+'/delly/src/bcftools/bcftools'
-        concat = [bcftools,'concat','-o',out_names['.vcf'],'-O','v',
-                 bcfs['del']+'.filter.bcf',bcfs['dup']+'.filter.bcf',bcfs['inv']+'.filter.bcf',
-                 bcfs['tra']+'.filter.bcf',bcfs['ins']+'.filter.bcf']
-        #bgzip and tabix the files and run vcf-merge on them...
-        #tabix = self.software_path+'/tabix-0.2.6/tabix'
-        #bgzip = self.software_path+'/tabix-0.2.6/bgzip'
-        #PATH = self.software_path+'/tabix-0.2.6:'+ \
-        #       self.software_path+'/vcftools_0.1.12b/bin:'+os.environ['PATH']
-        #PERL = self.software_path+'/vcftools_0.1.12b/perl'
-        #if os.environ.has_key('PERL5LIB'):
-        #    PERL += ':'+os.environ['PERL5LIB']
-        #types = [] #base call types that succeeded
-        #for k in vcfs:
-        #    if os.path.exists(vcfs[k]): types+=[vcfs[k].split('.vcf')[0]]
-        #print(types)
+        concat = [bcftools,'concat','-a','-o',out_names['.vcf'],'-O','v',
+                 bcfs['del'],bcfs['dup'],bcfs['inv'],bcfs['tra'],bcfs['ins']]
         try:
-            print('merging seperate variant types into a single .vcf file....')
-            #for t in types:
+            print(' '.join(concat))
             subprocess.check_output(' '.join(concat),
                                    stderr=subprocess.STDOUT,shell=True)
-                #subprocess.check_output(' '.join([bgzip,t+'.vcf']),
-                #                        stderr=subprocess.STDOUT,shell=True,env={'PATH':PATH})
-                #subprocess.check_output(' '.join([tabix,'-p','vcf',t+'.vcf.gz']),
-                #                        stderr=subprocess.STDOUT,shell=True,env={'PATH':PATH})
-            #merge with vcf-merge or vcf-concat
-            #vcfmerge = ['vcf-merge']+[i+'.vcf.gz' for i in types]+['>',out_names['.vcf']]
-            #subprocess.check_output(' '.join(vcfmerge), stderr=subprocess.STDOUT,
-            #                        shell=True,env={'PATH':PATH,'PERL5LIB':PERL})
-            #now remove the folder...
+            print("",join('rm -rf',sub_dir))
             subprocess.check_output('rm -rf %s'%sub_dir, stderr=subprocess.STDOUT,shell=True)                        
         #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:
@@ -174,14 +142,14 @@ class delly(stage_wrapper.Stage_Wrapper):
             results = [out_names['.vcf']]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("delly sucessfull........")
-                self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
+                print("<<<<<<<<<<<<<delly sucessfull>>>>>>>>>>>>>>>")
+                #self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
                 return results   #return a list of names
             else:
-                print("delly failure...........")
-                self.db_stop(run_id,{'output':output},'',False)
+                print("<<<<<<<<<<<<<delly failure>>>>>>>>>>>>>>>")
+                #self.db_stop(run_id,{'output':output},'',False)
                 return False
         else:
-            print("delly failure...........")
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            print("<<<<<<<<<<<<<delly failure>>>>>>>>>>>>>>>")
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             return None

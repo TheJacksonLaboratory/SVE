@@ -88,6 +88,7 @@ class cnvnator(stage_wrapper.Stage_Wrapper):
             output += subprocess.check_output(' '.join(call),stderr=subprocess.STDOUT, shell=True)+'\n'
             print (" ".join(conv))
             output += subprocess.check_output(' '.join(conv),stderr=subprocess.STDOUT, shell=True)+'\n'
+            print ("".join('rm',out_names['.calls'],out_names['.root']+'.tree.root',out_names['.root']+'.his.root'))
             output += subprocess.check_output('rm %s %s %s'%(out_names['.calls'],
                                                              out_names['.root']+'.tree.root',
                                                              out_names['.root']+'.his.root'),

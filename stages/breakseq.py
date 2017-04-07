@@ -24,7 +24,6 @@ class breakseq(stage_wrapper.Stage_Wrapper):
         #workflow is to run through the stage correctly and then check for error handles
         #[1a]get input names and output names setup
         in_names = {'.fa':inputs['.fa'][0], 
-                    '.gff':inputs['.gff'][0], #base gff and brkpt lib files here
                     '.bam':inputs['.bam']}
         #will have to figure out output file name handling
         out_exts = self.split_out_exts()
@@ -50,11 +49,17 @@ class breakseq(stage_wrapper.Stage_Wrapper):
         #run_breakseq2.py --reference b37.fasta --bams bwamem.bam --work work --bwa bwa-0.7.12/bwa --samtools samtools-0.1.19/samtools --bplib_gff bplib.gff --nthreads 4 --sample NA12878
         w = str(self.get_params()['window']['value']) 
         j = str(self.get_params()['junction']['value'])
+        gff = self.software_path+'/breakseq2-2.2/bplib/breakseq2_bplib_20150129_hg38.gff'
+#        call      = [python,breakseq,'--bwa',bwa,'--samtools',samtools,
+#                     '--reference',in_names['.fa'],'--bplib_gff',gff,
+#                     '--work',sub_dir,'--bams']+in_names['.bam']+\
+#                    ['--nthreads',str(4),'--min_span',str(2),'--window',max(100,w),
+#                     '--min_overlap',str(2),'--junction_length',max(200,j)] #junctio =2x lead length
+
         call      = [python,breakseq,'--bwa',bwa,'--samtools',samtools,
-                     '--reference',in_names['.fa'],'--bplib_gff',in_names['.gff'],
+                     '--reference',in_names['.fa'],'--bplib_gff',gff,
                      '--work',sub_dir,'--bams']+in_names['.bam']+\
-                    ['--nthreads',str(4),'--min_span',str(2),'--window',max(100,w),
-                     '--min_overlap',str(2),'--junction_length',max(200,j)] #junctio =2x lead length
+                    ['--nthreads',str(16)] #junctio =2x lead length
         #decompress the .vcf.gz
         decomp    = ['gzip','-d',sub_dir+'breakseq.vcf.gz']
         #copy up to ../
@@ -62,20 +67,23 @@ class breakseq(stage_wrapper.Stage_Wrapper):
         #delete the SID folder and all contents
         clean     = ['rm','-rf',sub_dir]
                       
-        self.db_start(run_id,','.join(in_names['.bam']))        
+        #self.db_start(run_id,','.join(in_names['.bam']))        
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
             print(" ".join(call))
             output += subprocess.check_output(' '.join(call),
                                               stderr=subprocess.STDOUT,shell=True,
-                                              env={'PYTHONPATH':'/home/leew/tools/breakseq2-2.2'})
-            output += subprocess.check_output(' '.join(decomp),
-                                              stderr=subprocess.STDOUT,shell=True)
-            output += subprocess.check_output(' '.join(copy),
-                                              stderr=subprocess.STDOUT,shell=True)
-            output += subprocess.check_output(' '.join(clean),
-                                              stderr=subprocess.STDOUT,shell=True)
+                                              env={'PYTHONPATH':'/home/leew/tools/breakseq2-2.2:'+os.environ['PYTHONPATH']})
+            #print(" ".join(decomp))
+            #output += subprocess.check_output(' '.join(decomp),
+            #                                  stderr=subprocess.STDOUT,shell=True)
+            #print(" ".join(copy))
+            #output += subprocess.check_output(' '.join(copy),
+            #                                  stderr=subprocess.STDOUT,shell=True)
+            #print(" ".join(clean))
+            #output += subprocess.check_output(' '.join(clean),
+            #                                  stderr=subprocess.STDOUT,shell=True)
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
             err['output'] = E.output
@@ -106,14 +114,14 @@ class breakseq(stage_wrapper.Stage_Wrapper):
             results = [out_names['.vcf']]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
-                self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
+                print("<<<<<<<<<<<<<breakseq sucessfull>>>>>>>>>>>>>>>\n")
+                #self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
                 return results   #return a list of names
             else:
-                print("failure...........")
-                self.db_stop(run_id,{'output':output},'',False)
+                print("<<<<<<<<<<<<<breakseq failure>>>>>>>>>>>>>>>\n")
+                #self.db_stop(run_id,{'output':output},'',False)
                 return False
         else:
-            print("failure...........")
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            print("<<<<<<<<<<<<<breakseq failure>>>>>>>>>>>>>>>\n")
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             return None

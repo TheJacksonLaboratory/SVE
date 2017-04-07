@@ -118,7 +118,7 @@ class hydra(stage_wrapper.Stage_Wrapper):
         copy  = ['cp',vcf_name,out_names['.vcf']]
         clean = ['rm','-rf',sub_dir]
         
-        self.db_start(run_id,','.join(in_names['.bam']))        
+        #self.db_start(run_id,','.join(in_names['.bam']))        
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
@@ -240,14 +240,14 @@ class hydra(stage_wrapper.Stage_Wrapper):
             results = [out_names['.vcf']]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("hydra sucessfull........")
-                self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
+                print("<<<<<<<<<<<<<hydra sucessfull>>>>>>>>>>>>>>>\n")
+                #self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
                 return results   #return a list of names
             else:
-                print("hydra failure...........")
-                self.db_stop(run_id,{'output':output},'',False)
+                print("<<<<<<<<<<<<<hydra failure>>>>>>>>>>>>>>>\n")
+                #self.db_stop(run_id,{'output':output},'',False)
                 return False
         else:
-            print("hydra failure...........")
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            print("<<<<<<<<<<<<<hydra failure>>>>>>>>>>>>>>>\n")
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             return None

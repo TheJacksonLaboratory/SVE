@@ -58,7 +58,7 @@ class lumpy(stage_wrapper.Stage_Wrapper):
                      ['-m 4','-T',out_dir+'temp','-P','-o',out_names['.vcf']] #more work on params
         #sv_fast can do a version that checks for matching .bam, .split.bam and .disc.bam triples (prior samblasted)
         #sort_vcf  = [vcfsort,out_names['.calls'],'>',out_names['.vcf']]        
-        self.db_start(run_id,in_names['.bam'][0])        
+        #self.db_start(run_id,in_names['.bam'][0])        
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
@@ -100,14 +100,14 @@ class lumpy(stage_wrapper.Stage_Wrapper):
             results = [out_names['.vcf']]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("lumpy sucessfull........")
-                self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
+                print("<<<<<<<<<<<<<lumpy sucessfull>>>>>>>>>>>>>>>\n")
+                #self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
                 return results   #return a list of names
             else:
-                print("lumpy failure...........")
-                self.db_stop(run_id,{'output':output},'',False)
+                print("<<<<<<<<<<<<<lumpy failure>>>>>>>>>>>>>>>\n")
+                #self.db_stop(run_id,{'output':output},'',False)
                 return False
         else:
-            print("lumpy failure...........")
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            print("<<<<<<<<<<<<<lumpy failure>>>>>>>>>>>>>>>\n")
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             return None
