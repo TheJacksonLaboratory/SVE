@@ -9,7 +9,7 @@ for line in sys.stdin:
         print line,
     else:                    #alignments
         raw  = line.split('\t')
-        base_qual = ''.join([chr(ord(i)-33) for i in raw[10]])
+        base_qual = ''.join([chr(ord(i)-31) for i in raw[10]])
         if len(raw)>10:
             print '\t'.join(raw[:10]+[base_qual]+raw[11:]),
         else:
