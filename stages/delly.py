@@ -114,7 +114,7 @@ class delly(stage_wrapper.Stage_Wrapper):
             print(' '.join(concat))
             subprocess.check_output(' '.join(concat),
                                    stderr=subprocess.STDOUT,shell=True)
-            print("",join('rm -rf',sub_dir))
+            print(' ',join('rm -rf',sub_dir))
             subprocess.check_output('rm -rf %s'%sub_dir, stderr=subprocess.STDOUT,shell=True)                        
         #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:

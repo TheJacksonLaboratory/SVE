@@ -59,7 +59,7 @@ class breakseq(stage_wrapper.Stage_Wrapper):
         call      = [python,breakseq,'--bwa',bwa,'--samtools',samtools,
                      '--reference',in_names['.fa'],'--bplib_gff',gff,
                      '--work',sub_dir,'--bams']+in_names['.bam']+\
-                    ['--nthreads',str(16)] #junctio =2x lead length
+                    ['--nthreads',str(4)] #junctio =2x lead length
         #decompress the .vcf.gz
         decomp    = ['gzip','-d',sub_dir+'breakseq.vcf.gz']
         #copy up to ../
@@ -74,7 +74,7 @@ class breakseq(stage_wrapper.Stage_Wrapper):
             print(" ".join(call))
             output += subprocess.check_output(' '.join(call),
                                               stderr=subprocess.STDOUT,shell=True,
-                                              env={'PYTHONPATH':'/home/leew/tools/breakseq2-2.2:'+os.environ['PYTHONPATH']})
+                                              env={'PYTHONPATH':'/home/leew/tools/breakseq2-2.2:'+'/home/leew/.local/lib/python2.7/site-packages:'+'/opt/compsci/python/2.7.3/lib/python2.7/site-packages'})
             #print(" ".join(decomp))
             #output += subprocess.check_output(' '.join(decomp),
             #                                  stderr=subprocess.STDOUT,shell=True)

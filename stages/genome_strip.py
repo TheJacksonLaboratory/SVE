@@ -45,7 +45,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                          '.del.genotype.vcf' :cascade+'_S'+str(self.stage_id)+out_exts[1],
                          '.cnv.vcf' :cascade+'_S'+str(self.stage_id)+out_exts[2]}  
 
-        self.db_start(run_id,in_names['.bam'][0]) #add entries to DB
+        #self.db_start(run_id,in_names['.bam'][0]) #add entries to DB
         refd = self.strip_name(in_names['.fa']) #this is a bit hackish
         print(refd)
         if inputs.has_key('chroms'): chroms = inputs['chroms']
@@ -410,7 +410,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         final_vcf = rd+'/S14.vcf'
         #[3b]check results--------------------------------------------------
         if err == {}:
-            self.db_stop(run_id,{'output':output},'',True)
+            #self.db_stop(run_id,{'output':output},'',True)
             results = [final_vcf]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
@@ -420,5 +420,5 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                 print("failure...........")
                 return False
         else:
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             return None
