@@ -37,32 +37,16 @@ def Dedup_Sort(in_bam, mem, threads):
         st.run(run_id,{'.bam':[sorted_bam]})
 
 if __name__ == '__main__':
-    ParseParameters()
+    paras = para_dict
+    ParseParameters(paras)
 
-host = socket.gethostname()
-
-#take in bam file(s) run
-#with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
-#    dbo.embed_schema()
-print('\n<<<<<<<<<<<<<USING HOST %s>>>>>>>>>>>>>>>=\n')%host
-print('using reference name = %s'%refbase)
-ref_id = -1
-"""
-try:
-    ref_id = dbo.get_ref_id(refbase)
-except IndexError:
-    print('unkown reference: run starting with -1')
-
-print('using ref_id=%s'%str(ref_id))
-dbo.new_run('illumina',host,ref_id)
-run_id = dbo.get_max_key('runs')
-print('starting run_id = %s'%run_id)
-"""
+paras['machine'] = socket.gethostname
+dbc = {'srv':'','db':'','uid':'','pwd':''}
 run_id = 0
-stage_meta = su.get_stage_meta()
-ids = su.get_stage_name_id(stage_meta)
    
-if args.bam is not None:
+if paras['command'] == "realign":
+    print "realign"
+    """
     if args.mark_duplicates:
         d_start = time.time()
         st = stage.Stage('picard_mark_duplicates',dbc)
@@ -79,19 +63,18 @@ if args.bam is not None:
                               'SM':[SM]})
         r_stop = time.time()
         print('SVE:picard_replace_rg time was %s sec'%round((r_stop-r_start)/(60**2),1))
-    if args.realign:
+    """
+    if True:
         a_start = time.time()
-        aligner_params = {'.fa':[ref_fa_path],'.bam':bam,'out_dir':[directory]}
+        print paras['out_dir']
         st = stage.Stage('speedseq_realign',dbc)
-        aligner_stage_params = st.get_params()
-        aligner_stage_params['-t']['value'] = threads
-        aligner_stage_params['-m']['value'] = mem
-        st.set_params(aligner_stage_params)
-        outs = st.run(run_id,aligner_params)
+        outs = st.run(run_id, {'.fa':paras['ref'],'.bam':paras['BAM'],'out_dir':paras['out_dir'],'threads':paras['threads'],'mem':paras['mem'],'RG':paras['RG']})
         a_stop = time.time()
         print('SVE:picard_mark_duplicates time was % hours'%round((a_stop-a_start)/(60**2),1))
 else:
+    print "align"
     a_start = time.time()
+    """
     base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
     if SM is None: SM = base
     aligner_params = {'.fa':[ref_fa_path],'.fq':reads,'platform_id':['illumina'],'SM':[SM],'out_dir':[directory]}
@@ -116,6 +99,6 @@ else:
         # outs will receive ".sorted.bam"
         sorted_bam = st.run(run_id,aligner_params)
         Dedup_Sort(sorted_bam, mem, threads)
-            
+    """     
     a_stop = time.time()
-    print('SVE:BAM:%s was completed in %s hours'%(algorithm,round((a_stop-a_start)/(60.0**2),4)))
+    #print('SVE:BAM:%s was completed in %s hours'%(algorithm,round((a_stop-a_start)/(60.0**2),4)))

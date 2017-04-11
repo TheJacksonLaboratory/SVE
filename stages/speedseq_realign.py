@@ -20,47 +20,25 @@ class speedseq_realign(stage_wrapper.Stage_Wrapper):
     def __exit__(self, type, value, traceback):
         return 0  
     
-    #override this function in each wrapper...
-    #bwa sampe ref.fa L.sai R.sai L.fq R.fq -f out.sam
     def run(self,run_id,inputs):
         #workflow is to run through the stage correctly and then check for error handles
         #[1b]
-        in_names  = {'.fa':inputs['.fa'][0],'.bam':inputs['.bam']}
-        #add tigra.ctg.fa bam by allowing a single '.fa' input key
-        stripped_name = self.strip_path(in_names['.bam'])
+        stripped_name = self.strip_path(inputs['.bam'])
         stripped_name = self.strip_in_ext(stripped_name,'.bam')
-        if inputs.has_key('out_dir'):
-            out_dir = inputs['out_dir'][0]
-            out_name = out_dir+stripped_name
-            out_name = out_name.rstrip('_')
-        else: #untested...
-            right = in_names['.fa'][0].rsplit('/')[-1]
-            out_dir = in_names['.bam'].replace(right,'')
-            cascade = self.strip_in_ext(in_names['.bam'],'.bam')
-            out_name = cascade
-            out_name = out_name.rstrip('_')
-        if inputs.has_key('SM'):
-            SM = inputs['SM'][0]
-        else:
-            SM = stripped_name
-            
+        out_name = inputs['out_dir']+'/'+stripped_name
         #[2]build command args
         #:::TO DO::: ALLOW THE USER TO GENERATE AND ENTER RG
-        if not os.path.exists(out_dir): os.makedirs(out_dir)
-        #if not os.path.exists(out_dir+'/sort/'): os.makedirs(out_dir+'/sort/')
         threads = str(self.get_params()['-t']['value'])
         mem = str(self.get_params()['-m']['value'])
         speedseq = self.software_path+'/speedseq/bin/speedseq'
 
         #'@RG\tID:H7AGF.2\tLB:Solexa-206008\tPL:illumina\tPU:H7AGFADXX131213.2\tSM:HG00096\tCN:BI'
         
-        realign = [speedseq,'realign','-t',threads,'-M',mem,'-o',out_name,in_names['.fa'],in_names['.bam']]
-        #[2b]make start entry which is a new staged_run row
-        #[1a]make start entry which is a new staged_run row  
-        self.command = realign
-        print(self.get_command_str())
-        self.db_start(run_id,in_names['.bam'][0])
-        
+        realign = [speedseq,'realign','-t',str(inputs['threads']),'-M',str(inputs['mem']),'-o',out_name]
+        if inputs['RG'] is not None:
+            realign += ['-R "'+inputs['RG']+'"']
+        realign += [inputs['.fa'],inputs['.bam']]
+
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
@@ -92,7 +70,7 @@ class speedseq_realign(stage_wrapper.Stage_Wrapper):
         
         #[3b]check results--------------------------------------------------
         if err == {}:
-            self.db_stop(run_id,{'output':output},'',True)
+            #self.db_stop(run_id,{'output':output},'',True)
             results = [out_name+'.bam']
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
@@ -102,5 +80,5 @@ class speedseq_realign(stage_wrapper.Stage_Wrapper):
                 print("speedseq realign failure...........")
                 return False
         else:
-            self.db_stop(run_id,{'output':output},err['message'],False)
+            #self.db_stop(run_id,{'output':output},err['message'],False)
             return None
