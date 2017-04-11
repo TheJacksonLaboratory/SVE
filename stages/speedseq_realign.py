@@ -4,6 +4,8 @@ import subprocess32 as subprocess
 sys.path.append('../') #go up one in the modules
 import stage_wrapper
 import stage_utils as su
+from stages.utils.CheckGenerateRG import CheckRG
+from stages.utils.CheckGenerateRG import GenerateRG
 
 #function for auto-making svedb stage entries and returning the stage_id
 class speedseq_realign(stage_wrapper.Stage_Wrapper):
@@ -35,8 +37,16 @@ class speedseq_realign(stage_wrapper.Stage_Wrapper):
         #'@RG\tID:H7AGF.2\tLB:Solexa-206008\tPL:illumina\tPU:H7AGFADXX131213.2\tSM:HG00096\tCN:BI'
         
         realign = [speedseq,'realign','-t',str(inputs['threads']),'-M',str(inputs['mem']),'-o',out_name]
-        if inputs['RG'] is not None:
+        if inputs['RG'] != '':
             realign += ['-R "'+inputs['RG']+'"']
+        else:
+           result = []
+           CheckRG(self.software_path+'/samtools-1.3/samtools',inputs['.bam'], out_name, result)
+           if len(result) == 0:
+               rg = GenerateRG(stripped_name)
+               print "ERROR: " + inputs['.bam'] + "doesn't have RG. " + rg + " is generated."
+               realign += ['-R "'+rg+'"']
+               
         realign += [inputs['.fa'],inputs['.bam']]
 
         #[3a]execute the command here----------------------------------------------------
