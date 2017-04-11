@@ -4,7 +4,6 @@
 #preprossesing steps such as indexing, masking, chrom spliting, etc...
 
 #simple_sve.py ref_path bam_path out_dir
-import argparse
 import os
 import sys
 import glob
@@ -16,9 +15,9 @@ import stage_utils as su
 import svedb
 import stage
 import subprocess32 as subprocess
+from stages.utils.ParseParameters import ParseParameters
+from stages.utils.ParseParameters import para_dict
 
-def path(path):
-    return os.path.abspath(path)[:-1]
 
 def Dedup_Sort(in_bam, mem, threads):
     # Mark duplications
@@ -37,114 +36,11 @@ def Dedup_Sort(in_bam, mem, threads):
         st.set_params(params)
         st.run(run_id,{'.bam':[sorted_bam]})
 
-
-#[1]parse command arguments
-des = """
-Processes Illumina PE .fq reads into a .bam file given a reference .fa file as input.
-[Note] mem, sub-pipelines assume reads > 75bp in length"""
-parser = argparse.ArgumentParser(description=des)
-parser.add_argument('-a','--algorithm', type=str, help='aln|mem|speed_seq')
-parser.add_argument('-g', '--replace_rg',action='store_true', help='replace reads groups\t[False]')
-parser.add_argument('-m', '--mark_duplicates',action='store_true', help='mark duplicate reads\t[False]')
-parser.add_argument('-s', '--sample',type=str, help='sample name\t[input]')
-parser.add_argument('-o', '--out_dir', type=str, help='output directory to store resulting files\t[None]')
-parser.add_argument('-r', '--ref', type=str, help='fasta reference file path\t[None]')
-#parser.add_argument('-d','--database',type=str, help='database configuration file\t[SVE/data]')
-parser.add_argument('-A','--realign',action='store_true', help='Realign')
-fqs_help = """
-fq comma-sep file path list\t[None]
-[EX PE] --fqs ~/data/sample1_FWD.fq,~/data/sample1_REV.fq"""
-parser.add_argument('-f', '--fqs',type=str, help=fqs_help)
-parser.add_argument('-b', '--bam',type=str, help='bam file path\t[None]')
-parser.add_argument('-t','--threads',type=int, help='number of threads per CPU\t[4]')
-parser.add_argument('-M','--mem',type=int, help='ram in GB units to use for processing per cpu/thread unit\t[4]')
-args = parser.parse_args()
-
-#read the database configuration file
-dbc = {'srv':'','db':'','uid':'','pwd':''}
-"""
-if args.database is not None:
-    with open(args.database, 'r') as f:
-        params = f.read().split('\n') #newline seperated configuration file
-    try:
-        dbc['srv']  = params[0].split('srv=')[-1]
-        dbc['db'] = params[0].split('srv=')[-1]
-        dbc['uid'] = params[0].split('srv=')[-1]
-        dbc['pwd'] = params[0].split('srv=')[-1]
-    except Exception:
-        print('invalid database configuration')
-        print('running the SVE without the SVEDB')
-        pass
-else:
-    with open(os.path.dirname(os.path.abspath(__file__))+'/../data/svedb.config', 'r') as f:
-        params = f.read().split('\n') #newline seperated configuration file
-    try:
-        dbc['srv'] = params[0].split('srv=')[-1]
-        dbc['db']  = params[1].split('db=')[-1]
-        dbc['uid'] = params[2].split('uid=')[-1]
-        dbc['pwd'] = params[3].split('pwd=')[-1]
-        schema = {}
-        with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
-            dbo.embed_schema()   #check the schema for a valid db
-            schema = dbo.schema
-        if len(schema)<1:
-            print('dbc:%s' % [c + '=' + dbc[c] for c in dbc])
-            print('invalid database configuration')
-            print('running the SVE without the SVEDB')
-        else:
-            print('dbc:%s'%[c+'='+dbc[c] for c in dbc])
-            print('valid database configuration found')
-            print('running the SVE with the SVEDB')
-    except Exception:
-        print('invalid database configuration')
-        print('running the SVE without the SVEDB')
-        pass
-"""
+if __name__ == '__main__':
+    ParseParameters()
 
 host = socket.gethostname()
-directory = path('~/'+host+'/') #users base home folder as default plus hostname
-if args.out_dir is not None:    #optional reroute
-    directory = args.out_dir
-if not os.path.exists(directory): os.makedirs(directory)
-if args.ref is not None:
-    ref_fa_path = args.ref
-else:
-    print('no ref pattern found')
-    ref_fa_path = ''
 
-refbase = ref_fa_path.rsplit('/')[-1].split('.fa')[0]
-if args.fqs is not None:
-    reads = args.fqs.split(',') #CSL returns a list of 1+
-else:
-    print('no fqs pattern found')
-    reads = []
-if not all([os.path.exists(r) for r in reads]):
-    print('fastq files not found!')
-    raise IOError
-if args.bam is not None:
-    bam = args.bam
-else:
-    print('no bam pattern found')
-    bam = ''
-
-if args.sample is not None:
-    SM = args.sample
-else:
-    SM = None
-
-if args.threads is not None:
-    threads = args.threads
-else:
-    threads = 4
-if args.mem is not None:
-    mem = int(args.mem)
-else:
-    mem = 4
-if args.algorithm is not None:
-    algorithm = args.algorithm
-else:
-    algorithm = 'speed_seq'
-    
 #take in bam file(s) run
 #with svedb.SVEDB(dbc['srv'], dbc['db'], dbc['uid'], dbc['pwd']) as dbo:
 #    dbo.embed_schema()
