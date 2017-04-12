@@ -71,7 +71,7 @@ if paras['command'] == "realign":
 elif paras['command'] == "align":
     a_start = time.time()
     aligner_params = {'.fa':paras['ref'],'.fq':paras['FASTQ'],'out_dir':paras['out_dir'],'threads':paras['threads'],'mem':paras['mem'],'RG':paras['RG']}
-    if paras['algorithm'] == 'mem':
+    if paras['algorithm'] == 'bwa_mem':
         st = stage.Stage('fq_to_bam_piped',dbc)
         # outs will receive ".sorted.bam"
         sorted_bam = st.run(run_id,aligner_params)
@@ -79,7 +79,7 @@ elif paras['command'] == "align":
     elif paras['algorithm'] == 'speed_seq':
         st = stage.Stage('speedseq_align',dbc)
         outs = st.run(run_id,aligner_params)
-    elif paras['algorithm'] == 'aln':
+    elif paras['algorithm'] == 'bwa_aln':
         st = stage.Stage('bwa_aln',dbc)
         # outs will receive ".sorted.bam"
         sorted_bam = st.run(run_id,aligner_params)
