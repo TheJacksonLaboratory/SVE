@@ -41,7 +41,7 @@ Command:\talign\tFASTQ->BAM
 
     def align(self):
         parser = argparse.ArgumentParser(usage = "prepare_bam align [options] <-r FILE> <FASTQ1 [FASTQ2]>")
-        parser.add_argument('-a', dest='algorithm', type=str, metavar='STR', choices=['aln|mem|speed_seq'], default='speed_seq', help='the method used for alignment\t[speed_seq]')
+        parser.add_argument('-a', dest='algorithm', type=str, metavar='STR', choices=['aln', 'mem', 'speed_seq'], default='speed_seq', help='the method used for alignment\t[speed_seq]')
         parser.add_argument('-R', dest='RG',type=str, metavar='STR', help='read group header line such as "@RG\\tID:id\\tSM:sampleName\\tLB:lib\\tPL:ILLUMINA"[null]')
         parser.add_argument('FASTQ',nargs='+', help='input FASTQs')
         return parser

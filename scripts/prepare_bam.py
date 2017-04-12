@@ -22,19 +22,14 @@ from stages.utils.ParseParameters import para_dict
 def Dedup_Sort(in_bam, mem, threads):
     # Mark duplications
     st = stage.Stage('picard_mark_duplicates',dbc)
-    params = st.get_params()
-    params['-t']['value'] = threads
-    params['-m']['value'] = mem
-    st.set_params(params)
-    dedup_bam = st.run(run_id,{'.bam':[sorted_bam]})
+    dedup_bam = st.run(run_id,{'.bam':in_bam,'mem':mem})
     if (dedup_bam == False):
         print "ERROR: picard_mark_duplicates fails"
     else:
-        subprocess.call(["mv",dedup_bam,sorted_bam])
+        subprocess.call(["mv",dedup_bam,in_bam])
         # Sort bam
         st = stage.Stage('sambamba_index',dbc)
-        st.set_params(params)
-        st.run(run_id,{'.bam':[sorted_bam]})
+        st.run(run_id,{'.bam':[in_bam],'threads':threads})
 
 if __name__ == '__main__':
     paras = para_dict
@@ -43,6 +38,11 @@ if __name__ == '__main__':
 paras['machine'] = socket.gethostname
 dbc = {'srv':'','db':'','uid':'','pwd':''}
 run_id = 0
+
+# Index FASTA if they are not there
+if not all ([os.path.isfile(paras['ref'] + '.' + suffix) for suffix in ['amb','ann','bwt','pac','sa']]):
+    st = stage.Stage('bwa_index',dbc)
+    st.run(run_id, {'.fa':[paras['ref']]})
 
 if paras['command'] == "realign":
     """
@@ -68,33 +68,21 @@ if paras['command'] == "realign":
     outs = st.run(run_id, {'.fa':paras['ref'],'.bam':paras['BAM'],'out_dir':paras['out_dir'],'threads':paras['threads'],'mem':paras['mem'],'RG':paras['RG']})
     a_stop = time.time()
     print('SVE:picard_mark_duplicates time was % hours'%round((a_stop-a_start)/(60**2),1))
-else:
+elif paras['command'] == "align":
     a_start = time.time()
-    """
-    base = su.get_common_string_left(reads).rsplit('/')[-1].rsplit('.')[0]
-    if SM is None: SM = base
-    aligner_params = {'.fa':[ref_fa_path],'.fq':reads,'platform_id':['illumina'],'SM':[SM],'out_dir':[directory]}
-    # Set the stage's parameters
-    st = stage.Stage('fq_to_bam_piped',dbc)
-    aligner_stage_params = st.get_params()
-    aligner_stage_params['-t']['value'] = threads
-    aligner_stage_params['-m']['value'] = mem
-    if algorithm == 'mem':
+    aligner_params = {'.fa':paras['ref'],'.fq':paras['FASTQ'],'out_dir':paras['out_dir'],'threads':paras['threads'],'mem':paras['mem'],'RG':paras['RG']}
+    if paras['algorithm'] == 'mem':
         st = stage.Stage('fq_to_bam_piped',dbc)
-        st.set_params(aligner_stage_params)
         # outs will receive ".sorted.bam"
         sorted_bam = st.run(run_id,aligner_params)
-        Dedup_Sort(sorted_bam, mem, threads)
-    elif algorithm == 'speed_seq':
+        Dedup_Sort(sorted_bam, paras['mem'], paras['threads'])
+    elif paras['algorithm'] == 'speed_seq':
         st = stage.Stage('speedseq_align',dbc)
-        st.set_params(aligner_stage_params)
         outs = st.run(run_id,aligner_params)
-    elif algorithm == 'aln':
+    elif paras['algorithm'] == 'aln':
         st = stage.Stage('bwa_aln',dbc)
-        st.set_params(aligner_stage_params)
         # outs will receive ".sorted.bam"
         sorted_bam = st.run(run_id,aligner_params)
-        Dedup_Sort(sorted_bam, mem, threads)
-    """     
+        Dedup_Sort(sorted_bam, paras['mem'], paras['threads'])
     a_stop = time.time()
-    #print('SVE:BAM:%s was completed in %s hours'%(algorithm,round((a_stop-a_start)/(60.0**2),4)))
+    print('SVE:BAM:%s was completed in %s hours'%(algorithm,round((a_stop-a_start)/(60.0**2),4)))

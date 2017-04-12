@@ -29,30 +29,29 @@ class speedseq_realign(stage_wrapper.Stage_Wrapper):
         stripped_name = self.strip_in_ext(stripped_name,'.bam')
         out_name = inputs['out_dir']+'/'+stripped_name
         #[2]build command args
-        #:::TO DO::: ALLOW THE USER TO GENERATE AND ENTER RG
-        threads = str(self.get_params()['-t']['value'])
-        mem = str(self.get_params()['-m']['value'])
+        threads = str(1)
+        if 'threads' in inputs: threads = str(inputs['threads'])
+        mem = str(8)
+        if 'mem' in inputs: mem = str(inputs['mem'])
         speedseq = self.software_path+'/speedseq/bin/speedseq'
 
-        #'@RG\tID:H7AGF.2\tLB:Solexa-206008\tPL:illumina\tPU:H7AGFADXX131213.2\tSM:HG00096\tCN:BI'
-        
         realign = [speedseq,'realign','-t',str(inputs['threads']),'-M',str(inputs['mem']),'-o',out_name]
-        if inputs['RG'] != '':
+        if 'RG' in inputs and inputs['RG'] != '':
             realign += ['-R "'+inputs['RG']+'"']
         else:
            result = []
            result = CheckRG(self.software_path+'/samtools-1.3/samtools',inputs['.bam'], out_name, result)
            if len(result) == 0:
                rg = GenerateRG(stripped_name)
-               print "ERROR: " + inputs['.bam'] + "doesn't have RG. " + rg + " is generated."
-               realign += ['-R "'+rg+'"']
+               print "ERROR: " + inputs['.bam'] + " doesn't have RG. " + rg + " is generated."
+               realign += ["-R \""+rg+"\""]
                
         realign += [inputs['.fa'],inputs['.bam']]
 
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
-            print('starting speedseq re-alignment')
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print(' '.join(realign))
             output += subprocess.check_output(' '.join(realign),stderr=subprocess.STDOUT,shell=True) #clean up the inputs now
         #catch all errors that arise under normal call behavior
@@ -84,10 +83,10 @@ class speedseq_realign(stage_wrapper.Stage_Wrapper):
             results = [out_name+'.bam']
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("speedseq realign sucessfull........")
+                print("<<<<<<<<<<<<<speedseq realign sucessfull>>>>>>>>>>>>>>>\n")
                 return results   #return a list of names
             else:
-                print("speedseq realign failure...........")
+                print("<<<<<<<<<<<<<speedseq realign failure>>>>>>>>>>>>>>>\n")
                 return False
         else:
             #self.db_stop(run_id,{'output':output},err['message'],False)

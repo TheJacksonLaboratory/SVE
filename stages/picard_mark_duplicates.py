@@ -25,30 +25,26 @@ class picard_mark_duplicates(stage_wrapper.Stage_Wrapper):
         #workflow is to run through the stage correctly and then check for error handles
     
         #[1a]get input names and output names setup
-        in_name  = {'.bam':inputs['.bam'][0]}
         out_ext = self.split_out_exts()[0]
-        out_name = self.strip_in_ext(in_name['.bam'],'.bam')+out_ext #just a temp ext
+        out_name = self.strip_in_ext(inputs['.bam'],'.bam')+out_ext #just a temp ext
         
         #[2a]build command args
         software = self.software_path
         java   = software+'/jre1.8.0_51/bin/java'
-        mem    = '-Xmx%sg'%str(self.get_params()['-m']['value'])
         picard = software+'/picard-tools-2.5.0/picard.jar'
-        mark   =  [java,mem,'-jar',picard,'MarkDuplicates','I='+in_name['.bam'],
+        mark   =  [java]
+        if 'mem' in inputs: 
+            mark += ['-Xmx%sg'%str(str(inputs['mem']))]
+        mark += ['-jar',picard,'MarkDuplicates','I='+inputs['.bam'],
                    'O='+out_name,'METRICS_FILE='+out_name+'.picard.metrics.txt',
                    'MAX_RECORDS_IN_RAM='+str(250000*16)]
-        
-        #[2b]make start entry which is a new staged_run row
-        self.command = mark
-        print(self.get_command_str())
-        #self.db_start(run_id,in_name['.bam'])
         
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+            print (' '.join(mark))
             output = subprocess.check_output(mark,stderr=subprocess.STDOUT)
-            #clean  = ['mv',self.strip_in_ext(in_name['.bam'],'.bam')+'.bai',out_name]
-            #output = subprocess.check_output(clean,stderr=subprocess.STDOUT)
         #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term

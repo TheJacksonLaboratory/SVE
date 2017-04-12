@@ -4,6 +4,7 @@ import subprocess32 as subprocess
 sys.path.append('../') #go up one in the modules
 import stage_wrapper
 import stage_utils as su
+from stages.utils.CheckGenerateRG import GenerateRG
 
 #function for auto-making svedb stage entries and returning the stage_id
 class speedseq_align(stage_wrapper.Stage_Wrapper):
@@ -25,52 +26,33 @@ class speedseq_align(stage_wrapper.Stage_Wrapper):
     def run(self,run_id,inputs):
         #workflow is to run through the stage correctly and then check for error handles
         #[1b]
-        in_names  = {'.fa':inputs['.fa'][0],'.fq':inputs['.fq']}
         out_ext = self.split_out_exts()[0]
         #add tigra.ctg.fa bam by allowing a single '.fa' input key
-        if len(in_names['.fq']) == 2: csl = su.get_common_string_left(in_names['.fq'])
-        else:                         csl = in_names['.fq'][0]
+        if len(inputs['.fq']) == 2:   csl = su.get_common_string_left(inputs['.fq'])
+        else:                         csl = inputs['.fq'][0]
         stripped_name = self.strip_path(csl)
-        if inputs.has_key('out_dir'):
-            out_dir = inputs['out_dir'][0]
-            out_name = out_dir+stripped_name
-            out_name = out_name.rstrip('_')
-        else: #untested...
-            right = in_names['.fa'][0].rsplit('/')[-1]
-            out_dir = in_names['.fq'][0].replace(right,'')
-            cascade = self.strip_in_ext(in_names['.fq'][0],'.fq')
-            out_name = cascade
-            out_name = out_name.rstrip('_')
-        if inputs.has_key('SM'):
-            SM = inputs['SM'][0]
-        else:
-            SM = stripped_name
-        sample = stripped_name
+        if (stripped_name[-1:] == '_' or stripped_name[-1:] == '.'): stripped_name = stripped_name[:-1]
+        out_dir = inputs['out_dir']
+        out_name = out_dir + '/' + stripped_name
+        RG = inputs['RG']
+        if RG == '': # RG is not defined
+            RG = GenerateRG(stripped_name)
+
         #[2]build command args
-        if not os.path.exists(out_dir): os.makedirs(out_dir)
-        #if not os.path.exists(out_dir+'/sort/'): os.makedirs(out_dir+'/sort/')
-        threads = str(self.get_params()['-t']['value'])
-        mem = str(self.get_params()['-m']['value'])
+        threads = str(inputs['threads'])
+        mem = str(inputs['mem'])
         speedseq = self.software_path+'/speedseq/bin/speedseq'
         #'@RG\tID:H7AGF.2\tLB:Solexa-206008\tPL:illumina\tPU:H7AGFADXX131213.2\tSM:HG00096\tCN:BI'
-        RG = r'\t'.join(["'@RG",'ID:'+sample,'LB:'+'Solexa'+sample,'PL:'+inputs['platform_id'][0],
-                         'PU:'+sample,'SM:'+SM+"'"])
-        align = [speedseq,'align','-t',threads,'-R',RG,'-M',mem,
-                 '-o',out_name,in_names['.fa']]+in_names['.fq'] #out_name: speedseq -o is prefix (without.bam)
-        #[2b]make start entry which is a new staged_run row
-        #[1a]make start entry which is a new staged_run row  
-        self.command = align
-        print(self.get_command_str())
-        #self.db_start(run_id,in_names['.fq'][0])
+        align = [speedseq,'align','-t',threads,'-R','"'+RG+'"','-M',mem,
+                 '-o',out_name,inputs['.fa']]+inputs['.fq'] #out_name: speedseq -o is prefix (without.bam)
         
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
-            print('starting speedseq alignment')
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print(' '.join(align))
             output += subprocess.check_output(' '.join(align),
                                               stderr=subprocess.STDOUT,
-                                              executable='/bin/bash',
                                               shell=True) #clean up the inputs now
         #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:

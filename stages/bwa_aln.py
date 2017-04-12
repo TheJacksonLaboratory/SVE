@@ -4,6 +4,7 @@ import subprocess32 as subprocess
 sys.path.append('../') #go up one in the modules
 import stage_wrapper
 import stage_utils as su
+from stages.utils.CheckGenerateRG import GenerateRG
 
 #function for auto-making svedb stage entries and returning the stage_id
 class bwa_sampe(stage_wrapper.Stage_Wrapper):
@@ -24,77 +25,57 @@ class bwa_sampe(stage_wrapper.Stage_Wrapper):
     #bwa sampe ref.fa L.sai R.sai L.fq R.fq -f out.sam
     def run(self,run_id,inputs):
         #workflow is to run through the stage correctly and then check for error handles
-    
-        #[1b]
-        in_names  = {'.fa':inputs['.fa'][0],'.fq':inputs['.fq'],}
-        #out_ext = self.split_out_exts()[0]
-
         #add tigra.ctg.fa bam by allowing a single '.fa' input key
-        if len(in_names['.fq']) == 2: csl = su.get_common_string_left(in_names['.fq'])
-        else:                         csl = in_names['.fq'][0]
+        if len(inputs['.fq']) == 2: csl = su.get_common_string_left(inputs['.fq'])
+        else:                       csl = inputs['.fq'][0]
         stripped_name = self.strip_path(csl)
         self.strip_in_ext(stripped_name,'.fq')
+        if (stripped_name[-1:] == '_' or stripped_name[-1:] == '.'): stripped_name = stripped_name[:-1]
 
-        if inputs.has_key('out_dir'):
-            out_dir = inputs['out_dir'][0]
-            out_name = out_dir+stripped_name
-            out_name = out_name.rstrip('_')
-        else: #untested...
-            right = in_names['.fa'][0].rsplit('/')[-1]
-            out_dir = in_names['.fq'][0].replace(right,'')
-            cascade = self.strip_in_ext(in_names['.fq'][0],'.fq')
-            out_name = cascade
-            out_name = out_name.rstrip('_')
+        out_dir = inputs['out_dir']
+        out_name = out_dir + '/' + stripped_name
 
-        if inputs.has_key('SM'):
-            SM = inputs['SM'][0]
-            print('found SM tag = %s'%SM)
-        else:
-            SM = stripped_name
-            print('missing a SM tag, using %s'%SM)
-
-
-        if not os.path.exists(out_dir): os.makedirs(out_dir)
-
-
-        threads = str(self.get_params()['-t']['value'])
+        threads = str(inputs['threads'])
         bwa = self.software_path+'/bwa-master/bwa' #latest release
         samtools = self.software_path+'/samtools-1.3/samtools'
         sambamba = self.software_path+'/sambamba_v0.6.6'
 
         #[2]build command args
-        aln1 = [bwa,'aln','-t',threads,in_names['.fa'],in_names['.fq'][0],'-f',out_name+'_1.sai']
-        aln2 = [bwa,'aln','-t',threads,in_names['.fa'],in_names['.fq'][1],'-f',out_name+'_2.sai']
+        aln1 = [bwa,'aln','-t',threads,inputs['.fa'],inputs['.fq'][0],'-f',out_name+'_1.sai']
+        aln2 = [bwa,'aln','-t',threads,inputs['.fa'],inputs['.fq'][1],'-f',out_name+'_2.sai']
         #'@RG\tID:H7AGF.2\tLB:Solexa-206008\tPL:illumina\tPU:H7AGFADXX131213.2\tSM:HG00096\tCN:BI'
-        sample = stripped_name+'RG'
-        RG = r'\t'.join(["'@RG",'ID:'+sample,'LB:'+'Solexa'+sample,'PL:'+inputs['platform_id'][0],
-                         'PU:'+sample,'SM:'+SM+"'"])
-        sampe = [bwa,'sampe','-r',RG,in_names['.fa'],out_name+'_1.sai',out_name+'_2.sai',in_names['.fq'][0],in_names['.fq'][1]]+['|']
-        #for k in self.params:
-        #    param = self.params[k]
-        #    if param['type']=='bool': command += [k]
-        #    else:                     command += [k, str(param['value'])]  
+        RG = inputs['RG']
+        if RG == '': # RG is not defined
+            RG = GenerateRG(stripped_name)
+
+        sampe = [bwa,'sampe','-r',"'"+RG+"'",inputs['.fa'],out_name+'_1.sai',out_name+'_2.sai',inputs['.fq'][0],inputs['.fq'][1]]+['|']
+        view  = [samtools,'view','-Sb','-','-o',out_name+'.bam']
+        sort  = [sambamba,'sort','-o',out_name+'.sorted.bam','-l','5','-t',threads,out_name+'.bam']
         
-        view = [samtools,'view','-Sb','-','-o',out_name+'.bam']
-   
-        sort   =  [sambamba,'sort','-o',out_name+'.sorted.bam','-l','5','-t',threads,out_name+'.bam']
-        
-        #[1a]make start entry which is a new staged_run row
-        self.command = aln1
-        print(self.get_command_str())
-        #self.db_start(run_id,in_names['.fq'][0])
         
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+            print (' '.join(aln1))
             output += subprocess.check_output(' '.join(aln1),stderr=subprocess.STDOUT,shell=True)
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+            print (' '.join(aln2))
             output += subprocess.check_output(' '.join(aln2),stderr=subprocess.STDOUT,shell=True)
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+            print (' '.join(sampe+view))
             output += subprocess.check_output(' '.join(sampe+view),stderr=subprocess.STDOUT,shell=True)
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+            print (' '.join(sort))
             output += subprocess.check_output(' '.join(sort),stderr=subprocess.STDOUT,shell=True)
             move = ['mv',out_name+'.sorted.bam',out_name+'.bam']
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+            print (' '.join(move))
             output += subprocess.check_output(' '.join(move),stderr=subprocess.STDOUT,shell=True)
             move = ['mv',out_name+'.sorted.bam.bai',out_name+'.bam.bai']
-            output += subprocess.check_output(' '.join(move),stderr=subprocess.STDOUT,shell=True)
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+            print (' '.join(move))
+            #output += subprocess.check_output(' '.join(move),stderr=subprocess.STDOUT,shell=True)
         #catch all errors that arise under normal behavior
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)             #what you would see in the term

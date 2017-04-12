@@ -25,6 +25,8 @@ class sambamba_index(stage_wrapper.Stage_Wrapper):
         input_bam = inputs['.bam'][0]
         command = [sambamba,'index','-t',threads,input_bam]
 
+        print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+        print (' '.join(command)) 
         output = subprocess.check_output(command,stderr=subprocess.STDOUT)
 
         if os.path.exists(input_bam+'.bai'):

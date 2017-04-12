@@ -24,9 +24,10 @@ class sambamba_sort(stage_wrapper.Stage_Wrapper):
 
     def run(input,output,threads):
         sambamba = self.software_path+'/sambamba_v0.6.6'
-        command = [sambamba,sort,'-o',outout,'-l','5','-t',threads,inout]
+        command = [sambamba,sort,'-o',outout,'-l','5','-t',str(threads),inout]
 
         #[3a]execute the command here----------------------------------------------------
+        print (' '.join(command))
         output = subprocess.check_output(command,stderr=subprocess.STDOUT)
         #[3b]check results--------------------------------------------------
         if os.path.exists(output):
