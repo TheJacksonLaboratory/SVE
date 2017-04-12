@@ -43,7 +43,7 @@ if __name__ == '__main__':
 paras['machine'] = socket.gethostname
 dbc = {'srv':'','db':'','uid':'','pwd':''}
 run_id = 0
-   
+
 if paras['command'] == "realign":
     """
     if args.mark_duplicates:
@@ -63,12 +63,11 @@ if paras['command'] == "realign":
         r_stop = time.time()
         print('SVE:picard_replace_rg time was %s sec'%round((r_stop-r_start)/(60**2),1))
     """
-    if True:
-        a_start = time.time()
-        st = stage.Stage('speedseq_realign',dbc)
-        outs = st.run(run_id, {'.fa':paras['ref'],'.bam':paras['BAM'],'out_dir':paras['out_dir'],'threads':paras['threads'],'mem':paras['mem'],'RG':paras['RG']})
-        a_stop = time.time()
-        print('SVE:picard_mark_duplicates time was % hours'%round((a_stop-a_start)/(60**2),1))
+    a_start = time.time()
+    st = stage.Stage('speedseq_realign',dbc)
+    outs = st.run(run_id, {'.fa':paras['ref'],'.bam':paras['BAM'],'out_dir':paras['out_dir'],'threads':paras['threads'],'mem':paras['mem'],'RG':paras['RG']})
+    a_stop = time.time()
+    print('SVE:picard_mark_duplicates time was % hours'%round((a_stop-a_start)/(60**2),1))
 else:
     a_start = time.time()
     """

@@ -56,6 +56,9 @@ Command:\talign\tFASTQ->BAM
         parser.add_argument('-o', dest='out_dir', type=str, metavar='STR', default='./output', help='output directory\t[./output]')
         parser.add_argument('-t', dest='threads',type=int, metavar='INT', help='number of threads per CPU\t[4]')
         parser.add_argument('-M', dest='mem',type=int, metavar='INT', help='ram in GB to use for per cpu/thread unit\t[8]')
+        if len(sys.argv[2:]) == 0:
+            parser.print_help()
+            exit()
         global args 
         args = parser.parse_args(sys.argv[2:])
         args.command = command

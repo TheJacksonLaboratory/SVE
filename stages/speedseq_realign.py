@@ -41,7 +41,7 @@ class speedseq_realign(stage_wrapper.Stage_Wrapper):
             realign += ['-R "'+inputs['RG']+'"']
         else:
            result = []
-           CheckRG(self.software_path+'/samtools-1.3/samtools',inputs['.bam'], out_name, result)
+           result = CheckRG(self.software_path+'/samtools-1.3/samtools',inputs['.bam'], out_name, result)
            if len(result) == 0:
                rg = GenerateRG(stripped_name)
                print "ERROR: " + inputs['.bam'] + "doesn't have RG. " + rg + " is generated."
