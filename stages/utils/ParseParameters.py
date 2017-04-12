@@ -2,6 +2,7 @@
 import argparse
 import os
 import sys
+import gzip
 
 para_dict={
 'machine':'',
@@ -82,9 +83,17 @@ Command:\talign\tFASTQ->BAM
             exit()
         if (paras['ref'].endswith(('.fasta.gz', '.fa.gz', '.fasta', '.fa')) == False):
             print "ERROR: reference file should end with .fasta.gz, .fa.gz, .fasta or .fa."
+        # Decompress FASTA
+        if paras['ref'][-3:] == ".gz":
+            decompress_fname = paras['ref'][:-3]
+            if not os.path.isfile(decompress_fname):
+                print "Decompressing " + paras['ref'] + " as " + decompress_fname
+                with gzip.open(paras['ref'],'rb') as in_file:
+                    s = in_file.read()
+                with open(decompress_fname,'w') as f:
+                    f.write(s)
+            paras['ref'] = decompress_fname
         # Either one of them
-        paras['refbase'] = paras['ref'].rsplit('/')[-1].split('.fasta.gz')[0]
-        paras['refbase'] = paras['ref'].rsplit('/')[-1].split('.fa.gz')[0]
         paras['refbase'] = paras['ref'].rsplit('/')[-1].split('.fasta')[0]
         paras['refbase'] = paras['ref'].rsplit('/')[-1].split('.fa')[0]
 
