@@ -40,11 +40,29 @@ dbc = {'srv':'','db':'','uid':'','pwd':''}
 run_id = 0
 
 # Index FASTA if they are not there
-if not all ([os.path.isfile(paras['ref'] + '.' + suffix) for suffix in ['amb','ann','bwt','pac','sa']]):
-    st = stage.Stage('bwa_index',dbc)
-    st.run(run_id, {'.fa':[paras['ref']]})
+#if not all ([os.path.isfile(paras['ref'] + '.' + suffix) for suffix in ['amb','ann','bwt','pac','sa']]):
+#    st = stage.Stage('bwa_index',dbc)
+#    st.run(run_id, {'.fa':[paras['ref']]})
 
-if paras['command'] == "realign":
+if paras['command'] == "align":
+    a_start = time.time()
+    aligner_params = {'.fa':paras['ref'],'.fq':paras['FASTQ'],'out_dir':paras['out_dir'],'threads':paras['threads'],'mem':paras['mem'],'RG':paras['RG']}
+    if paras['algorithm'] == 'bwa_mem':
+        st = stage.Stage('fq_to_bam_piped',dbc)
+        # outs will receive ".sorted.bam"
+        sorted_bam = st.run(run_id,aligner_params)
+        Dedup_Sort(sorted_bam, paras['mem'], paras['threads'])
+    elif paras['algorithm'] == 'speed_seq':
+        st = stage.Stage('speedseq_align',dbc)
+        outs = st.run(run_id,aligner_params)
+    elif paras['algorithm'] == 'bwa_aln':
+        st = stage.Stage('bwa_aln',dbc)
+        # outs will receive ".sorted.bam"
+        sorted_bam = st.run(run_id,aligner_params)
+        Dedup_Sort(sorted_bam, paras['mem'], paras['threads'])
+    a_stop = time.time()
+    print('SVE:BAM:%s was completed in %s hours'%(algorithm,round((a_stop-a_start)/(60.0**2),4)))
+elif paras['command'] == "realign":
     """
     if args.mark_duplicates:
         d_start = time.time()
@@ -67,22 +85,10 @@ if paras['command'] == "realign":
     st = stage.Stage('speedseq_realign',dbc)
     outs = st.run(run_id, {'.fa':paras['ref'],'.bam':paras['BAM'],'out_dir':paras['out_dir'],'threads':paras['threads'],'mem':paras['mem'],'RG':paras['RG']})
     a_stop = time.time()
-    print('SVE:picard_mark_duplicates time was % hours'%round((a_stop-a_start)/(60**2),1))
-elif paras['command'] == "align":
+    print('SVE:realignment time was % hours'%round((a_stop-a_start)/(60**2),1))
+elif paras['command'] == "hg38fix":
     a_start = time.time()
-    aligner_params = {'.fa':paras['ref'],'.fq':paras['FASTQ'],'out_dir':paras['out_dir'],'threads':paras['threads'],'mem':paras['mem'],'RG':paras['RG']}
-    if paras['algorithm'] == 'bwa_mem':
-        st = stage.Stage('fq_to_bam_piped',dbc)
-        # outs will receive ".sorted.bam"
-        sorted_bam = st.run(run_id,aligner_params)
-        Dedup_Sort(sorted_bam, paras['mem'], paras['threads'])
-    elif paras['algorithm'] == 'speed_seq':
-        st = stage.Stage('speedseq_align',dbc)
-        outs = st.run(run_id,aligner_params)
-    elif paras['algorithm'] == 'bwa_aln':
-        st = stage.Stage('bwa_aln',dbc)
-        # outs will receive ".sorted.bam"
-        sorted_bam = st.run(run_id,aligner_params)
-        Dedup_Sort(sorted_bam, paras['mem'], paras['threads'])
+    st = stage.Stage('bwa_hg38_alt_fix',dbc)
+    st.run(run_id, {'.bam':paras['BAM'],'out_file':paras['out_file']})
     a_stop = time.time()
-    print('SVE:BAM:%s was completed in %s hours'%(algorithm,round((a_stop-a_start)/(60.0**2),4)))
+    print('SVE:hg38fix time was % hours'%round((a_stop-a_start)/(60**2),1))

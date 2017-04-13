@@ -1,0 +1,10 @@
+{
+    "stage_id":50,
+    "type":"utility",
+    "name":"bwa_hg38_alt_fix",
+    "version":"",
+    "wrapper":"bwa_hg38_alt_fix",
+    "in_ext":".bam",
+    "out_ext":".bam",
+    "param_map":{}
+}

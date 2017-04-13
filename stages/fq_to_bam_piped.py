@@ -45,7 +45,7 @@ class fq_to_bam_piped(stage_wrapper.Stage_Wrapper):
         if RG == '': # RG is not defined
             RG = GenerateRG(stripped_name)
         bwa_mem = [bwa,'mem','-M','-t',threads,'-R',"'"+RG+"'",inputs['.fa']]+inputs['.fq']+['|']
-        view = [samtools,'view','-Sb','-','>',out_name+'.bam']
+        view = [samtools,'view','-Sb','-','-o',out_name+'.bam']
         
         sort = [sambamba,'sort',
                 '-o',out_name+'.sorted.bam',

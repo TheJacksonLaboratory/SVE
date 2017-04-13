@@ -6,8 +6,9 @@ import bam_split_all
 import bam_split_simple
 import breakdancer
 import breakseq
-import bwa_index
 import bwa_aln
+import bwa_hg38_alt_fix
+import bwa_index
 import bwa_mem
 import bwa_sampe
 import cnvnator

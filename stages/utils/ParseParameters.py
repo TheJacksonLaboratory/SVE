@@ -95,17 +95,6 @@ Command:\talign\tFASTQ->BAM
             exit()
 
         if args.out_file != "": paras['out_file'] = args.out_file
-        if args.out_file != "" and not os.path.isfile(args.out_file):
-            print "WARNING: " + paras['out_file'] + " has existed. The program will rewrite it."
-
-        if not any (os.path.isfile(f) for f in args.ref_alt):
-            paras['ref_alt'] =  args.ref_alt
-        else:
-            for f in args.alt_files:
-                if not os.path.isfile(f):
-                    print "ERROR: Cannot open file: " + f
-                    exit()
-        
 
     def aln_parse(self, command, parser, paras):
         self.load_args(parser)
