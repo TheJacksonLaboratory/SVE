@@ -9,9 +9,9 @@ import sys
 import socket
 import HTSeq as ht
 import subprocess32 as subprocess
+import tools
 sys.path.append('../') #go up one in the modules
 import svedb
-
 
 #function for auto-making svedb stage entries and returning the stage_id
 class Stage_Wrapper(object):
@@ -39,6 +39,7 @@ class Stage_Wrapper(object):
         else:
             self.params = params
         self.software_path = os.path.abspath(os.path.dirname(os.path.abspath(__file__))+'/../..')
+	self.tools = tools.TOOLS
         
     def __enter__(self):
         return self
