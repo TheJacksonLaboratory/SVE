@@ -1,9 +1,7 @@
 import os
 import sys
 import subprocess32 as subprocess
-sys.path.append('../') #go up one in the modules
 import stage_wrapper
-import stage_utils as su
 from stages.utils.CheckGenerateRG import CheckRG
 from stages.utils.CheckGenerateRG import GenerateRG
 
@@ -29,22 +27,18 @@ class speedseq_realign(stage_wrapper.Stage_Wrapper):
         stripped_name = self.strip_in_ext(stripped_name,'.bam')
         out_name = inputs['out_dir']+'/'+stripped_name
         #[2]build command args
-        threads = str(1)
-        if 'threads' in inputs: threads = str(inputs['threads'])
-        mem = str(8)
-        if 'mem' in inputs: mem = str(inputs['mem'])
-        speedseq = self.software_path+'/speedseq/bin/speedseq'
-
-        realign = [speedseq,'realign','-t',str(inputs['threads']),'-M',str(inputs['mem']),'-o',out_name]
+        realign = [self.tools['SPEEDSEQ'], 'realign', '-T', out_name, '-o', out_name]
+        if 'threads' in inputs: realign += ['-t', str(inputs['threads'])]
+        if 'mem' in inputs: realign += ['-M', str(inputs['mem'])]
         if 'RG' in inputs and inputs['RG'] != '':
             realign += ['-R "'+inputs['RG']+'"']
         else:
            result = []
-           result = CheckRG(self.software_path+'/samtools-1.3/samtools',inputs['.bam'], out_name, result)
+           result = CheckRG(self.tools['SAMTOOLS-1.3'],inputs['.bam'], out_name, result)
            if len(result) == 0:
                rg = GenerateRG(stripped_name)
                print "ERROR: " + inputs['.bam'] + " doesn't have RG. " + rg + " is generated."
-               realign += ["-R \""+rg+"\""]
+               realign += ['-R "'+rg+'"']
                
         realign += [inputs['.fa'],inputs['.bam']]
 
