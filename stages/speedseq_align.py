@@ -40,12 +40,10 @@ class speedseq_align(stage_wrapper.Stage_Wrapper):
             RG = inputs['RG']
 
         #[2]build command args
-        threads = str(inputs['threads'])
-        mem = str(inputs['mem'])
-	speedseq = self.tools['SPEEDSEQ']
-        #'@RG\tID:H7AGF.2\tLB:Solexa-206008\tPL:illumina\tPU:H7AGFADXX131213.2\tSM:HG00096\tCN:BI'
-        align = [speedseq,'align','-t',threads,'-R','"'+RG+'"','-M',mem,'-T',out_dir,
-                 '-o',out_name,inputs['.fa']]+inputs['.fq'] #out_name: speedseq -o is prefix (without.bam)
+        align = [self.tools['SPEEDSEQ'], 'align', '-T', out_name, '-o', out_name, '-R', '"'+RG+'"']
+        if 'threads' in inputs: align += ['-t', str(inputs['threads'])]
+        if 'mem' in inputs: align += ['-M', str(inputs['mem'])]
+        align += [inputs['.fa']] + inputs['.fq']
         
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
