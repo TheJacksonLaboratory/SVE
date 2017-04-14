@@ -1,3 +1,6 @@
 [submodule "src/bwa"]
 	path = src/bwa
 	url = https://github.com/lh3/bwa.git
+[submodule "src/speedseq"]
+	path = src/speedseq
+	url = https://github.com/hall-lab/speedseq.git
