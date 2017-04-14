@@ -1,6 +1,8 @@
 
 export MKFILE_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 SRC=src
+TARGET_BIN=bin
+CONFIG=$(TARGET_BIN)/tools.py
 
 SVE_DIR=$(shell pwd)
 
@@ -11,6 +13,7 @@ SUBDIRS = bwa speedseq samtools-1.3
 all:
 	$(MAKE) unzip
 	$(MAKE) build
+	$(MAKE) config
 .PHONY: all
 
 unzip:
@@ -28,8 +31,13 @@ build:
 		echo "- Building in $$dir"; \
 		$(MAKE) --no-print-directory -C $(SRC)/$$dir;\
 	done
-
-# modules
+config:
+	@echo "TOOLS={}" > $(CONFIG)
+	@echo "TOOLS += {'BWA':'$(SVE_DIR)/$(SRC)/bwa/bwa'}" >> $(CONFIG)
+	@echo "TOOLS += {'SPEEDSEQ':'$(SVE_DIR)/$(SRC)/speedseq/bin/speedseq'}" >> $(CONFIG)
+	@echo "TOOLS += {'SAMTOOLS-1.3':'$(SVE_DIR)/$(SRC)/samtools-1.3/samtools'}" >> $(CONFIG)
+	@echo "TOOLS += {'JAVA-1.8':'$(SVE_DIR)/$(SRC)/jre1.8.0_51/bin/java'}" >> $(CONFIG)
+	@echo "TOOLS += {'PICARD':'$(SVE_DIR)/$(SRC)/picard-tools-2.5.0/picard.jar'}" >> $(CONFIG)
 
 clean:
 	@echo "- Clean up"
@@ -41,5 +49,6 @@ clean:
 	@for module in $(TARS); do \
 		rm -rf $(SRC)/$$module; \
 	done
+	@rm -f $(CONFIG)
 
 .PHONY: clean
