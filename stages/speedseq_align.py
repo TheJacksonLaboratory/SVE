@@ -1,7 +1,6 @@
 import os
 import sys
 import subprocess32 as subprocess
-sys.path.append('../') #go up one in the modules
 import stage_wrapper
 import stage_utils as su
 from stages.utils.CheckGenerateRG import GenerateRG
@@ -34,16 +33,18 @@ class speedseq_align(stage_wrapper.Stage_Wrapper):
         if (stripped_name[-1:] == '_' or stripped_name[-1:] == '.'): stripped_name = stripped_name[:-1]
         out_dir = inputs['out_dir']
         out_name = out_dir + '/' + stripped_name
-        RG = inputs['RG']
-        if RG == '': # RG is not defined
+        RG = ''
+        if (not 'RG' in inputs) or (inputs['RG'] == ''): # RG is not defined
             RG = GenerateRG(stripped_name)
+	else:
+            RG = inputs['RG']
 
         #[2]build command args
         threads = str(inputs['threads'])
         mem = str(inputs['mem'])
-        speedseq = self.software_path+'/speedseq/bin/speedseq'
+	speedseq = self.tools['SPEEDSEQ']
         #'@RG\tID:H7AGF.2\tLB:Solexa-206008\tPL:illumina\tPU:H7AGFADXX131213.2\tSM:HG00096\tCN:BI'
-        align = [speedseq,'align','-t',threads,'-R','"'+RG+'"','-M',mem,
+        align = [speedseq,'align','-t',threads,'-R','"'+RG+'"','-M',mem,'-T',out_dir,
                  '-o',out_name,inputs['.fa']]+inputs['.fq'] #out_name: speedseq -o is prefix (without.bam)
         
         #[3a]execute the command here----------------------------------------------------
