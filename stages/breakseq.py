@@ -40,8 +40,9 @@ class breakseq(stage_wrapper.Stage_Wrapper):
         #build temp directory to work in
         sub_dir = out_dir+'/'+'S'+str(self.stage_id)+'/'
         if not os.path.exists(sub_dir): os.makedirs(sub_dir)
-            
-        python    = 'python'
+
+	print sys.executable            
+        python    = sys.executable
         samtools  = self.software_path+'/samtools-0.1.19/samtools'
         bwa       = self.software_path+'/bwa-master/bwa'
         breakseq  = self.software_path+'/breakseq2-2.2/scripts/run_breakseq2.py'
@@ -71,10 +72,11 @@ class breakseq(stage_wrapper.Stage_Wrapper):
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
+            print subprocess.check_output('which python', stderr=subprocess.STDOUT, shell=True)
             print(" ".join(call))
             output += subprocess.check_output(' '.join(call),
                                               stderr=subprocess.STDOUT,shell=True,
-                                              env={'PYTHONPATH':'/home/leew/tools/breakseq2-2.2:'+'/home/leew/.local/lib/python2.7/site-packages:'+'/opt/compsci/python/2.7.3/lib/python2.7/site-packages'})
+                                              env={'PYTHONPATH':'/home/leew/tools/breakseq2-2.2'})
             #print(" ".join(decomp))
             #output += subprocess.check_output(' '.join(decomp),
             #                                  stderr=subprocess.STDOUT,shell=True)
