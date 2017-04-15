@@ -35,22 +35,24 @@ class bwa_sampe(stage_wrapper.Stage_Wrapper):
         out_dir = inputs['out_dir']
         out_name = out_dir + '/' + stripped_name
 
-        threads = str(inputs['threads'])
-        bwa = self.software_path+'/bwa-master/bwa' #latest release
-        samtools = self.software_path+'/samtools-1.3/samtools'
-        sambamba = self.software_path+'/sambamba_v0.6.6'
+        threads = 1
+        if 'threads' in inputs: threads = str(inputs['threads'])
+        bwa = self.tools['BWA']
+        samtools = self.tools['SAMTOOLS-1.3']
+        sambamba = self.tools['SAMBAMBA']
 
         #[2]build command args
-        aln1 = [bwa,'aln','-t',threads,inputs['.fa'],inputs['.fq'][0],'-f',out_name+'_1.sai']
-        aln2 = [bwa,'aln','-t',threads,inputs['.fa'],inputs['.fq'][1],'-f',out_name+'_2.sai']
-        #'@RG\tID:H7AGF.2\tLB:Solexa-206008\tPL:illumina\tPU:H7AGFADXX131213.2\tSM:HG00096\tCN:BI'
-        RG = inputs['RG']
-        if RG == '': # RG is not defined
-            RG = GenerateRG(stripped_name)
+        aln1 = [bwa, 'aln', '-t', threads, inputs['.fa'], inputs['.fq'][0], '-f', out_name+'_1.sai']
+        aln2 = [bwa, 'aln', '-t', threads, inputs['.fa'], inputs['.fq'][1], '-f', out_name+'_2.sai']
 
-        sampe = [bwa,'sampe','-r',"'"+RG+"'",inputs['.fa'],out_name+'_1.sai',out_name+'_2.sai',inputs['.fq'][0],inputs['.fq'][1]]+['|']
-        view  = [samtools,'view','-Sb','-','-o',out_name+'.bam']
-        sort  = [sambamba,'sort','-o',out_name+'.sorted.bam','-l','5','-t',threads,out_name+'.bam']
+        #'@RG\tID:H7AGF.2\tLB:Solexa-206008\tPL:illumina\tPU:H7AGFADXX131213.2\tSM:HG00096\tCN:BI'
+        RG = ''
+        if (not 'RG' in inputs) or (inputs['RG'] == ''): RG = GenerateRG(stripped_name)
+        else: RG = inputs['RG']
+
+        sampe = [bwa, 'sampe', '-r', "'"+RG+"'", inputs['.fa'], out_name+'_1.sai', out_name+'_2.sai', inputs['.fq'][0], inputs['.fq'][1]]+['|']
+        view  = [samtools, 'view', '-Sb', '-', '-o', out_name+'.bam']
+        sort  = [sambamba, 'sort', '-o', out_name+'.sorted.bam', '-l', '5', '-t', threads, out_name+'.bam']
         
         
         #[3a]execute the command here----------------------------------------------------
