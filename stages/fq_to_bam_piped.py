@@ -37,21 +37,20 @@ class fq_to_bam_piped(stage_wrapper.Stage_Wrapper):
         out_name = out_dir + '/' + stripped_name
             
         #[2]build command args
-        threads = str(inputs['threads'])
-        bwa = self.software_path+'/bwa-master/bwa' #latest release
-        samtools = self.software_path+'/samtools-1.3/samtools'
-	sambamba = self.software_path+'/sambamba_v0.6.6'
-        RG = inputs['RG']
-        if RG == '': # RG is not defined
-            RG = GenerateRG(stripped_name)
-        bwa_mem = [bwa,'mem','-M','-t',threads,'-R',"'"+RG+"'",inputs['.fa']]+inputs['.fq']+['|']
-        view = [samtools,'view','-Sb','-','-o',out_name+'.bam']
+        threads = 1
+        if 'threads' in inputs: threads = str(inputs['threads'])
+        bwa = self.tools['BWA']
+        samtools = self.tools['SAMTOOLS-1.3']
+	sambamba = self.tools['SAMBAMBA']
+
+        RG = ''
+        if (not 'RG' in inputs) or (inputs['RG'] == ''): RG = GenerateRG(stripped_name)
+        else: RG = inputs['RG']
+
+        bwa_mem = [bwa, 'mem', '-M', '-t', threads, '-R', "'"+RG+"'", inputs['.fa']]+inputs['.fq']+['|']
+        view = [samtools, 'view', '-Sb', '-', '-o',out_name+'.bam']
         
-        sort = [sambamba,'sort',
-                '-o',out_name+'.sorted.bam',
-                '-l','5',
-                '-t',threads,
-                out_name+'.bam']
+        sort = [sambamba, 'sort', '-o', out_name+'.sorted.bam', '-l', '5', '-t', threads, out_name+'.bam']
                 
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
