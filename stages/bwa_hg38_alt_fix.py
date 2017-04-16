@@ -25,15 +25,11 @@ class bwa_index(stage_wrapper.Stage_Wrapper):
         #[1b]get some metadata for I/O names
         
         #[2]build command args
-        samtools = self.software_path+'/samtools-1.3/samtools'
+        samtools = self.tools['SAMTOOLS-1.3']
         view = [samtools, 'view', '-Sh', inputs['.bam']]
 
-        path = self.software_path+'/bwa.kit'
-        k8 = path + '/k8'
-        postalt   = path + '/bwa-postalt.js'
-        alt_files = path + '/resource-GRCh38/hs38DH-extra.fa ' 
-        alt_files += path + '/resource-GRCh38/hs38DH.fa.alt'
-        alt_fix = [k8, postalt, '-p', alt_files]
+        path = self.tools['BWA-POSTALT']
+        alt_fix = [self.tools['BWA-POSTALT'], '-p', self.files['GRCH38-EXTRA'], self.files['GRCH38-ALT']]
 
         out_file = inputs['out_file']
         if out_file is None:

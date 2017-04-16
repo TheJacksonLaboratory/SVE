@@ -40,6 +40,7 @@ class Stage_Wrapper(object):
             self.params = params
         self.software_path = os.path.abspath(os.path.dirname(os.path.abspath(__file__))+'/../..')
 	self.tools = tools.TOOLS
+	self.files = tools.FILES
         
     def __enter__(self):
         return self
