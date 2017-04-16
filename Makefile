@@ -14,7 +14,7 @@ SUBDIRS = bwa speedseq samtools-1.3
 all:
 	$(MAKE) unzip
 	$(MAKE) build
-	@test -d $(SVE_DIR)/$(TARGET_BIN) || mkdir $(SVE_DIR)$(TARGET_BIN)
+	@test -d $(SVE_DIR)/$(TARGET_BIN) || mkdir $(SVE_DIR)/$(TARGET_BIN)
 	$(MAKE) config
 	@cp $(PROGRAM) $(SVE_DIR)/$(TARGET_BIN)
 .PHONY: all
