@@ -1,7 +1,0 @@
-#2017-04-10
-Please check the webpage of breakseq2, http://bioinform.github.io/breakseq2/.
-breakseq2_bplib_20150129.* are downloaded from http://sv.gersteinlab.org/phase1bkpts/breakseq2_bplib_20150129.zip.
-We then extracted hg19 as hg19.pos and used liftOver to transfer to hg38.
-$ ./liftOver hg19.pos hg19ToHg18.over.chain hg38.pos liftover.unmapped
-After we implemented src/breakseq_bplib_convertor.cpp to convert breakseq2_bplib_20150129.* to breakseq2_bplib_20150129_hg38.*.
-$ ./convertor hg19.pos hg38.pos liftover.unmapped breakseq2_bplib_20150129 breakseq2_bplib_20150129_hg38

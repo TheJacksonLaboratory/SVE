@@ -3,6 +3,7 @@ export MKFILE_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 SRC=src
 TARGET_BIN=bin
 CONFIG=$(TARGET_BIN)/tools.py
+PROGRAM=$(SVE_DIR)/scripts/sve
 
 SVE_DIR=$(shell pwd)
 
@@ -13,7 +14,9 @@ SUBDIRS = bwa speedseq samtools-1.3
 all:
 	$(MAKE) unzip
 	$(MAKE) build
+	@test -d $(SVE_DIR)/$(TARGET_BIN) || mkdir $(SVE_DIR)$(TARGET_BIN)
 	$(MAKE) config
+	@cp $(PROGRAM) $(SVE_DIR)/$(TARGET_BIN)
 .PHONY: all
 
 unzip:
@@ -25,6 +28,7 @@ unzip:
 		fi; \
 	done; \
 	cd $(SVE_DIR)
+	@test -d $(SVE_DIR)/data || tar -zxvf data.tar.gz
 
 build:
 	@for dir in $(SUBDIRS); do \
@@ -54,6 +58,7 @@ clean:
 	@for module in $(TARS); do \
 		rm -rf $(SRC)/$$module; \
 	done
-	@rm -f $(CONFIG)
+	@rm -rf $(SVE_DIR)/data
+	@rm -rf $(TARGET_BIN)
 
 .PHONY: clean

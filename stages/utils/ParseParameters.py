@@ -23,7 +23,7 @@ class ParseParameters(object):
     def __init__(self, paras):
         parser = argparse.ArgumentParser(
             add_help=False,
-            usage = '''prepare_bam.py <command> [options]\n
+            usage = '''sve <command> [options]\n
 Command:\talign\tFASTQ->BAM
         \trealign\tBAM->BAM
         \thg38fix\tBAM->BAM
