@@ -30,8 +30,8 @@ class picard_mark_duplicates(stage_wrapper.Stage_Wrapper):
         
         #[2a]build command args
         software = self.software_path
-        java   = software+'/jre1.8.0_51/bin/java'
-        picard = software+'/picard-tools-2.5.0/picard.jar'
+        java   = self.tools['JAVA-1.8']
+        picard = self.tools['PICARD']
         mark   =  [java]
         if 'mem' in inputs: 
             mark += ['-Xmx%sg'%str(str(inputs['mem']))]

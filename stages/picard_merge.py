@@ -42,10 +42,9 @@ class picard_merge(stage_wrapper.Stage_Wrapper):
             out_name = {'.bam' : out_dir+stripped_name+out_ext}
 
         #[2a]build command args
-        software = self.software_path
-        java = software + '/jre1.8.0_51/bin/java'
-        mem = '-Xmx32g'
-        picard = self.software_path+'/picard-tools-2.5.0/picard.jar'
+        java = self.tools['JAVA-1.8']
+        mem = '-Xmx8g'
+        picard = self.tools['PICARD']
         command = [java,mem,'-jar',picard,'MergeSamFiles']+\
                   ['I='+bam for bam in in_name['.bam']]+['O='+out_name['.bam']]
         
