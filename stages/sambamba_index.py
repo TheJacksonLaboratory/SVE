@@ -20,7 +20,7 @@ class sambamba_index(stage_wrapper.Stage_Wrapper):
         return 0
 
     def run(self,run_id,inputs):
-        sambamba = self.software_path+'/sambamba_v0.6.6'
+        sambamba = self.tools['SAMBAMBA']
         threads = str(self.get_params()['-t']['value'])
         input_bam = inputs['.bam'][0]
         command = [sambamba,'index','-t',threads,input_bam]

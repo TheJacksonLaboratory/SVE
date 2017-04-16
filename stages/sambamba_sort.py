@@ -23,7 +23,7 @@ class sambamba_sort(stage_wrapper.Stage_Wrapper):
     #bwa sampe ref.fa L.sai R.sai L.fq R.fq -f out.sam
 
     def run(input,output,threads):
-        sambamba = self.software_path+'/sambamba_v0.6.6'
+        sambamba = self.tools['SAMBAMBA']
         command = [sambamba,sort,'-o',outout,'-l','5','-t',str(threads),inout]
 
         #[3a]execute the command here----------------------------------------------------
