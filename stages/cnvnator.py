@@ -37,8 +37,9 @@ class cnvnator(stage_wrapper.Stage_Wrapper):
         stripped_name = ''
         if len(inputs['.bam']) == 1: stripped_name = self.strip_path(self.strip_in_ext(inputs['.bam'][0],'.bam'))
         else: stripped_name = 'joint'
-        out_names = {'.root' : out_dir+stripped_name+'_S'+str(self.stage_id),
-                     '.calls': out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[1],
+        temp_dir = out_dir+stripped_name+'_S'+str(self.stage_id)+'/temp/'
+        out_names = {'.root' : temp_dir+'temp',
+                     '.calls': temp_dir+'temp'+out_exts[1],
                      '.vcf'  : out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[2]}
         #[2a]build command args
         
@@ -82,10 +83,8 @@ class cnvnator(stage_wrapper.Stage_Wrapper):
             print (" ".join(conv))
             output += subprocess.check_output(' '.join(conv),stderr=subprocess.STDOUT, shell=True)+'\n'
             print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
-            print ("".join('rm',out_names['.calls'],out_names['.root']+'.tree.root',out_names['.root']+'.his.root'))
-            output += subprocess.check_output('rm %s %s %s'%(out_names['.calls'],
-                                                             out_names['.root']+'.tree.root',
-                                                             out_names['.root']+'.his.root'),
+            print ('rm -rf %s'%temp_dir)
+            output += subprocess.check_output('rm -rf %s'%temp_dir,
                                               stderr=subprocess.STDOUT, shell=True)
         #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:

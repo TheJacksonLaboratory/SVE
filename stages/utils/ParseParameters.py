@@ -164,7 +164,7 @@ Command:\talign\tFASTQ->BAM
 
         ### Call: genome
         if paras['command'] in ['call']:
-            if args.algorithm in ['genome_strip', 'delly'] and args.genome is None:
+            if args.algorithm in ['genome_strip', 'delly', 'breakseq'] and args.genome is None:
                 print "ERROR: Please specify the input genome: -g hg19|hg38|others."
                 exit()
             else:

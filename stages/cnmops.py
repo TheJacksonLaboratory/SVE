@@ -27,17 +27,17 @@ class cnmops(stage_wrapper.Stage_Wrapper):
     def run(self,run_id,inputs):
         #workflow is to run through the stage correctly and then check for error handles
     
-        #[1a]get input names and output names setup      
-        in_names = {'.fa':inputs['.fa'][0],'.bam':inputs['.bam']}
-        
-        out_ext = self.split_out_exts()
-        if inputs.has_key('out_dir'):
-            out_dir = inputs['out_dir'][0]
-            stripped_name = self.strip_path(self.strip_in_ext(in_names['.bam'][0],'.bam'))
-            out_names = {'.vcf':out_dir+stripped_name+'_S'+str(self.stage_id)+out_ext[0]}
-        else:
-            cascade = self.strip_in_ext(in_names['.bam'][0],'.bam')
-            out_names = {'.vcf' :cascade+'_S'+str(self.stage_id)+out_ext[0]}
+        #[1a]get input names and output names setup
+        if ('.fa' not in inputs) or ('.bam' not in inputs) or ('out_dir' not in inputs):
+            print "ERROR: .fa, .bam, and out_dir are required for genome_strip.py"
+            return None
+        #will have to figure out output file name handling
+        out_exts = self.split_out_exts()
+        out_dir = inputs['out_dir'] + '/'
+        stripped_name = ''
+        if len(inputs['.bam']) == 1: stripped_name = self.strip_path(self.strip_in_ext(inputs['.bam'][0],'.bam'))
+        else: stripped_name = 'joint'
+        out_names = {'.vcf':out_dir+stripped_name+'_S'+str(self.stage_id)+out_ext[0]}
         
         #[2a]build command args
         
