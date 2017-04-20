@@ -4,3 +4,18 @@
 [submodule "src/speedseq"]
 	path = src/speedseq
 	url = https://github.com/hall-lab/speedseq.git
+[submodule "src/samtools"]
+	path = src/samtools
+	url = https://github.com/samtools/samtools.git
+[submodule "src/htslib"]
+	path = src/htslib
+	url = https://github.com/samtools/htslib.git
+[submodule "src/bcftools"]
+	path = src/bcftools
+	url = https://github.com/samtools/bcftools.git
+[submodule "src/delly"]
+	path = src/delly
+	url = https://github.com/dellytools/delly.git
+[submodule "src/lumpy-sv"]
+	path = src/lumpy-sv
+	url = https://github.com/arq5x/lumpy-sv.git
