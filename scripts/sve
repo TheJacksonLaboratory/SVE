@@ -37,12 +37,12 @@ paras['machine'] = socket.gethostname
 dbc = {'srv':'','db':'','uid':'','pwd':''}
 run_id = 0
 
-# Index FASTA if they are not there
-#if not all ([os.path.isfile(paras['ref'] + '.' + suffix) for suffix in ['amb','ann','bwt','pac','sa']]):
-#    st = stage.Stage('bwa_index',dbc)
-#    st.run(run_id, {'.fa':[paras['ref']]})
-
 if paras['command'] == "align":
+    # Index FASTA if they are not there
+    if not all ([os.path.isfile(paras['ref'] + '.' + suffix) for suffix in ['amb','ann','bwt','pac','sa']]):
+        st = stage.Stage('bwa_index',dbc)
+        st.run(run_id, {'.fa':[paras['ref']]})
+    # Align
     a_start = time.time()
     aligner_params = {'.fa':paras['ref'],'.fq':paras['FASTQ'],'out_dir':paras['out_dir'],'threads':paras['threads'],'mem':paras['mem'],'RG':paras['RG']}
     if paras['algorithm'] == 'bwa_mem':
@@ -60,33 +60,43 @@ if paras['command'] == "align":
         Dedup_Sort(sorted_bam, paras['mem'], paras['threads'])
     a_stop = time.time()
     print('SVE:BAM:%s was completed in %s hours'%(paras['algorithm'],round((a_stop-a_start)/(60.0**2),4)))
+
 elif paras['command'] == "realign":
-    """
-    if args.mark_duplicates:
-        d_start = time.time()
-        st = stage.Stage('picard_mark_duplicates',dbc)
-        outs = st.run(run_id,{'.bam':[bam]})
-        d_stop = time.time()
-        print('SVE:picard_mark_duplicates time was % hours'%round((d_stop-d_start)/(60**2),1))
-    if args.replace_rg: #set to do one at a time only for now...
-        r_start = time.time()
-        base = bam.rsplit('/')[-1].rsplit('.')[0].rsplit('_')[0].rsplit('-')
-        if SM is None: SM = base
-        st = stage.Stage('picard_replace_rg',dbc)
-        outs = st.run(run_id,{'.bam':[bam],
-                              'platform_id':['illumina'],
-                              'SM':[SM]})
-        r_stop = time.time()
-        print('SVE:picard_replace_rg time was %s sec'%round((r_stop-r_start)/(60**2),1))
-    """
+    # Index FASTA if they are not there
+    if not all ([os.path.isfile(paras['ref'] + '.' + suffix) for suffix in ['amb','ann','bwt','pac','sa']]):
+        st = stage.Stage('bwa_index',dbc)
+        st.run(run_id, {'.fa':[paras['ref']]})
+    # Realign
     a_start = time.time()
     st = stage.Stage('speedseq_realign',dbc)
-    outs = st.run(run_id, {'.fa':paras['ref'],'.bam':paras['BAM'],'out_dir':paras['out_dir'],'threads':paras['threads'],'mem':paras['mem'],'RG':paras['RG']})
+    outs = st.run(run_id, {'.fa':paras['ref'],'.bam':paras['BAM'][0],'out_dir':paras['out_dir'],'threads':paras['threads'],'mem':paras['mem'],'RG':paras['RG']})
     a_stop = time.time()
     print('SVE:realignment time was % hours'%round((a_stop-a_start)/(60**2),1))
+
 elif paras['command'] == "hg38fix":
     a_start = time.time()
     st = stage.Stage('bwa_hg38_alt_fix',dbc)
-    st.run(run_id, {'.bam':paras['BAM'],'out_file':paras['out_file']})
+    st.run(run_id, {'.bam':paras['BAM'][0],'out_file':paras['out_file']})
     a_stop = time.time()
     print('SVE:hg38fix time was % hours'%round((a_stop-a_start)/(60**2),1))
+
+elif paras['command'] == "call":
+    # Please note that some calls are able to take multiple bams for joint calling.
+    call_params = {'.fa':paras['ref'],'.bam':paras['BAM'],'out_dir':paras['out_dir'],'threads':paras['threads'],'mem':paras['mem']}
+    if paras['algorithm'] == 'genome_strip':
+        call_params['genome'] = paras['genome']
+        st = stage.Stage('genome_strip_prepare_ref',dbc)
+        gs_ref = st.run(run_id, call_params)
+        if gs_ref is None: exit()
+        call_params['.svmask.fasta']  = gs_ref['.svmask.fasta']
+        call_params['.ploidymap.txt'] = gs_ref['.ploidymap.txt']
+        call_params['.rdmask.bed']    = gs_ref['.rdmask.bed']
+        st = stage.Stage('genome_strip',dbc)
+        st.run(run_id, call_params)
+    if paras['algorithm'] in ['cnvnator', 'lumpy']:
+        st = stage.Stage(paras['algorithm'],dbc)
+        st.run(run_id, call_params)
+    if paras['algorithm'] in ['delly']:
+        call_params['genome'] = paras['genome']
+        st = stage.Stage('delly',dbc)
+        st.run(run_id, call_params)
