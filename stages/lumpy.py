@@ -25,51 +25,29 @@ class lumpy(stage_wrapper.Stage_Wrapper):
         #workflow is to run through the stage correctly and then check for error handles
              
         #[1a]get input names and output names setup
-        in_names = {'.bam':inputs['.bam']}
+        if ('.fa' not in inputs) or ('.bam' not in inputs) or ('out_dir' not in inputs):
+            print "ERROR: .fa, .bam, and out_dir are required for genome_strip.py"
+            return None
         #will have to figure out output file name handling
         out_exts = self.split_out_exts()
-        out_dir = self.strip_name(in_names['.bam'][0]) #default output directory
-        if inputs.has_key('out_dir'):
-            out_dir = inputs['out_dir'][0]
-            if inputs.has_key('multisample'):
-                stripped_name = 'multisample'
-            else:
-                stripped_name = self.strip_path(self.strip_in_ext(in_names['.bam'][0],'.bam'))
-            out_names = {'.calls' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[0],
-                         '.vcf' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[1]}
-        else:
-            if inputs.has_key('multisample'):
-                cascade = 'multisample'
-            else:
-                cascade = self.strip_in_ext(in_names['.bam'][0],'.bam')
-            out_names = {'.calls' :out_dir+cascade+'_S'+str(self.stage_id)+out_exts[0],
-                         '.vcf' :out_dir+cascade+'_S'+str(self.stage_id)+out_exts[1]} 
+        out_dir = inputs['out_dir'] + '/'
+        stripped_name = ''
+        if len(inputs['.bam']) == 1: stripped_name = self.strip_path(self.strip_in_ext(inputs['.bam'][0],'.bam'))
+        else: stripped_name = 'joint'
+        out_names = {'.calls' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[0],
+                     '.vcf' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[1]}
             
-        defaults,params = self.params,[]
-        params = [k+'='+str(defaults[k]['value']) for k in defaults]
-        print(params)
         #[2a]build command args       
-        lumpy   = self.software_path+'/lumpy-sv/bin/lumpyexpress'
-        #vcfsort = self.software_path+'/vcftools_0.1.12b/bin/vcf-sort'
-        #PERL = self.software_path+'/vcftools_0.1.12b/perl'
-        #if os.environ.has_key('PERL5LIB'):
-        #    PERL += ':'+os.environ['PERL5LIB']
-        sv_call   = [lumpy,'-B']+ [','.join(in_names['.bam'])]+\
-                     ['-m 4','-T',out_dir+'temp','-P','-o',out_names['.vcf']] #more work on params
-        #sv_fast can do a version that checks for matching .bam, .split.bam and .disc.bam triples (prior samblasted)
-        #sort_vcf  = [vcfsort,out_names['.calls'],'>',out_names['.vcf']]        
-        #self.db_start(run_id,in_names['.bam'][0])        
+        lumpy   = self.tools['LUMPY-EXPRESS']
+        temp_dir = out_dir+stripped_name+'_S'+str(self.stage_id)+'/temp'
+        sv_call = [lumpy,'-B'] + [','.join(inputs['.bam'])] + ['-m 4','-T',temp_dir,'-P','-o',out_names['.vcf']] #more work on params
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
+            print (' '.join(sv_call))
             output += subprocess.check_output(' '.join(sv_call),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
-            #output += subprocess.check_output(' '.join(sort_vcf),
-            #                                  stderr=subprocess.STDOUT,shell=True,
-            #                                  env={'PERL5LIB':PERL})+'\n'
-            #output += subprocess.check_output(' '.join(['rm',out_names['.calls']]),
-            #                                  stderr=subprocess.STDOUT,shell=True)+'\n'
-            #catch all errors that arise under normal call behavior
+            output += subprocess.check_output('rm -rf %s' %stemp_dir, stderr=subprocess.STDOUT,shell=True)+'\n'
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
             err['output'] = E.output

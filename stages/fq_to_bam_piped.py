@@ -40,7 +40,7 @@ class fq_to_bam_piped(stage_wrapper.Stage_Wrapper):
         threads = 1
         if 'threads' in inputs: threads = str(inputs['threads'])
         bwa = self.tools['BWA']
-        samtools = self.tools['SAMTOOLS-1.3']
+        samtools = self.tools['SAMTOOLS']
 	sambamba = self.tools['SAMBAMBA']
 
         RG = ''

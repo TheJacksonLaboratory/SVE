@@ -25,40 +25,32 @@ class cnvnator(stage_wrapper.Stage_Wrapper):
         #workflow is to run through the stage correctly and then check for error handles
     
         #[1a]get input names and output names setup
-        in_names = {'.fa': inputs['.fa'], '.bam': inputs['.bam']}
+        if ('.fa' not in inputs) or ('.bam' not in inputs) or ('out_dir' not in inputs):
+            print "ERROR: .fa, .bam, and out_dir are required for genome_strip.py"
+            return None
         #if self.db_get_ref_name(run_id): ref_name = self.ref_name        
         #else: ref_name = in_names['.fa'][0].rsplit('/')[-1].rsplit('.')[0]
-        ref_name = in_names['.fa'][0].rsplit('/')[-1].rsplit('.')[0]
+        ref_name = inputs['.fa'].rsplit('/')[-1].rsplit('.')[0]
         
         out_exts = self.split_out_exts()
-        if inputs.has_key('out_dir'):
-            out_dir = inputs['out_dir'][0]
-            stripped_name = self.strip_path(self.strip_in_ext(in_names['.bam'][0],'.bam'))
-            out_names = {'.root' : out_dir+stripped_name+'_S'+str(self.stage_id),
-                         '.calls': out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[1],
-                         '.vcf'  : out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[2]}
-        else:
-            cascade = self.strip_in_ext(in_names['.bam'][0],'.bam')
-            out_names = {'.root' :cascade+'_S'+str(self.stage_id),
-                         '.calls':cascade+'_S'+str(self.stage_id)+out_exts[1],
-                         '.vcf'  :cascade+'_S'+str(self.stage_id)+out_exts[2]}                 
+        out_dir = inputs['out_dir'] + '/'
+        stripped_name = ''
+        if len(inputs['.bam']) == 1: stripped_name = self.strip_path(self.strip_in_ext(inputs['.bam'][0],'.bam'))
+        else: stripped_name = 'joint'
+        out_names = {'.root' : out_dir+stripped_name+'_S'+str(self.stage_id),
+                     '.calls': out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[1],
+                     '.vcf'  : out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[2]}
         #[2a]build command args
         
         #split the ref seq into seperate chroms...
-        cnvnator = self.software_path+'/CNVnator_v0.3.3/src/cnvnator'
-        cnv2vcf  = self.software_path+'/CNVnator_v0.3.3/cnvnator2VCF.pl'
+        cnvnator = self.tools['CNVNATOR']
+        cnv2vcf  = self.tools['CNVNATOR2VCF']
 
-        chrom_l  = sr.get_fasta_seq_names(in_names['.fa'][0]) #by reading the larger ref
         #[self.strip_in_ext(self.strip_path(i),'.fa') for i in in_names['.fa']] #by using the input list
         w = str(self.get_params()['window']['value'])
-        refd = self.strip_name(in_names['.fa'][0]) #this is a bit hackish
+        refd = self.strip_name(inputs['.fa']) #this is a bit hackish
         
-        print(chrom_l)
-        print(w)
-        print(refd)
-        print(ref_name)
-        
-        extr     = [cnvnator, '-unique','-root', out_names['.root']+'.tree.root','-tree']+ in_names['.bam']
+        extr     = [cnvnator, '-unique','-root', out_names['.root']+'.tree.root','-tree']+ inputs['.bam']
         hist     = [cnvnator, '-genome', ref_name, '-root', out_names['.root']+'.tree.root',
                     '-outroot',out_names['.root']+'.his.root','-his', w, '-d', refd]
         stats    = [cnvnator, '-root', out_names['.root']+'.his.root', '-stat', w]
@@ -68,26 +60,28 @@ class cnvnator(stage_wrapper.Stage_Wrapper):
         
         #[2b]make start entry which is a new staged_run row
 
-        #self.command = extr+hist+stats+sig+call+conv
-        #print(self.get_command_str())
-        
-        #self.db_start(run_id,in_names['.bam'][0])
-        
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print (" ".join(extr))
             output += subprocess.check_output(' '.join(extr),stderr=subprocess.STDOUT, shell=True)+'\n'
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print (" ".join(hist))
             output += subprocess.check_output(' '.join(hist),stderr=subprocess.STDOUT, shell=True)+'\n'
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print (" ".join(stats))
             output += subprocess.check_output(' '.join(stats),stderr=subprocess.STDOUT, shell=True)+'\n'
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print (" ".join(sig))
             output += subprocess.check_output(' '.join(sig),stderr=subprocess.STDOUT, shell=True)+'\n'
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print (" ".join(call))
             output += subprocess.check_output(' '.join(call),stderr=subprocess.STDOUT, shell=True)+'\n'
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print (" ".join(conv))
             output += subprocess.check_output(' '.join(conv),stderr=subprocess.STDOUT, shell=True)+'\n'
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print ("".join('rm',out_names['.calls'],out_names['.root']+'.tree.root',out_names['.root']+'.his.root'))
             output += subprocess.check_output('rm %s %s %s'%(out_names['.calls'],
                                                              out_names['.root']+'.tree.root',

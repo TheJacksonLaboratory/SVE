@@ -9,6 +9,7 @@ para_dict={
 'command':'',
 'ref':'',
 'refbase':'',
+'genome':'',
 'out_dir':'',
 'out_file':'',
 'threads':4,
@@ -16,7 +17,7 @@ para_dict={
 'algorithm':'speed_seq',
 'RG':'',
 'FASTQ':[],
-'BAM':''
+'BAM':[]
 }
 
 class ParseParameters(object):
@@ -27,11 +28,12 @@ class ParseParameters(object):
 Command:\talign\tFASTQ->BAM
         \trealign\tBAM->BAM
         \thg38fix\tBAM->BAM
+	\tcall\tBAM(s)->VCF
 ''')
         parser.add_argument('command', help='Subcommand to run')
         # parse_args defaults to [1:] for args, but you need to
         # exclude the rest of the args too, or validation will fail
-        sub_commands = ['align', 'realign', 'hg38fix']
+        sub_commands = ['align', 'realign', 'hg38fix', 'call']
         args = parser.parse_args(sys.argv[1:2])
         if not args.command in sub_commands:
             print args.command + ' is not a recognized command.\n'
@@ -45,6 +47,8 @@ Command:\talign\tFASTQ->BAM
             getattr(self, 'aln_parse')(args.command, parser1, paras)
         elif args.command in sub_commands[2]:
             getattr(self, 'fix_parse')(args.command, parser1, paras)
+        elif args.command in sub_commands[3]:
+            getattr(self, 'aln_parse')(args.command, parser1, paras)
 
     ##### sub commands #####
     def align(self):
@@ -59,14 +63,22 @@ Command:\talign\tFASTQ->BAM
         parser = argparse.ArgumentParser(usage = "prepare_bam realign [options] <-r FILE> <BAM>")
         self.aln_common(parser)
         parser.add_argument('-R', dest='RG',type=str, metavar='STR', help='read group header line such as "@RG\\tID:id\\tSM:sampleName\\tLB:lib\\tPL:ILLUMINA"\t[RG_in_input_BAM]')
-        parser.add_argument('BAM', help='input BAM [null]')
+        parser.add_argument('BAM', nargs=1, help='input BAM [null]')
         return parser
 
     def hg38fix(self):
         parser = argparse.ArgumentParser(usage = "prepare_bam hg38fix [options] <BAM>")
         #parser.add_argument('-p', dest='ref_alt', nargs='+', type=str, metavar='FILE', help='\t[hs38DH-extra hs38DH.fa.alt]')
         parser.add_argument('-o', dest='out_file', type=str, metavar='STR', help='output BAM\t[in_prefix.alt.bam]')
-        parser.add_argument('BAM', help='input BAM [null]')
+        parser.add_argument('BAM', nargs=1, help='input BAM [null]')
+        return parser
+
+    def call(self):
+        parser = argparse.ArgumentParser(usage = "prepare_bam call [options] <-r FILE> <-g hg19|hg38|others> <BAM [BAM ...]>")
+        self.aln_common(parser)
+        parser.add_argument('-a', dest='algorithm', type=str, metavar='STR', choices=['breakdancer', 'breakseq', 'cnvnator', 'hydra', 'delly', 'lumpy', 'genome_strip', 'cnmops', 'gatk', 'tigra'], help='the method used for SV calling\t[NULL]')
+        parser.add_argument('-g', dest='genome', type=str, metavar='STR', choices=['hg19', 'hg38', 'others'], help='tell us the input reference\t[NULL]')
+        parser.add_argument('BAM', nargs='+', help='input BAM [null]')
         return parser
     ##### end sub commands #####
 
@@ -90,11 +102,11 @@ Command:\talign\tFASTQ->BAM
 
         ### BAM
         paras['BAM'] = args.BAM
-        if not os.path.isfile(paras['BAM']): 
-            print "ERROR: Cannot open BAM file: " + paras['BAM']
+        if not os.path.isfile(paras['BAM'][0]): 
+            print "ERROR: Cannot open BAM file: " + paras['BAM'][0]
             exit()
 
-        if args.out_file != "": paras['out_file'] = args.out_file
+        if args.out_file is not None: paras['out_file'] = args.out_file
 
     def aln_parse(self, command, parser, paras):
         self.load_args(parser)
@@ -132,7 +144,7 @@ Command:\talign\tFASTQ->BAM
         paras['refbase'] = paras['ref'].rsplit('/')[-1].split('.fa')[0]
 
         ### Align
-        if paras['command'] == 'align':
+        if paras['command'] in ['align']:
             paras['FASTQ'] = args.FASTQ
             if len(paras['FASTQ']) > 2:
                 print "ERROR: At most two FASTQs"
@@ -142,18 +154,37 @@ Command:\talign\tFASTQ->BAM
                 if not os.path.isfile(r):
                     print "ERROR: Cannot open FASTQ file: " + r
                     exit()
+
+        ### Realign and Call: for bam input
+        if paras['command'] in ['realign']:
+            paras['BAM'] = args.BAM
+            if not os.path.isfile(paras['BAM'][0]): 
+                print "ERROR: Cannot open BAM file: " + paras['BAM'][0]
+                exit()
+
+        ### Call: genome
+        if paras['command'] in ['call']:
+            if args.algorithm in ['genome_strip', 'delly'] and args.genome is None:
+                print "ERROR: Please specify the input genome: -g hg19|hg38|others."
+                exit()
+            else:
+                paras['genome'] = args.genome
+            paras['BAM'] = args.BAM
+            for bam in paras['BAM']:
+                if not os.path.isfile(bam):
+                    print "ERROR: Cannot open BAM file: " + bam
+                    exit()
+            
+
+        ### Align and Call: for algorithm
+        if paras['command'] in ['align', 'call']:
             if args.algorithm is not None: paras['algorithm'] = args.algorithm
 
-        ### Realign
-        elif paras['command'] == 'realign':
-            paras['BAM'] = args.BAM
-            if not os.path.isfile(paras['BAM']): 
-                print "ERROR: Cannot open BAM file: " + paras['BAM']
-                exit()
+        if paras['command'] in ['align', 'realign']:
+            if args.RG is not None:        paras['RG'] = args.RG
 
         if args.threads is not None:   paras['threads'] = int(args.threads)
         if args.mem is not None:       paras['mem'] = int(args.mem)
-        if args.RG is not None:        paras['RG'] = args.RG
 
         if not os.path.exists(paras['out_dir'] ): os.makedirs(paras['out_dir'] )
 

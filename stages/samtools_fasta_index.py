@@ -30,7 +30,7 @@ class samtools_fasta_index(stage_wrapper.Stage_Wrapper):
         out_name = self.strip_in_ext(in_names['.fa'],'.fa')+out_ext
 
         #[2a]build command args
-        samtools = self.software_path+'/samtools-1.3/samtools'
+        samtools = self.tools['SAMTOOLS']
         command = [samtools,'faidx',in_names['.fa']]   
         
         #[2b]make start entry which is a new staged_run row

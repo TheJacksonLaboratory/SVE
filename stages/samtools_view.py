@@ -30,7 +30,7 @@ class samtools_view(stage_wrapper.Stage_Wrapper):
         out_name = self.strip_in_ext(in_names['.sam'],'.sam')+'_S'+str(self.stage_id)+out_ext
 
         #[2a]build command args
-        samtools = self.software_path+'/samtools-1.3/samtools'
+        samtools = self.tools['SAMTOOLS']
         command = [samtools,'view',in_names['.sam'],'-o',out_name]
         for k in self.params:
             param = self.params[k]

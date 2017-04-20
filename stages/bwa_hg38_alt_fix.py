@@ -25,7 +25,7 @@ class bwa_index(stage_wrapper.Stage_Wrapper):
         #[1b]get some metadata for I/O names
         
         #[2]build command args
-        samtools = self.tools['SAMTOOLS-1.3']
+        samtools = self.tools['SAMTOOLS']
         view = [samtools, 'view', '-Sh', inputs['.bam']]
 
         path = self.tools['BWA-POSTALT']

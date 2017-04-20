@@ -25,66 +25,78 @@ class delly(stage_wrapper.Stage_Wrapper):
         #workflow is to run through the stage correctly and then check for error handles
              
         #[1a]get input names and output names setup
-        in_names = {'.fa':inputs['.fa'][0],
-                    '.bam':inputs['.bam']}
+        if ('.fa' not in inputs) or ('.bam' not in inputs) or ('out_dir' not in inputs):
+            print "ERROR: .fa, .bam, and out_dir are required for genome_strip.py"
+            return None
         #will have to figure out output file name handling
         out_exts = self.split_out_exts()
-        out_dir = self.strip_name(in_names['.fa']) #default output directory
-        if inputs.has_key('out_dir'):
-            out_dir = inputs['out_dir'][0]
-            stripped_name = self.strip_path(self.strip_in_ext(in_names['.bam'][0],'.bam'))
-            out_names = {'.vcf' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[0]}
-        else:
-            cascade = self.strip_in_ext(in_names['.bam'][0],'.bam')
-            out_names = {'.vcf' :cascade+'_S'+str(self.stage_id)+out_exts[0]}  
+        out_dir = inputs['out_dir'] + '/'
+        stripped_name = ''
+        if len(inputs['.bam']) == 1: stripped_name = self.strip_path(self.strip_in_ext(inputs['.bam'][0],'.bam'))
+        else: stripped_name = 'joint'
+        stripped_name = self.strip_path(self.strip_in_ext(inputs['.bam'][0],'.bam'))
+        out_names = {'.vcf' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[0]}
         #[2a]build command args
         sub_dir = out_dir+'/'+'S'+str(self.stage_id)+'/'
         if not os.path.exists(sub_dir): os.makedirs(sub_dir)
         
         #add load libs parameters for OPEN_MP to do || processing        
         #will have to make some connection changes here
-        delly = self.software_path+'/delly/src/delly' #updated binary
-        excl  = self.software_path+'/delly/excludeTemplates/human.hg38.excl.tsv'#need to match reference
-        vcfs  = {'del':sub_dir+'del.vcf','dup':sub_dir+'dup.vcf',
-                 'inv':sub_dir+'inv.vcf','tra':sub_dir+'tra.vcf',
-                 'ins': sub_dir + 'ins.vcf'}
+        delly = self.tools['DELLY']
+        excl = ''
+        if inputs['genome'] == 'hg19': excl  = self.files['DELLY-HG19']
+        elif inputs['genome'] == 'hg38': excl  = self.files['DELLY-HG38']
 
-        bcfs  = {'del':sub_dir+'del.bcf','dup':sub_dir+'dup.bcf',
-                 'inv':sub_dir+'inv.bcf','tra':sub_dir+'tra.bcf',
-                 'ins': sub_dir + 'ins.bcf'}
-        #q = str(self.get_params()['q']['value'])
-        #s = str(self.get_params()['s']['value'])
-        del_call = [delly,'call','-t','DEL',
-                    '-x',excl,'-o',bcfs['del'],'-g',in_names['.fa']]+in_names['.bam']
-        dup_call = [delly,'call','-t','DUP',
-                    '-x',excl,'-o',bcfs['dup'],'-g',in_names['.fa']]+in_names['.bam']
-        inv_call = [delly,'call','-t','INV',
-                    '-x',excl,'-o',bcfs['inv'],'-g',in_names['.fa']]+in_names['.bam']
-        tra_call = [delly,'call','-t','TRA',
-                    '-x',excl,'-o',bcfs['tra'],'-g',in_names['.fa']]+in_names['.bam']
-        ins_call = [delly,'call','-t','INS',
-                    '-x',excl,'-o',bcfs['ins'],'-g',in_names['.fa']]+in_names['.bam']
+        bcfs = {}
+        type_list = ['del', 'dup', 'inv', 'bnd', 'ins']
+        for type in type_list:
+            bcfs[type] = sub_dir+type+'.bcf'
 
         #self.db_start(run_id,in_names['.bam'][0])        
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try: #should split these up for better robustness...
-            print (" ".join(del_call))
-            output += subprocess.check_output(' '.join(del_call),
-                                              stderr=subprocess.STDOUT,shell=True)+'\n'
-            print (" ".join(dup_call))
-            output += subprocess.check_output(' '.join(dup_call),
-                                              stderr=subprocess.STDOUT,shell=True)+'\n'
-            print (" ".join(inv_call))
-            output += subprocess.check_output(' '.join(inv_call),
-                                              stderr=subprocess.STDOUT,shell=True)+'\n'
-            print (" ".join(tra_call))
-            output += subprocess.check_output(' '.join(tra_call),
-                                              stderr=subprocess.STDOUT,shell=True)+'\n'
-            print (" ".join(ins_call))
-            output += subprocess.check_output(' '.join(ins_call),
-                                              stderr=subprocess.STDOUT,shell=True)+'\n'
-            #new version has ins_call too, will add
+            count = 0
+            # Delly call
+            for bam in inputs['.bam']:
+                delly_call = [delly, 'call', '-g',inputs['.fa']]
+                if excl != '': delly_call += ['-x', excl]
+                for type in type_list:
+                    type_call = delly_call + ['-t', type.upper(), '-o', sub_dir+str(count)+'.'+type+'.bcf'] + [bam]
+                    print (" ".join(type_call))
+                    output += subprocess.check_output(' '.join(type_call), stderr=subprocess.STDOUT,shell=True)+'\n'
+                count += 1
+
+            # Delly merge
+            if count > 1:
+                delly_merge = [delly, 'merge', '-r', str(0.5), '-b', str(500), '-n', str(1000000), '-m', str(500)]
+                for type in type_list:
+                    type_merge = delly_merge + ['-t', type.upper(), '-o', 'b_geno_'+bcfs[type]]
+                    for i in range (count): 
+                        type_merge += [sub_dir+str(count)+'.'+type+'.bcf']
+                    output += subprocess.check_output(' '.join(type_merge), stderr=subprocess.STDOUT,shell=True)+'\n'
+
+                # Delly renotype
+                for bam in inputs['.bam']:
+                    delly_geno = [delly, 'call', '-g',inputs['.fa']]
+                    if excl != '': delly_geno += ['-x', excl]
+                    for type in type_list:
+                        type_geno = delly_geno + ['-v', 'b_geno_'+bcfs[type], '-t', type.upper(), '-o', sub_dir+str(count)+'.'+type+'.geno.bcf'] + [bam]
+                        print (" ".join(type_geno))
+                        output += subprocess.check_output(' '.join(type_geno), stderr=subprocess.STDOUT,shell=True)+'\n'
+
+                # Merge regeno bcf
+                delly_geno_merge = [delly, 'merge', '-m', 'id', '-O', 'b']
+                for type in type_list:
+                    type_geno_merge += ['-o', bcfs[type]]
+                    for i in range (count):
+                        type_geno_merge += [sub_dir+str(count)+'.'+type+'.geno.bcf']
+                    output += subprocess.check_output(' '.join(type_geno_merge), stderr=subprocess.STDOUT,shell=True)+'\n'
+
+            elif count == 1:
+                for type in type_list:
+                    bcfs[type] = sub_dir+str(count - 1)+'.'+type+'.bcf'
+
         #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
@@ -107,14 +119,15 @@ class delly(stage_wrapper.Stage_Wrapper):
         print('output:\n'+output)
 
         #merge/filter all the calls into one .vcf with vcftools
-        bcftools = self.software_path+'/delly/src/bcftools/bcftools'
-        concat = [bcftools,'concat','-a','-o',out_names['.vcf'],'-O','v',
-                 bcfs['del'],bcfs['dup'],bcfs['inv'],bcfs['tra'],bcfs['ins']]
+        bcftools = self.tools['BCFTOOLS']
+        concat = [bcftools,'concat','-a','-o',out_names['.vcf'],'-O','v']
+        for type in type_list: concat += [bcfs[type]]
+
         try:
             print(' '.join(concat))
-            subprocess.check_output(' '.join(concat),
+            output += subprocess.check_output(' '.join(concat),
                                    stderr=subprocess.STDOUT,shell=True)
-            print(' ',join('rm -rf',sub_dir))
+            print('rm -rf %s'%sub_dir)
             subprocess.check_output('rm -rf %s'%sub_dir, stderr=subprocess.STDOUT,shell=True)                        
         #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:

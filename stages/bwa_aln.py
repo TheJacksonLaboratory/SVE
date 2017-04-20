@@ -38,7 +38,7 @@ class bwa_sampe(stage_wrapper.Stage_Wrapper):
         threads = 1
         if 'threads' in inputs: threads = str(inputs['threads'])
         bwa = self.tools['BWA']
-        samtools = self.tools['SAMTOOLS-1.3']
+        samtools = self.tools['SAMTOOLS']
         sambamba = self.tools['SAMBAMBA']
 
         #[2]build command args

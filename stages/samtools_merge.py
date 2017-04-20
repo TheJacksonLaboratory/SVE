@@ -30,7 +30,7 @@ class samtools_merge(stage_wrapper.Stage_Wrapper):
         out_name = self.strip_in_ext(in_names['.bam'][0],'.bam')+out_ext
 
         #[2a]build command args
-        samtools = self.software_path+'/samtools-1.3/samtools'
+        samtools = self.tools['SAMTOOLS']
         command = [samtools,'merge','-r',out_name]+in_names['.bam']
 #        for k in self.params:
 #            param = self.params[k]

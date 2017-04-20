@@ -50,12 +50,12 @@ class bwa_sampe(stage_wrapper.Stage_Wrapper):
 
 
         threads = str(self.get_params()['-t']['value'])
-        bwa = self.software_path+'/bwa-master/bwa' #latest release
-        samtools = self.software_path+'/samtools-1.3/samtools'
-        java   = self.software_path+'/jre1.8.0_51/bin/java'
-        sambamba = self.software_path+'/sambamba_v0.6.6'
+        bwa = self.tools['BWA'] #latest release
+        samtools = self.tools['SAMTOOLS']
+        java   = self.tools['JAVA-1.8']
+        sambamba = self.tools['SAMBAMBA']
         mem    = '-Xmx%sg'%str(self.get_params()['-m']['value'])
-        picard = self.software_path+'/picard-tools-2.5.0/picard.jar' #latest release here
+        picard = self.tools['PICARD'] #latest release here
      
 
         #[2]build command args
