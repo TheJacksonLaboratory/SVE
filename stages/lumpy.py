@@ -47,7 +47,7 @@ class lumpy(stage_wrapper.Stage_Wrapper):
             print (' '.join(sv_call))
             output += subprocess.check_output(' '.join(sv_call),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
-            output += subprocess.check_output('rm -rf %s' %stemp_dir, stderr=subprocess.STDOUT,shell=True)+'\n'
+            output += subprocess.check_output('rm -rf %s' %temp_dir, stderr=subprocess.STDOUT,shell=True)+'\n'
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
             err['output'] = E.output

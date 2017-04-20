@@ -96,7 +96,7 @@ elif paras['command'] == "call":
     if paras['algorithm'] in ['cnvnator', 'lumpy']:
         st = stage.Stage(paras['algorithm'],dbc)
         st.run(run_id, call_params)
-    if paras['algorithm'] in ['delly']:
+    if paras['algorithm'] in ['delly', 'breakseq']:
         call_params['genome'] = paras['genome']
-        st = stage.Stage('delly',dbc)
+        st = stage.Stage(paras['algorithm'],dbc)
         st.run(run_id, call_params)

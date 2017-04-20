@@ -3,6 +3,7 @@ import sys
 import subprocess32 as subprocess
 sys.path.append('../') #go up one in the modules
 import stage_wrapper
+import gzip
 
 #function for auto-making svedb stage entries and returning the stage_id
 class breakseq(stage_wrapper.Stage_Wrapper):
@@ -23,69 +24,57 @@ class breakseq(stage_wrapper.Stage_Wrapper):
     def run(self,run_id,inputs):
         #workflow is to run through the stage correctly and then check for error handles
         #[1a]get input names and output names setup
-        in_names = {'.fa':inputs['.fa'][0], 
-                    '.bam':inputs['.bam']}
+        if ('.fa' not in inputs) or ('.bam' not in inputs) or ('out_dir' not in inputs):
+            print "ERROR: .fa, .bam, and out_dir are required for genome_strip.py"
+            return None
         #will have to figure out output file name handling
         out_exts = self.split_out_exts()
-        out_dir = self.strip_name(in_names['.fa']) #default output directory
-        if inputs.has_key('out_dir'):
-            out_dir = inputs['out_dir'][0]
-            stripped_name = self.strip_path(self.strip_in_ext(in_names['.bam'][0],'.bam'))
-            out_names = {'.vcf' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[0]}
-        else:
-            cascade = self.strip_in_ext(in_names['.bam'][0],'.bam')
-            out_names = {'.vcf' :cascade+'_S'+str(self.stage_id)+out_exts[0]}  
+        out_dir = inputs['out_dir'] + '/'
+        stripped_name = ''
+        if len(inputs['.bam']) == 1: stripped_name = self.strip_path(self.strip_in_ext(inputs['.bam'][0],'.bam'))
+        else: stripped_name = 'joint'
+        out_names = {'.vcf' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[0]}
         #[2a]build command args
 
         #build temp directory to work in
-        sub_dir = out_dir+'/'+'S'+str(self.stage_id)+'/'
+        sub_dir = out_dir+stripped_name+'_S'+str(self.stage_id)+'/'
         if not os.path.exists(sub_dir): os.makedirs(sub_dir)
+
+        gff = ''
+        if inputs['genome'] == 'hg19': gff  = self.files['BREAKSEQ-HG19']
+        elif inputs['genome'] == 'hg38': gff  = self.files['BREAKSEQ-HG38']
 
 	print sys.executable            
         python    = sys.executable
-        samtools  = self.software_path+'/samtools-0.1.19/samtools'
-        bwa       = self.software_path+'/bwa-master/bwa'
-        breakseq  = self.software_path+'/breakseq2-2.2/scripts/run_breakseq2.py'
-        #brkptlib = human_g1k_v37_decoy_S35.brkptlib.gff etc files ...
-        #run_breakseq2.py --reference b37.fasta --bams bwamem.bam --work work --bwa bwa-0.7.12/bwa --samtools samtools-0.1.19/samtools --bplib_gff bplib.gff --nthreads 4 --sample NA12878
+        samtools  = self.tools['SAMTOOLS']
+        bwa       = self.tools['BWA']
+        breakseq  = self.tools['BREAKSEQ']
         w = str(self.get_params()['window']['value']) 
         j = str(self.get_params()['junction']['value'])
-        gff = self.software_path+'/breakseq2-2.2/bplib/breakseq2_bplib_20150129_hg38.gff'
 #        call      = [python,breakseq,'--bwa',bwa,'--samtools',samtools,
 #                     '--reference',in_names['.fa'],'--bplib_gff',gff,
 #                     '--work',sub_dir,'--bams']+in_names['.bam']+\
 #                    ['--nthreads',str(4),'--min_span',str(2),'--window',max(100,w),
 #                     '--min_overlap',str(2),'--junction_length',max(200,j)] #junctio =2x lead length
 
-        call      = [python,breakseq,'--bwa',bwa,'--samtools',samtools,
-                     '--reference',in_names['.fa'],'--bplib_gff',gff,
-                     '--work',sub_dir,'--bams']+in_names['.bam']+\
-                    ['--nthreads',str(4)] #junctio =2x lead length
-        #decompress the .vcf.gz
-        decomp    = ['gzip','-d',sub_dir+'breakseq.vcf.gz']
-        #copy up to ../
-        copy      = ['cp',sub_dir+'breakseq.vcf',out_names['.vcf']]
-        #delete the SID folder and all contents
+        call      = [python,breakseq,'--bwa',bwa,'--samtools',samtools, '--reference',inputs['.fa'],'--work',sub_dir,'--bams']+\
+                    inputs['.bam']+['--nthreads',str(4)] #junctio =2x lead length
+        if gff != '': call += ['--bplib_gff', gff]
+
         clean     = ['rm','-rf',sub_dir]
-                      
-        #self.db_start(run_id,','.join(in_names['.bam']))        
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
-            print subprocess.check_output('which python', stderr=subprocess.STDOUT, shell=True)
             print(" ".join(call))
             output += subprocess.check_output(' '.join(call),
                                               stderr=subprocess.STDOUT,shell=True,
-                                              env={'PYTHONPATH':'/home/leew/tools/breakseq2-2.2'})
-            #print(" ".join(decomp))
-            #output += subprocess.check_output(' '.join(decomp),
-            #                                  stderr=subprocess.STDOUT,shell=True)
-            #print(" ".join(copy))
-            #output += subprocess.check_output(' '.join(copy),
-            #                                  stderr=subprocess.STDOUT,shell=True)
-            #print(" ".join(clean))
-            #output += subprocess.check_output(' '.join(clean),
-            #                                  stderr=subprocess.STDOUT,shell=True)
+                                              env={'PYTHONPATH':self.tools['BREAKSEQ_PATH']})
+            if os.path.isfile(sub_dir+'breakseq.vcf.gz'):
+                with gzip.open(sub_dir+'breakseq.vcf.gz','rb') as in_file:
+                    gz_in = in_file.read()
+                with open(out_names['.vcf'],'w') as f:
+                    f.write(gz_in)
+            output += subprocess.check_output('rm -rf %s' %sub_dir, stderr=subprocess.STDOUT, shell=True)
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
             err['output'] = E.output

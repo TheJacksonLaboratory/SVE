@@ -19,3 +19,6 @@
 [submodule "src/lumpy-sv"]
 	path = src/lumpy-sv
 	url = https://github.com/arq5x/lumpy-sv.git
+[submodule "src/breakseq2"]
+	path = src/breakseq2
+	url = https://github.com/bioinform/breakseq2.git
