@@ -32,7 +32,7 @@ class cnmops(stage_wrapper.Stage_Wrapper):
             print "ERROR: .fa, .bam, and out_dir are required for genome_strip.py"
             return None
         #will have to figure out output file name handling
-        out_exts = self.split_out_exts()
+        out_ext = self.split_out_exts()
         out_dir = inputs['out_dir'] + '/'
         stripped_name = ''
         if len(inputs['.bam']) == 1: stripped_name = self.strip_path(self.strip_in_ext(inputs['.bam'][0],'.bam'))
@@ -42,11 +42,10 @@ class cnmops(stage_wrapper.Stage_Wrapper):
         #[2a]build command args
         
         #split the ref seq into seperate chroms...
-        #rscript  = self.software_path+'/R-3.1.2/bin/Rscript'
-        rscript  = self.software_path+'/R-3.3.1/bin/Rscript' #changed for running on clusters
-        cnmops_r = self.software_path+'/SVE/stages/utils/cnmops.R'
-        R_LIBS   = self.software_path+'/R-3.3.1/library'
-        PATH   = self.software_path+'/R-3.3.1/bin'
+        rscript  = self.tools['R_PATH'] + '/Rscript'
+        cnmops_r = self.tools['SVE_HOME'] + '/stages/utils/cnmops.R'
+        R_LIBS   = self.tools['R_PATH'] + '/library' + ':' + self.tools['SVE_HOME'] + '/src/R-package/packages/lib'
+        PATH   = self.tools['R_PATH'] + ':' + self.tools['SVE_HOME'] + '/src/R-package/packages/lib'
         if os.environ.has_key('PATH'):
             PATH += ':'+os.environ['PATH']
         #load up params to pass to the Rscript cmd_parser.R        
@@ -55,8 +54,8 @@ class cnmops(stage_wrapper.Stage_Wrapper):
         print(params)
             
         command = [rscript, cnmops_r, 
-                   'ref_seq='+in_names['.fa'],
-                   'in_bams='+','.join(in_names['.bam']),
+                   'ref_seq='+inputs['.fa'],
+                   'in_bams='+','.join(inputs['.bam']),
                    #'in_chroms='+','.join(in_names['chroms']),
                    'out_vcf='+out_names['.vcf']]+params
         self.command = command
@@ -64,14 +63,13 @@ class cnmops(stage_wrapper.Stage_Wrapper):
         #cn.mop ref=x string is off and needs to be setup for chr1,chr2,chr3...
         
         #[2b]make start entry which is a new staged_run row
-        print(self.get_command_str())
-        self.db_start(run_id,in_names['.bam'][0])
         
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
+            print (' '.join(command))
             output = subprocess.check_output(' '.join(command),stderr=subprocess.STDOUT,shell=True,
-                                             env={'R_LIBS':R_LIBS,'PATH':PATH})
+                                             env={'R_LIBS':R_LIBS,'PATH':PATH, 'LIBRARY_PATH':R_LIBS, 'LD_LIBRARY_PATH':R_LIBS})
         #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
@@ -99,13 +97,10 @@ class cnmops(stage_wrapper.Stage_Wrapper):
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
                 print("sucessfull........")
-                self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
                 return results   #return a list of names
             else:
                 print("failure...........")
-                self.db_stop(run_id,{'output':output},'',False)
                 return False
         else:
             print("failure...........")
-            self.db_stop(run_id,{'output':output},err['message'],False)
             return None
