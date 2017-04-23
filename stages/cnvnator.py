@@ -84,8 +84,8 @@ class cnvnator(stage_wrapper.Stage_Wrapper):
             print (" ".join(conv))
             output += subprocess.check_output(' '.join(conv),stderr=subprocess.STDOUT, shell=True)+'\n'
             print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
-            print ('rm -rf %s'%temp_dir)
-            output += subprocess.check_output('rm -rf %s'%temp_dir,
+            print ('rm -rf %s'%sub_dir)
+            output += subprocess.check_output('rm -rf %s'%sub_dir,
                                               stderr=subprocess.STDOUT, shell=True)
         #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:
