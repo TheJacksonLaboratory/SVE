@@ -93,6 +93,10 @@ elif paras['command'] == "call":
         call_params['.rdmask.bed']    = gs_ref['.rdmask.bed']
         st = stage.Stage('genome_strip',dbc)
         st.run(run_id, call_params)
+    if paras['algorithm'] == 'tigra':
+	call_params['.vcf'] = paras['vcf']
+	st = stage.Stage('tigra',dbc)
+        st.run(run_id, call_params)
     if paras['algorithm'] in ['cnvnator', 'lumpy', 'cnmops']:
         st = stage.Stage(paras['algorithm'],dbc)
         st.run(run_id, call_params)

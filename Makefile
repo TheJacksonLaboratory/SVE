@@ -11,12 +11,12 @@ R_INSTALL_DIR=$(SVE_DIR)/$(SRC)/R-package/packages
 R_PACKAGE_DEPEN = bzip2-1.0.6 curl-7.47.1 pcre-8.40 xz-5.2.2 zlib-1.2.9
 
 TARBALLS = jre1.8.0_51 picard-tools-2.5.0 svtoolkit_2.00.1736 CNVnator_v0.3.3
-SUBDIRS = bwa speedseq htslib samtools bcftools delly lumpy-sv
+SUBDIRS = bwa speedseq htslib samtools bcftools bedtools2 delly lumpy-sv tigra
 
 GCCVERSION=$(shell gcc --version | grep ^gcc | sed 's/^.* //g' | awk -F'.' '{print $1"."$2}')
 
 # all
-all: unzip_tarballs configure build R-package CNVnator_v0.3.3
+all: unzip_tarballs configure build CNVnator_v0.3.3
 	@test -d $(SVE_DIR)/data || tar -zxvf data.tar.gz # unzip data
 	@test -d $(SVE_DIR)/$(TARGET_BIN) || mkdir $(SVE_DIR)/$(TARGET_BIN)
 	$(MAKE) tool_paths
@@ -40,6 +40,13 @@ configure:
 	$(MAKE) --no-print-directory -C $(SVE_DIR)/$(SRC)/lumpy-sv
 	@echo "- Configuring in breakseq2"
 	@cd $(SVE_DIR)/$(SRC)/breakseq2 && python setup.py && cd $(SVE_DIR) || true
+	@echo "- Configuring in tigra"
+	@sed -i "/SAMTOOLS=/d" $(SVE_DIR)/$(SRC)/tigra/Makefile
+	@sed -i "/HTSLIB=/d" $(SVE_DIR)/$(SRC)/tigra/Makefile
+	@sed -i "/SAMHTSLIB=/d" $(SVE_DIR)/$(SRC)/tigra/Makefile
+	@sed -i "2 a SAMHTSLIB=$(SVE_DIR)/$(SRC)/htslib/htslib" $(SVE_DIR)/$(SRC)/tigra/Makefile
+	@sed -i "2 a HTSLIB=$(SVE_DIR)/$(SRC)/htslib" $(SVE_DIR)/$(SRC)/tigra/Makefile
+	@sed -i "2 a SAMTOOLS=$(SVE_DIR)/$(SRC)/samtools" $(SVE_DIR)/$(SRC)/tigra/Makefile
 
 build:
 	@for dir in $(SUBDIRS); do \
@@ -86,9 +93,13 @@ tool_paths:
 	@echo "TOOLS ['CNVNATOR2VCF']  = '$(SVE_DIR)/$(SRC)/CNVnator_v0.3.3/cnvnator2VCF.pl'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['DELLY']         = '$(SVE_DIR)/$(SRC)/delly/src/delly'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['BCFTOOLS']      = '$(SVE_DIR)/$(SRC)/bcftools/bcftools'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['BEDTOOLS']      = '$(SVE_DIR)/$(SRC)/bedtools2/bin/bcftools'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['LUMPY-EXPRESS'] = '$(SVE_DIR)/$(SRC)/lumpy-sv/bin/lumpyexpress'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['BREAKSEQ']      = '$(SVE_DIR)/$(SRC)/breakseq2/scripts/run_breakseq2.py'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['TIGRA']         = '$(SVE_DIR)/$(SRC)/tigra/tigra-sv'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['TIGRA-EXT']     = '$(SVE_DIR)/$(SRC)/tigra-ext/TIGRA-ext.pl'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['R_PATH']            = '$(R_PACKAGE)/R-3.3.3/bin'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['TIGRA_PATH']        = '$(SVE_DIR)/$(SRC)/tigra'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['BWA_PATH']          = '$(SVE_DIR)/$(SRC)/bwa'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['SAMTOOLS_PATH']     = '$(SVE_DIR)/$(SRC)/samtools'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['BCFTOOLS_PATH']     = '$(SVE_DIR)/$(SRC)/bcftools'" >> $(TOOL_PATHS)

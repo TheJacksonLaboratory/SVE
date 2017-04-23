@@ -37,7 +37,7 @@ class delly(stage_wrapper.Stage_Wrapper):
         stripped_name = self.strip_path(self.strip_in_ext(inputs['.bam'][0],'.bam'))
         out_names = {'.vcf' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[0]}
         #[2a]build command args
-        sub_dir = out_dir+'/'+'S'+str(self.stage_id)+'/'
+        sub_dir = out_dir+stripped_name+'_S'+str(self.stage_id)+'/'
         if not os.path.exists(sub_dir): os.makedirs(sub_dir)
         
         #add load libs parameters for OPEN_MP to do || processing        

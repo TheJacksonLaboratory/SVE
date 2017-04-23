@@ -22,3 +22,12 @@
 [submodule "src/breakseq2"]
 	path = src/breakseq2
 	url = https://github.com/bioinform/breakseq2.git
+[submodule "src/tigra"]
+	path = src/tigra
+	url = https://bitbucket.org/xianfan/tigra.git
+[submodule "src/tigra-ext"]
+	path = src/tigra-ext
+	url = https://bitbucket.org/xianfan/tigra-ext.git
+[submodule "src/bedtools2"]
+	path = src/bedtools2
+	url = https://github.com/arq5x/bedtools2.git

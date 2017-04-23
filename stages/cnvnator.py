@@ -37,9 +37,10 @@ class cnvnator(stage_wrapper.Stage_Wrapper):
         stripped_name = ''
         if len(inputs['.bam']) == 1: stripped_name = self.strip_path(self.strip_in_ext(inputs['.bam'][0],'.bam'))
         else: stripped_name = 'joint'
-        temp_dir = out_dir+stripped_name+'_S'+str(self.stage_id)+'/temp/'
-        out_names = {'.root' : temp_dir+'temp',
-                     '.calls': temp_dir+'temp'+out_exts[1],
+        sub_dir = out_dir+stripped_name+'_S'+str(self.stage_id)+'/'
+        if not os.path.exists(sub_dir): os.makedirs(sub_dir)
+        out_names = {'.root' : sub_dir+'temp',
+                     '.calls': sub_dir+'temp'+out_exts[1],
                      '.vcf'  : out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[2]}
         #[2a]build command args
         

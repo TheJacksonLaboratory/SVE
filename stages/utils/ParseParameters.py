@@ -14,7 +14,8 @@ para_dict={
 'out_file':'',
 'threads':4,
 'mem':8,
-'algorithm':'speed_seq',
+'algorithm':'',
+'vcf':'',
 'RG':'',
 'FASTQ':[],
 'BAM':[]
@@ -78,6 +79,7 @@ Command:\talign\tFASTQ->BAM
         self.aln_common(parser)
         parser.add_argument('-a', dest='algorithm', type=str, metavar='STR', choices=['breakdancer', 'breakseq', 'cnvnator', 'hydra', 'delly', 'lumpy', 'genome_strip', 'cnmops', 'gatk', 'tigra'], help='the method used for SV calling\t[NULL]')
         parser.add_argument('-g', dest='genome', type=str, metavar='STR', choices=['hg19', 'hg38', 'others'], help='tell us the input reference\t[NULL]')
+        parser.add_argument('-v', dest='vcf', type=str, metavar='STR', help='the input vcf\t[NULL]')
         parser.add_argument('BAM', nargs='+', help='input BAM [null]')
         return parser
     ##### end sub commands #####
@@ -169,6 +171,11 @@ Command:\talign\tFASTQ->BAM
                 exit()
             else:
                 paras['genome'] = args.genome
+            if args.algorithm == 'tigra' and args.vcf is None:
+		print "ERROR: For tigra please specify the input vcf: -v <VCF>."
+                exit()
+            else:
+                paras['vcf'] = args.vcf
             paras['BAM'] = args.BAM
             for bam in paras['BAM']:
                 if not os.path.isfile(bam):
