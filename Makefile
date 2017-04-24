@@ -10,8 +10,8 @@ R_PACKAGE=$(SVE_DIR)/$(SRC)/R-package
 R_INSTALL_DIR=$(SVE_DIR)/$(SRC)/R-package/packages
 R_PACKAGE_DEPEN = bzip2-1.0.6 curl-7.47.1 pcre-8.40 xz-5.2.2 zlib-1.2.9
 
-TARBALLS = jre1.8.0_51 picard-tools-2.5.0 svtoolkit_2.00.1736 CNVnator_v0.3.3
-SUBDIRS = bwa speedseq htslib samtools bcftools bedtools2 delly lumpy-sv tigra
+TARBALLS = jre1.8.0_51 picard-tools-2.5.0 svtoolkit_2.00.1736 CNVnator_v0.3.3 samtools-0.1.19
+SUBDIRS = bwa speedseq htslib samtools samtools-0.1.19 bcftools bedtools2 delly lumpy-sv hydra tigra
 
 GCCVERSION=$(shell gcc --version | grep ^gcc | sed 's/^.* //g' | awk -F'.' '{print $1"."$2}')
 
@@ -98,15 +98,18 @@ tool_paths:
 	@echo "TOOLS ['BREAKSEQ']      = '$(SVE_DIR)/$(SRC)/breakseq2/scripts/run_breakseq2.py'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['TIGRA']         = '$(SVE_DIR)/$(SRC)/tigra/tigra-sv'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['TIGRA-EXT']     = '$(SVE_DIR)/$(SRC)/tigra-ext/TIGRA-ext.pl'" >> $(TOOL_PATHS)
-	@echo "TOOLS ['R_PATH']            = '$(R_PACKAGE)/R-3.3.3/bin'" >> $(TOOL_PATHS)
-	@echo "TOOLS ['TIGRA_PATH']        = '$(SVE_DIR)/$(SRC)/tigra'" >> $(TOOL_PATHS)
-	@echo "TOOLS ['BWA_PATH']          = '$(SVE_DIR)/$(SRC)/bwa'" >> $(TOOL_PATHS)
-	@echo "TOOLS ['SAMTOOLS_PATH']     = '$(SVE_DIR)/$(SRC)/samtools'" >> $(TOOL_PATHS)
-	@echo "TOOLS ['BCFTOOLS_PATH']     = '$(SVE_DIR)/$(SRC)/bcftools'" >> $(TOOL_PATHS)
-	@echo "TOOLS ['HTSLIB_PATH']       = '$(SVE_DIR)/$(SRC)/htslib'" >> $(TOOL_PATHS)
-	@echo "TOOLS ['JAVA-1.8_PATH']     = '$(SVE_DIR)/$(SRC)/jre1.8.0_51/bin'" >> $(TOOL_PATHS)
-	@echo "TOOLS ['GENOME_STRIP_PATH'] = '$(SVE_DIR)/$(SRC)/svtoolkit_2.00.1736'" >> $(TOOL_PATHS)
-	@echo "TOOLS ['BREAKSEQ_PATH']     = '$(SVE_DIR)/$(SRC)/breakseq2'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['FATO2BIT']      = '$(SVE_DIR)/$(SRC)/faToTwoBit/faToTwoBit_linux'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['R_PATH']               = '$(R_PACKAGE)/R-3.3.3/bin'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['HYDRA_PATH']           = '$(SVE_DIR)/$(SRC)/hydra'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['TIGRA_PATH']           = '$(SVE_DIR)/$(SRC)/tigra'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['BWA_PATH']             = '$(SVE_DIR)/$(SRC)/bwa'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['SAMTOOLS_PATH']        = '$(SVE_DIR)/$(SRC)/samtools'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['SAMTOOLS-0.1.19_PATH'] = '$(SVE_DIR)/$(SRC)/samtools-0.1.19'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['BCFTOOLS_PATH']        = '$(SVE_DIR)/$(SRC)/bcftools'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['HTSLIB_PATH']          = '$(SVE_DIR)/$(SRC)/htslib'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['JAVA-1.8_PATH']        = '$(SVE_DIR)/$(SRC)/jre1.8.0_51/bin'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['GENOME_STRIP_PATH']    = '$(SVE_DIR)/$(SRC)/svtoolkit_2.00.1736'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['BREAKSEQ_PATH']        = '$(SVE_DIR)/$(SRC)/breakseq2'" >> $(TOOL_PATHS)
 	@echo "" >> $(TOOL_PATHS)
 	@echo "FILES={}" >> $(TOOL_PATHS)
 	@echo "FILES ['GRCH38-EXTRA'] = '$(SVE_DIR)/data/bwakit-GRCh38/hs38DH-extra.fa'"  >> $(TOOL_PATHS)

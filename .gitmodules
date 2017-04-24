@@ -31,3 +31,6 @@
 [submodule "src/bedtools2"]
 	path = src/bedtools2
 	url = https://github.com/arq5x/bedtools2.git
+[submodule "src/hydra"]
+	path = src/hydra
+	url = https://github.com/arq5x/Hydra.git

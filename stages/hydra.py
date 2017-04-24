@@ -26,38 +26,33 @@ class hydra(stage_wrapper.Stage_Wrapper):
         #workflow is to run through the stage correctly and then check for error handles
              
         #[1a]get input names and output names setup
-        in_names = {'.fa':inputs['.fa'][0],'.bam':inputs['.bam']}
-        #will have to figure out output file name handling
+        if ('.fa' not in inputs) or ('.bam' not in inputs) or ('out_dir' not in inputs):
+            print "ERROR: .fa, .bam, and out_dir are required for genome_strip.py"
+            return None
+        #if self.db_get_ref_name(run_id): ref_name = self.ref_name        
+        ref_name = inputs['.fa'].rsplit('/')[-1].rsplit('.')[0]
+        
         out_exts = self.split_out_exts()
-        out_dir = self.strip_name(in_names['.bam'][0]) #default output directory
-        if inputs.has_key('out_dir'):
-            out_dir = inputs['out_dir'][0]
-            stripped_name = self.strip_path(self.strip_in_ext(in_names['.bam'][0],'.bam'))
-            out_names = {'.vcf' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[0]}
-        else:
-            cascade = self.strip_in_ext(in_names['.bam'][0],'.bam')
-            out_names = {'.vcf' :cascade+'_S'+str(self.stage_id)+out_exts[0]} 
-            
-        #load params    
-        defaults,params = self.params,[]
-        params = [k+'='+str(defaults[k]['value']) for k in defaults]
-        
-        #build temp directory to work in
-        sub_dir = out_dir+'/'+'S'+str(self.stage_id)+'/'
+        out_dir = inputs['out_dir'] + '/'
+        stripped_name = ''
+        if len(inputs['.bam']) == 1: stripped_name = self.strip_path(self.strip_in_ext(inputs['.bam'][0],'.bam'))
+        else: stripped_name = 'joint'
+        sub_dir = out_dir+stripped_name+'_S'+str(self.stage_id)+'/'
         if not os.path.exists(sub_dir): os.makedirs(sub_dir)
-        
+        out_names = {'.vcf' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[0]}
+            
         #[a]use to run several sub scripts via command line/seperate process
-        python = 'python'
-        hydra  = self.software_path+'/Hydra/'
-        hydra_to_vcf = self.software_path+'/SVE/stages/utils/hydra_to_vcf.py'
+        python = sys.executable
+        hydra  = self.tools['HYDRA_PATH'] + '/'
+        hydra_to_vcf = self.tools['SVE_HOME'] + '/stages/utils/hydra_to_vcf.py'
         #ENV
         PATH = hydra+'bin:'+hydra+'scripts:'+\
-               self.software_path+'/samtools-0.1.19:'+\
+               self.tools['SAMTOOLS-0.1.19_PATH']+':'+\
                os.environ['PATH']
 
         #[0] stub file generation        
-        bams = sub_dir+'/bam.stub'
-        bam_names = '\n'.join(['sample%s'%i+'\t'+in_names['.bam'][i] for i in range(len(in_names['.bam']))])
+        bams = sub_dir+'bam.stub'
+        bam_names = '\n'.join(['sample%s'%i+'\t'+inputs['.bam'][i] for i in range(len(inputs['.bam']))])
         with open(bams,'w') as f: f.write(bam_names) #follow readme.md tenplate
         
         #[1] make a config file
@@ -112,16 +107,17 @@ class hydra(stage_wrapper.Stage_Wrapper):
         #bkpts = [python,hydra+'scripts/hydraToBreakpoint.py','-i',freq_name,'>',bkpts_name]
         
         #[9] convert to VCF using the utils/hydra_to_vcf.py tool
-        bkpt2vcf = [python,hydra_to_vcf,final_name,in_names['.fa'][0:-3]+'.2bit']#assumes a .2bit for ref is there...
+        fasta_2bit = inputs['.fa']+'.2bit'
+        bkpt2vcf = [python,hydra_to_vcf,final_name,fasta_2bit]#assumes a .2bit for ref is there...
         
         #[10] Copy out and Clean up files
         copy  = ['cp',vcf_name,out_names['.vcf']]
         clean = ['rm','-rf',sub_dir]
         
-        #self.db_start(run_id,','.join(in_names['.bam']))        
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print('making the hydra configuration')
             print(' '.join(make_cfg))
             output += subprocess.check_output(' '.join(make_cfg),
@@ -129,47 +125,57 @@ class hydra(stage_wrapper.Stage_Wrapper):
                                               env={'PATH':PATH})+'\n'
 
                                               
-            for k in ['sample%s'%i for i in range(len(in_names['.bam']))]:
+            for k in ['sample%s'%i for i in range(len(inputs['.bam']))]:
                 print('extracting discordants for %s'%k)
                 print(' '.join(extract+[k]))
                 output += subprocess.check_output(' '.join(extract+[k]),
                                                   stderr=subprocess.STDOUT,shell=True,
                                                   env={'PATH':PATH})+'\n'
                                                   
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print('routing all samples into hydra router')
             print(' '.join(route))
             output += subprocess.check_output(' '.join(route),
                                               stderr=subprocess.STDOUT,shell=True,
                                               env={'PATH':PATH})+'\n'
                                               
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print('combining hydra assembly files')
             print(' '.join(assemble))
             output += subprocess.check_output(' '.join(assemble),
                                               stderr=subprocess.STDOUT,shell=True,
                                               env={'PATH':PATH})+'\n'
                                               
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print('merging results')
             print(' '.join(merge))
             output += subprocess.check_output(' '.join(merge),
                                               stderr=subprocess.STDOUT,shell=True,
                                               env={'PATH':PATH})+'\n'
                                               
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print('starting hydra clustering')
             print(' '.join(cluster))
             output += subprocess.check_output(' '.join(cluster),
                                               stderr=subprocess.STDOUT,shell=True,
                                               env={'PATH':PATH})+'\n'
                                               
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print('computing hydra frequencies')
             print(' '.join(freqs))
             output += subprocess.check_output(' '.join(freqs),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
                                               
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print('converting hydra to vcf format')
             print(' '.join(bkpt2vcf))
+            if not os.path.isfile(fasta_2bit):
+                generate_fasta_2bit = [self.tools['FATO2BIT'], inputs['.fa'], fasta_2bit]
+                output += subprocess.check_output(' '.join(generate_fasta_2bit), stderr=subprocess.STDOUT,shell=True)+'\n'
             output += subprocess.check_output(' '.join(bkpt2vcf),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
                                               
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print('copying files and cleaning sub directory')
             output += subprocess.check_output(' '.join(copy),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'

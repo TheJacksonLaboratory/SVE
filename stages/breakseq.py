@@ -44,7 +44,6 @@ class breakseq(stage_wrapper.Stage_Wrapper):
         if inputs['genome'] == 'hg19': gff  = self.files['BREAKSEQ-HG19']
         elif inputs['genome'] == 'hg38': gff  = self.files['BREAKSEQ-HG38']
 
-	print sys.executable            
         python    = sys.executable
         samtools  = self.tools['SAMTOOLS']
         bwa       = self.tools['BWA']
