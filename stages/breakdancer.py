@@ -26,20 +26,23 @@ class breakdancer(stage_wrapper.Stage_Wrapper):
         #workflow is to run through the stage correctly and then check for error handles
              
         #[1a]get input names and output names setup
-        in_names = {'.fa':inputs['.fa'][0],
-                    '.bam':inputs['.bam']}
+        if ('.fa' not in inputs) or ('.bam' not in inputs) or ('out_dir' not in inputs):
+            print "ERROR: .fa, .bam, and out_dir are required for genome_strip.py"
+            return None
         #will have to figure out output file name handling
         out_exts = self.split_out_exts()
-        out_dir = self.strip_name(in_names['.fa']) #default output directory
-        if inputs.has_key('out_dir'):
-            out_dir = inputs['out_dir'][0]
-            stripped_name = self.strip_path(self.strip_in_ext(in_names['.bam'][0],'.bam'))
-            out_names = {'.calls' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[0],
-                         '.vcf' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[1]}
-        else:
-            cascade = self.strip_in_ext(in_names['.bam'][0],'.bam')
-            out_names = {'.calls' :cascade+'_S'+str(self.stage_id)+out_exts[0],
-                         '.vcf' :cascade+'_S'+str(self.stage_id)+out_exts[1]}  
+        out_dir = inputs['out_dir'] + '/'
+        stripped_name = ''
+        if len(inputs['.bam']) == 1: stripped_name = self.strip_path(self.strip_in_ext(inputs['.bam'][0],'.bam'))
+        else: stripped_name = 'joint'
+        #[2a]build command args
+        
+        #build temp directory to work in
+        sub_dir = out_dir+stripped_name+'_S'+str(self.stage_id)+'/'
+        if not os.path.exists(sub_dir): os.makedirs(sub_dir)
+
+        out_names = {'.calls' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[0],
+                     '.vcf' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[1]}
         #[2a]build command args
 #        PATH = os.environ['PATH'] 
 #        PATH = os.path.dirname(os.path.abspath('~'))+'/software/perl/bin:'+os.environ['PATH']
@@ -47,17 +50,13 @@ class breakdancer(stage_wrapper.Stage_Wrapper):
 #        PERL5LIB = os.path.dirname(os.path.abspath('~'))+'/software/perl/lib/site_perl/5.20.1:'+\
 #                   os.path.dirname(os.path.abspath('~'))+'/software/perl/lib/5.20.1'#+os.environ['PERL5LIB']
         PERL5LIB = self.software_path+'/perl_lib' + ':' + os.environ['PERL5LIB']
-        cfg    = out_dir+"bd_confg.txt" #new version 1.1.2 working!
+        cfg    = sub_dir+"bd_confg.txt" #new version 1.1.2 working!
 #        perl   = os.path.dirname(os.path.abspath('~'))+'/software/perl/bin/perl'
-        config = self.software_path+'/breakdancer-1.4.5/perl/bam2cfg.pl'        
-        breakd = self.software_path+'/breakdancer-1.4.5/build/bin/breakdancer-max'
-        configure = ['perl','-l /home/leew/tools/perl_lib',config,'-q','30','-n','10000'] + in_names['.bam']+['>',cfg]
+        config = self.tools['BREAKDANCER_PATH'] + '/perl/bam2cfg.pl'        
+        breakd = self.tools['BREAKDANCER_PATH'] + '/build/bin/breakdancer-max'
+        configure = ['perl',config,'-q','30','-n','10000'] + inputs['.bam']+['>',cfg]
         sv_call   = [breakd, cfg,'>', out_names['.calls']]
         
-#        breakdancer_max $OUT$BAM2CFG > $OUT$BD
-#        python ./breakdancer2vcf.py $REF $OUT         
-#                
-        self.db_start(run_id,in_names['.bam'][0])        
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
@@ -67,7 +66,7 @@ class breakdancer(stage_wrapper.Stage_Wrapper):
             output += subprocess.check_output(' '.join(sv_call),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
             table = bd.read_breakdancer(out_names['.calls'])
-            bd.write_vcf(out_names['.vcf'],bd.vcf_header(in_names['.fa']),bd.build_vcf(table))
+            bd.write_vcf(out_names['.vcf'],bd.vcf_header(inputs['.fa']),bd.build_vcf(table))
 #            output += subprocess.check_output(' '.join(['rm',out_names['.calls']]),
 #                                              stderr=subprocess.STDOUT,shell=True)+'\n'
 #            output += subprocess.check_output(' '.join(['rm',cfg]),
@@ -104,13 +103,10 @@ class breakdancer(stage_wrapper.Stage_Wrapper):
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
                 print("sucessfull........")
-                self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
                 return results   #return a list of names
             else:
                 print("failure...........")
-                self.db_stop(run_id,{'output':output},'',False)
                 return False
         else:
             print("failure...........")
-            self.db_stop(run_id,{'output':output},err['message'],False)
             return None

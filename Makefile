@@ -16,7 +16,7 @@ SUBDIRS = bwa speedseq htslib samtools samtools-0.1.19 bcftools bedtools2 delly 
 GCCVERSION=$(shell gcc --version | grep ^gcc | sed 's/^.* //g' | awk -F'.' '{print $1"."$2}')
 
 # all
-all: unzip_tarballs configure build CNVnator_v0.3.3
+all: unzip_tarballs configure build CNVnator_v0.3.3 breakdancer
 	@test -d $(SVE_DIR)/data || tar -zxvf data.tar.gz # unzip data
 	@test -d $(SVE_DIR)/$(TARGET_BIN) || mkdir $(SVE_DIR)/$(TARGET_BIN)
 	$(MAKE) tool_paths
@@ -57,6 +57,13 @@ build:
 CNVnator_v0.3.3:
 	$(MAKE) --no-print-directory -C $(SRC)/CNVnator_v0.3.3/src/samtools
 	$(MAKE) --no-print-directory -C $(SRC)/CNVnator_v0.3.3/src
+
+breakdancer:
+	@cd $(SVE_DIR)/$(SRC)/breakdancer; \
+	mkdir build; \
+	cd build; \
+	cmake .. -DCMAKE_BUILD_TYPE=release; \
+	$(MAKE)
 
 R-package:
 	@test -d $(R_INSTALL_DIR) || mkdir -p $(R_INSTALL_DIR)
@@ -101,6 +108,7 @@ tool_paths:
 	@echo "TOOLS ['FATO2BIT']      = '$(SVE_DIR)/$(SRC)/faToTwoBit/faToTwoBit_linux'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['R_PATH']               = '$(R_PACKAGE)/R-3.3.3/bin'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['HYDRA_PATH']           = '$(SVE_DIR)/$(SRC)/hydra'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['BREAKDANCER_PATH']     = '$(SVE_DIR)/$(SRC)/breakdancer'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['TIGRA_PATH']           = '$(SVE_DIR)/$(SRC)/tigra'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['BWA_PATH']             = '$(SVE_DIR)/$(SRC)/bwa'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['SAMTOOLS_PATH']        = '$(SVE_DIR)/$(SRC)/samtools'" >> $(TOOL_PATHS)
