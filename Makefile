@@ -16,8 +16,6 @@ PERL_LIB_DEPEN = GD-2.52 GDTextUtil-0.86 GDGraph-histogram-1.1 GDGraph-1.54
 TARBALLS = jre1.8.0_51 picard-tools-2.5.0 svtoolkit_2.00.1736 CNVnator_v0.3.3 samtools-0.1.19 breakdancer-1.4.5
 SUBDIRS = bwa speedseq htslib samtools samtools-0.1.19 bcftools bedtools2 delly lumpy-sv hydra tigra
 
-GCCVERSION=$(shell gcc --version | grep ^gcc | sed 's/^.* //g' | awk -F'.' '{print $1"."$2}')
-
 # all
 all: unzip_tarballs configure build CNVnator_v0.3.3 perl-lib breakdancer
 	@test -d $(SVE_DIR)/data || tar -zxvf data.tar.gz # unzip data
@@ -91,6 +89,8 @@ R-package:
 	done; \
 	test -d R-3.3.3 || tar -zxvf R-3.3.3.tar.gz; \
 	cd $(SVE_DIR)
+	@sed -i "/CFLAGS=/d" $(R_PACKAGE)/bzip2-1.0.6/Makefile
+	@sed -i '23 a CFLAGS=-Wall -Winline -O2 -g -fPIC $$(BIGFILES)' $(R_PACKAGE)/bzip2-1.0.6/Makefile
 	@cd $(R_PACKAGE)/bzip2-1.0.6 && $(MAKE) clean && $(MAKE) -f Makefile-libbz2_so && $(MAKE) clean && $(MAKE) && $(MAKE) -n install PREFIX=$(R_INSTALL_DIR) && $(MAKE) install PREFIX=$(R_INSTALL_DIR)
 	@cd $(R_PACKAGE)/curl-7.47.1 && ./configure --prefix=$(R_INSTALL_DIR) && $(MAKE) -j3 && $(MAKE) install
 	@cd $(R_PACKAGE)/pcre-8.40 && ./configure --prefix=$(R_INSTALL_DIR) --enable-utf8 && $(MAKE) && $(MAKE) install
@@ -121,7 +121,8 @@ tool_paths:
 	@echo "TOOLS ['TIGRA']         = '$(SVE_DIR)/$(SRC)/tigra/tigra-sv'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['TIGRA-EXT']     = '$(SVE_DIR)/$(SRC)/tigra-ext/TIGRA-ext.pl'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['FATO2BIT']      = '$(SVE_DIR)/$(SRC)/faToTwoBit/faToTwoBit_linux'" >> $(TOOL_PATHS)
-	@echo "TOOLS ['R_PATH']               = '$(R_PACKAGE)/R-3.3.3/bin'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['R_PATH']               = '$(R_PACKAGE)/R-3.3.3'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['R_LIB_PATH']               = '$(R_INSTALL_DIR)'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['PERL_LIB_PATH']            = '$(PERL_LIB)'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['HYDRA_PATH']           = '$(SVE_DIR)/$(SRC)/hydra'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['BREAKDANCER_PATH']     = '$(SVE_DIR)/$(SRC)/breakdancer-1.4.5'" >> $(TOOL_PATHS)
@@ -132,7 +133,7 @@ tool_paths:
 	@echo "TOOLS ['BCFTOOLS_PATH']        = '$(SVE_DIR)/$(SRC)/bcftools'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['HTSLIB_PATH']          = '$(SVE_DIR)/$(SRC)/htslib'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['JAVA-1.8_PATH']        = '$(SVE_DIR)/$(SRC)/jre1.8.0_51/bin'" >> $(TOOL_PATHS)
-	@echo "TOOLS ['GENOME_STRIP_PATH']    = '$(SVE_DIR)/$(SRC)/svtoolkit_2.00.1736'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['GENOME_STRIP_PATH']    = '$(SVE_DIR)/$(SRC)/svtoolkit'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['BREAKSEQ_PATH']        = '$(SVE_DIR)/$(SRC)/breakseq2'" >> $(TOOL_PATHS)
 	@echo "" >> $(TOOL_PATHS)
 	@echo "FILES={}" >> $(TOOL_PATHS)

@@ -57,7 +57,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         gmask, ploidy, rdmask = '', '', ''
 #        cnmask = in_names['.gcmask.fasta']
         
-        sub_dir = out_dir+'S'+str(self.stage_id)+'/'
+        sub_dir = out_dir+stripped_name+'_S'+str(self.stage_id)+'/'
         if not os.path.exists(sub_dir): os.makedirs(sub_dir)
         
         #[2] bam file list is needed        

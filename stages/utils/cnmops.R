@@ -53,6 +53,9 @@ window   <- args['window'][[1]]
 mode     <- args['mode'][[1]]
 
 #start up the dynamically loaded libraries and run cn.mops
+source("https://bioconductor.org/biocLite.R")
+biocLite("Rsamtools")
+biocLite("cn.mops")
 library('Rsamtools');
 library('cn.mops');
 f_names <- in_bams;

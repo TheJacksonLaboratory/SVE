@@ -42,12 +42,11 @@ class cnmops(stage_wrapper.Stage_Wrapper):
         #[2a]build command args
         
         #split the ref seq into seperate chroms...
-        rscript  = self.tools['R_PATH'] + '/Rscript'
+        rscript  = self.tools['R_PATH'] + '/bin/Rscript'
         cnmops_r = self.tools['SVE_HOME'] + '/stages/utils/cnmops.R'
-        R_LIBS   = self.tools['R_PATH'] + '/library' + ':' + self.tools['SVE_HOME'] + '/src/R-package/packages/lib'
-        PATH   = self.tools['R_PATH'] + ':' + self.tools['SVE_HOME'] + '/src/R-package/packages/lib'
-        if os.environ.has_key('PATH'):
-            PATH += ':'+os.environ['PATH']
+        #LD_PATH= self.tools['R_PATH'] + '/lib:' + self.tools['R_LIB_PATH'] + ':' + os.environ['LD_LIBRARY_PATH']
+        #R_LIBS   = self.tools['R_PATH'] + '/library' + ':' + self.tools['SVE_HOME'] + '/src/R-package/packages/lib'
+        #PATH   = self.tools['R_PATH'] + ':' + self.tools['SVE_HOME'] + '/src/R-package/packages/lib' + ':' + os.environ['PATH']
         #load up params to pass to the Rscript cmd_parser.R        
         defaults,params = self.params,[]
         params = [k+'='+str(defaults[k]['value']) for k in defaults]        
@@ -68,8 +67,8 @@ class cnmops(stage_wrapper.Stage_Wrapper):
         output,err = '',{}
         try:
             print (' '.join(command))
-            output = subprocess.check_output(' '.join(command),stderr=subprocess.STDOUT,shell=True,
-                                             env={'R_LIBS':R_LIBS,'PATH':PATH, 'LIBRARY_PATH':R_LIBS, 'LD_LIBRARY_PATH':R_LIBS})
+            output = subprocess.check_output(' '.join(command),stderr=subprocess.STDOUT,shell=True)
+                                             #env={'R_LIBS':R_LIBS,'PATH':PATH})
         #catch all errors that arise under normal call behavior
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
