@@ -44,11 +44,14 @@ class cnmops(stage_wrapper.Stage_Wrapper):
         #split the ref seq into seperate chroms...
         rscript  = self.tools['R_PATH'] + '/bin/Rscript'
         cnmops_r = self.tools['SVE_HOME'] + '/stages/utils/cnmops.R'
-        #LD_PATH= self.tools['R_PATH'] + '/lib:' + self.tools['R_LIB_PATH'] + ':' + os.environ['LD_LIBRARY_PATH']
-        #R_LIBS   = self.tools['R_PATH'] + '/library' + ':' + self.tools['SVE_HOME'] + '/src/R-package/packages/lib'
-        #PATH   = self.tools['R_PATH'] + ':' + self.tools['SVE_HOME'] + '/src/R-package/packages/lib' + ':' + os.environ['PATH']
-        #load up params to pass to the Rscript cmd_parser.R        
+        #load up params to pass to the Rscript cmd_parser.R
         defaults,params = self.params,[]
+        if len(inputs['.bam']) <= 1: defaults['mode']['value'] = 3
+        elif len(inputs['.bam']) == 2: defaults['mode']['value'] = 1
+        else: defaults['mode']['value'] = 0
+	defaults['normal']['value'] = 3
+        defaults['cir_seg']['value'] = True
+        
         params = [k+'='+str(defaults[k]['value']) for k in defaults]        
         print(params)
             
@@ -57,7 +60,6 @@ class cnmops(stage_wrapper.Stage_Wrapper):
                    'in_bams='+','.join(inputs['.bam']),
                    #'in_chroms='+','.join(in_names['chroms']),
                    'out_vcf='+out_names['.vcf']]+params
-        self.command = command
         
         #cn.mop ref=x string is off and needs to be setup for chr1,chr2,chr3...
         
