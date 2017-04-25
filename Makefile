@@ -7,16 +7,19 @@ PROGRAM=$(SVE_DIR)/scripts/sve
 
 SVE_DIR=$(shell pwd)
 R_PACKAGE=$(SVE_DIR)/$(SRC)/R-package
-R_INSTALL_DIR=$(SVE_DIR)/$(SRC)/R-package/packages
+R_INSTALL_DIR=$(R_PACKAGE)/packages
 R_PACKAGE_DEPEN = bzip2-1.0.6 curl-7.47.1 pcre-8.40 xz-5.2.2 zlib-1.2.9
 
-TARBALLS = jre1.8.0_51 picard-tools-2.5.0 svtoolkit_2.00.1736 CNVnator_v0.3.3 samtools-0.1.19
+PERL_LIB=$(SVE_DIR)/$(SRC)/perl-lib
+PERL_LIB_DEPEN = GD-2.52 GDTextUtil-0.86 GDGraph-histogram-1.1 GDGraph-1.54
+
+TARBALLS = jre1.8.0_51 picard-tools-2.5.0 svtoolkit_2.00.1736 CNVnator_v0.3.3 samtools-0.1.19 breakdancer-1.4.5
 SUBDIRS = bwa speedseq htslib samtools samtools-0.1.19 bcftools bedtools2 delly lumpy-sv hydra tigra
 
 GCCVERSION=$(shell gcc --version | grep ^gcc | sed 's/^.* //g' | awk -F'.' '{print $1"."$2}')
 
 # all
-all: unzip_tarballs configure build CNVnator_v0.3.3 breakdancer
+all: unzip_tarballs configure build CNVnator_v0.3.3 perl-lib breakdancer
 	@test -d $(SVE_DIR)/data || tar -zxvf data.tar.gz # unzip data
 	@test -d $(SVE_DIR)/$(TARGET_BIN) || mkdir $(SVE_DIR)/$(TARGET_BIN)
 	$(MAKE) tool_paths
@@ -59,11 +62,23 @@ CNVnator_v0.3.3:
 	$(MAKE) --no-print-directory -C $(SRC)/CNVnator_v0.3.3/src
 
 breakdancer:
-	@cd $(SVE_DIR)/$(SRC)/breakdancer; \
+	@cd $(SVE_DIR)/$(SRC)/breakdancer-1.4.5; \
 	mkdir build; \
 	cd build; \
 	cmake .. -DCMAKE_BUILD_TYPE=release; \
 	$(MAKE)
+
+perl-lib:
+	@cd $(PERL_LIB); \
+	for module in $(PERL_LIB_DEPEN); do \
+		if [ ! -d $$module ]; then \
+			echo "- Unzip $$module"; \
+			tar -zxvf $$module.tar.gz; \
+			cd $(PERL_LIB)/$$module; \
+			perl Makefile.PL INSTALL_BASE=$(PERL_LIB); \
+			$(MAKE) && $(MAKE) install; \
+		fi; \
+	done; \
 
 R-package:
 	@test -d $(R_INSTALL_DIR) || mkdir -p $(R_INSTALL_DIR)
@@ -107,8 +122,9 @@ tool_paths:
 	@echo "TOOLS ['TIGRA-EXT']     = '$(SVE_DIR)/$(SRC)/tigra-ext/TIGRA-ext.pl'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['FATO2BIT']      = '$(SVE_DIR)/$(SRC)/faToTwoBit/faToTwoBit_linux'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['R_PATH']               = '$(R_PACKAGE)/R-3.3.3/bin'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['PERL_LIB_PATH']            = '$(PERL_LIB)'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['HYDRA_PATH']           = '$(SVE_DIR)/$(SRC)/hydra'" >> $(TOOL_PATHS)
-	@echo "TOOLS ['BREAKDANCER_PATH']     = '$(SVE_DIR)/$(SRC)/breakdancer'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['BREAKDANCER_PATH']     = '$(SVE_DIR)/$(SRC)/breakdancer-1.4.5'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['TIGRA_PATH']           = '$(SVE_DIR)/$(SRC)/tigra'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['BWA_PATH']             = '$(SVE_DIR)/$(SRC)/bwa'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['SAMTOOLS_PATH']        = '$(SVE_DIR)/$(SRC)/samtools'" >> $(TOOL_PATHS)
@@ -138,14 +154,18 @@ clean:
 			rm -rf $(SRC)/$$module; \
 		fi; \
 	done
-	@cd $(R_PACKAGE); \
-	for module in $(R_PACKAGE_DEPEN); do \
+	@for module in $(R_PACKAGE_DEPEN); do \
 		if [ -d $(R_PACKAGE)/$$module ]; then \
 			rm -rf $(R_PACKAGE)/$$module; \
 		fi; \
 	done;
 	@rm -rf $(R_INSTALL_DIR)
 	@rm -rf $(R_PACKAGE)/R-3.3.3
+	@for module in $(PERL_LIB_DEPEN); do \
+		if [ -d $(PERL_LIB)/$$module ]; then \
+			rm -rf $(PERL_LIB)/$$module; \
+		fi; \
+	done;
 	@if [ -d $(SVE_DIR)/data ]; then \
 		chmod -R 777 $(SVE_DIR)/data; \
 		rm -rf $(SVE_DIR)/data; \
