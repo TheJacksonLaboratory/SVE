@@ -47,8 +47,8 @@ class hydra(stage_wrapper.Stage_Wrapper):
         hydra_to_vcf = self.tools['SVE_HOME'] + '/stages/utils/hydra_to_vcf.py'
         #ENV
         PATH = hydra+'bin:'+hydra+'scripts:'+\
-               self.tools['SAMTOOLS-0.1.19_PATH']+':'+\
-               os.environ['PATH']
+               self.tools['SAMTOOLS-0.1.19_PATH']
+        if os.environ.has_key('PATH'): PATH += ':' + os.environ['PATH']
 
         #[0] stub file generation        
         bams = sub_dir+'bam.stub'
