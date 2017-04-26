@@ -36,9 +36,11 @@ unzip_tarballs:
 
 configure:
 	@echo "- Configuring in htslib"
-	@cd $(SVE_DIR)/$(SRC)/htslib && autoheader && autoconf && ./configure --disable-lzma && $(MAKE) && cd $(SVE_DIR)
+	@cd $(SVE_DIR)/$(SRC)/htslib && autoheader && autoconf && ./configure --disable-lzma && $(MAKE) 
+	@cd $(SVE_DIR)
 	@echo "- Configuring in lumpy"
-	$(MAKE) --no-print-directory -C $(SVE_DIR)/$(SRC)/lumpy-sv
+	@cd $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib && autoheader && autoconf
+	@cd $(SVE_DIR)
 	@echo "- Configuring in breakseq2"
 	@cd $(SVE_DIR)/$(SRC)/breakseq2 && python setup.py && cd $(SVE_DIR) || true
 	@echo "- Configuring in tigra"

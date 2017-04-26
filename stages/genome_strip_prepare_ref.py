@@ -134,8 +134,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
 
             if not os.path.isfile(out_names['.svmask.fasta']):
                 LD_LIB = self.tools['GENOME_STRIP_PATH']+'/bwa'
-                if os.environ.has_key('LD_LIBRARY_PATH'):
-                     LD_LIB += ':'+os.environ['LD_LIBRARY_PATH']
+                if os.environ.has_key('LD_LIBRARY_PATH'): LD_LIB += ':'+os.environ['LD_LIBRARY_PATH']
                 svmask    = [self.tools['JAVA-1.8'], '-cp', classpath, cgm, '-R', inputs['.fa'], '-O', out_names['.svmask.fasta'], '-readLength',str(100)]
                 print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
                 print (' '.join(svmask))

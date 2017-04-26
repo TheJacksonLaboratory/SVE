@@ -44,12 +44,8 @@ class breakdancer(stage_wrapper.Stage_Wrapper):
         out_names = {'.calls' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[0],
                      '.vcf' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[1]}
         #[2a]build command args
-#        PATH = os.environ['PATH'] 
-#        PATH = os.path.dirname(os.path.abspath('~'))+'/software/perl/bin:'+os.environ['PATH']
-#        PATH = self.software_path+'/breakdancer-1.4.5/perl/GD-2.46:'+'/software/perl/bin:'+os.environ['PATH']
-#        PERL5LIB = os.path.dirname(os.path.abspath('~'))+'/software/perl/lib/site_perl/5.20.1:'+\
-#                   os.path.dirname(os.path.abspath('~'))+'/software/perl/lib/5.20.1'#+os.environ['PERL5LIB']
-        PERL5LIB = self.tools['PERL_LIB_PATH'] + '/lib/perl5:' + os.environ['PERL5LIB']
+        PERL5LIB = self.tools['PERL_LIB_PATH'] + '/lib/perl5'
+        if os.environ.has_key('PERL5LIB'): PERL5LIB += ':' + os.environ['PERL5LIB']
         PATH = self.tools['SAMTOOLS_PATH'] + ':' + os.environ['PATH']
         cfg    = sub_dir+"bd_confg.txt" #new version 1.1.2 working!
         config = self.tools['BREAKDANCER_PATH'] + '/perl/bam2cfg.pl'        
