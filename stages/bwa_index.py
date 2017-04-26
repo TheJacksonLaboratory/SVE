@@ -42,7 +42,7 @@ class bwa_index(stage_wrapper.Stage_Wrapper):
         output,err = '',{}
         try:
             print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
-            print (' ',join(command))
+            print (' '.join(command))
             output = subprocess.check_output(command,stderr=subprocess.STDOUT)
         #catch all errors that arise under normal behavior
         except subprocess.CalledProcessError as E:

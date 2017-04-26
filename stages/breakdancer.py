@@ -60,9 +60,12 @@ class breakdancer(stage_wrapper.Stage_Wrapper):
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
-            print(' '.join(configure))
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+            print (' '.join(configure))
             output += subprocess.check_output(' '.join(configure),
                                               stderr=subprocess.STDOUT,shell=True, env={'PERL5LIB':PERL5LIB, 'PATH':PATH})+'\n'
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+            print (' '.join(sv_call))
             output += subprocess.check_output(' '.join(sv_call),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
             table = bd.read_breakdancer(out_names['.calls'])
