@@ -230,10 +230,10 @@ if(mode==3){ #mode = 3 -> singlecn.mops(single sample WGS)
 #TO DO ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #update for multiple sample analysis mode=0 and 1---------------------------------------------
 #check that CNV were found...
-image_m <- strsplit(out_vcf,'.vcf')[[1]]
-image_n <- sub('.bam','',image_m[length(image_m)])
-outimage <- paste(image_n,'.RData',sep='');
-save.image(file=outimage); #saves objects for remote debugging/ect..
+#image_m <- strsplit(out_vcf,'.vcf')[[1]]
+#image_n <- sub('.bam','',image_m[length(image_m)])
+#outimage <- paste(image_n,'.RData',sep='');
+#save.image(file=outimage); #saves objects for remote debugging/ect..
 len <- 0;
 if(class(res)[1]=="CNVDetectionResult"){
 	len <- dim(mcols(cnvr(res)))[1][1]; #number of CNV reported by cn.mops
