@@ -6,7 +6,7 @@ import random
 
 def CheckRG(samtools,bam,out_name,result):
     file = out_name+'.bam.header'
-    command = [samtools,'view','-SH',bam,'>',file]
+    command = [samtools,'view','-SH',bam,'-o',file]
     print (' '.join(command))
     subprocess.check_output(' '.join(command),stderr=subprocess.STDOUT,shell=True)
 
@@ -16,7 +16,7 @@ def CheckRG(samtools,bam,out_name,result):
         header = f.readlines()
     for l in range(len(header)):
         i = 0
-        if header[0:3] == "@RG":
+        if header[l][0:3] == "@RG":
           RG = {x.split(':')[0]:x.split(':')[-1].replace('\n','') for x in header[l].split('@RG')[-1].split('\t')[1:]}
           result.append(RG)
 

@@ -160,6 +160,9 @@ Command:\talign\tFASTQ->BAM
         ### Realign and Call: for bam input
         if paras['command'] in ['realign']:
             paras['BAM'] = args.BAM
+            if len(paras['BAM']) > 1:
+                print "ERROR: Please give only one BAM; " + len(paras['BAM']) + "are given."
+                exit()
             if not os.path.isfile(paras['BAM'][0]): 
                 print "ERROR: Cannot open BAM file: " + paras['BAM'][0]
                 exit()

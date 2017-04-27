@@ -25,16 +25,17 @@ class speedseq_realign(stage_wrapper.Stage_Wrapper):
         #[1b]
         stripped_name = self.strip_path(inputs['.bam'])
         stripped_name = self.strip_in_ext(stripped_name,'.bam')
-        out_name = inputs['out_dir']+'/'+stripped_name
+        out_dir = inputs['out_dir']
+        sub_dir = out_dir + '/' + stripped_name + '_S' + str(self.stage_id) + '/'
         #[2]build command args
-        realign = [self.tools['SPEEDSEQ'], 'realign', '-T', out_name, '-o', out_name]
+        realign = [self.tools['SPEEDSEQ'], 'realign', '-T', sub_dir, '-o', out_dir]
         if 'threads' in inputs: realign += ['-t', str(inputs['threads'])]
         if 'mem' in inputs: realign += ['-M', str(inputs['mem'])]
         if 'RG' in inputs and inputs['RG'] != '':
             realign += ['-R "'+inputs['RG']+'"']
         else:
            result = []
-           result = CheckRG(self.tools['SAMTOOLS'],inputs['.bam'], out_name, result)
+           result = CheckRG(self.tools['SAMTOOLS'],inputs['.bam'], out_dir + stripped_name, result)
            if len(result) == 0:
                rg = GenerateRG(stripped_name)
                print "ERROR: " + inputs['.bam'] + " doesn't have RG. " + rg + " is generated."
