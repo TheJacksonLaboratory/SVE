@@ -54,8 +54,8 @@ mode     <- args['mode'][[1]]
 
 #start up the dynamically loaded libraries and run cn.mops
 source("https://bioconductor.org/biocLite.R")
-biocLite("Rsamtools")
-biocLite("cn.mops")
+biocLite("Rsamtools");
+biocLite("cn.mops");
 library('Rsamtools');
 library('cn.mops');
 f_names <- in_bams;
@@ -84,7 +84,7 @@ if(mode==0){ #mode = 0 -> cn.mops(regular multi sample WGS)
 	tryCatch({
 		cat('----------using cn.mops->multi sample WGS mode\n');
 		data <- getReadCountsFromBAM(BAMFiles=f_names, sampleNames=s_names, 
-                            	 	 refSeqName = ref, WL=window, mode = paired, 
+                            	 	 refSeqName = ref, WL=window, 
                              	 	 parallel=(cores-1));              
 		cat(paste('----------finished reading ',dim(mcols(data))[1],' bins\n',sep=''));
 		#cleaning routine to suppress zero count issues.....cnmopsBUG
@@ -126,11 +126,11 @@ if(mode==1){ #mode = 1 -> referencecn.mops(case ctrl WGS)
 	case_f_names <- as.vector(f_names[2]);
 	case_s_names <- as.vector(s_names[2]);
 	case_data <- getReadCountsFromBAM(BAMFiles=case_f_names, sampleNames=case_s_names, 
-                             	      refSeqName = ref, WL=window, mode = paired, 
+                             	      refSeqName = ref, WL=window, 
                              	      parallel=(cores-1));
     cat(paste('----------finished reading ',dim(mcols(data))[1],' case bins\n',sep='')); 
     ctrl_data <- getReadCountsFromBAM(BAMFiles=ctrl_f_names, sampleNames=ctrl_s_names, 
-                             	      refSeqName = ref, WL=window, mode = paired, 
+                             	      refSeqName = ref, WL=window, 
                              	      parallel=(cores-1));
     cat(paste('----------finished reading ',dim(mcols(data))[1],' ctrl bins\n',sep=''));                          	              
 	res  <- referencecn.mops(cases=case_data,controls=ctrl_data,
@@ -148,7 +148,7 @@ if(mode==2){ #mode = 2 -> exomecn.mops(whole exome sequencing WES)
 	tryCatch({
 		cat('----------using exomecn.mops->WES mode\n');
 		data <- getReadCountsFromBAM(BAMFiles=f_names, sampleNames=s_names, 
-                            	 	 refSeqName = ref, WL=window, mode = paired, 
+                            	 	 refSeqName = ref, WL=window, 
                              	 	 parallel=(cores-1));              
 		cat(paste('----------finished reading ',dim(mcols(data))[1],' bins\n',sep=''));
 		#cleaning routine to suppress zero count issues.....cnmopsBUG
@@ -184,10 +184,12 @@ if(mode==2){ #mode = 2 -> exomecn.mops(whole exome sequencing WES)
 }
 if(mode==3){ #mode = 3 -> singlecn.mops(single sample WGS)
 	#try to make this more robust or alter input ref seq list = ref	
+        cat("BAM file: ", f_names, " ", s_names, " ", ref, " ", window, " ", paired)
+        cat("\n")
 	tryCatch({
 		cat('----------using singlecn.mops->single sample WGS mode\n');
 		data <- getReadCountsFromBAM(BAMFiles=f_names, sampleNames=s_names, 
-                            	 	 refSeqName = ref, WL=window, mode = paired, 
+                            	 	 refSeqName = ref, WL=window, 
                              	 	 parallel=(cores-1));              
 		cat(paste('----------finished reading ',dim(mcols(data))[1],' bins\n',sep=''));
 		#cleaning routine to suppress zero count issues.....cnmopsBUG
