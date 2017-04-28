@@ -26,20 +26,22 @@ class speedseq_realign(stage_wrapper.Stage_Wrapper):
         stripped_name = self.strip_path(inputs['.bam'])
         stripped_name = self.strip_in_ext(stripped_name,'.bam')
         out_dir = inputs['out_dir']
-        sub_dir = out_dir + '/' + stripped_name + '_S' + str(self.stage_id) + '/'
         #[2]build command args
-        realign = [self.tools['SPEEDSEQ'], 'realign', '-T', sub_dir, '-o', out_dir]
+        realign = [self.tools['SPEEDSEQ'], 'realign', '-T', out_dir, '-o', out_dir]
         if 'threads' in inputs: realign += ['-t', str(inputs['threads'])]
         if 'mem' in inputs: realign += ['-M', str(inputs['mem'])]
         if 'RG' in inputs and inputs['RG'] != '':
-            realign += ['-R "'+inputs['RG']+'"']
+            RG = '"' + inputs['RG'] + '"'
+            realign += ['-R', RG]
         else:
            result = []
            result = CheckRG(self.tools['SAMTOOLS'],inputs['.bam'], out_dir + stripped_name, result)
            if len(result) == 0:
-               rg = GenerateRG(stripped_name)
-               print "ERROR: " + inputs['.bam'] + " doesn't have RG. " + rg + " is generated."
-               realign += ['-R "'+rg+'"']
+               sample_name = stripped_name.rsplit('.')[0].rsplit('_')[0] # remove . and _
+               RG = GenerateRG(sample_name)
+               print "ERROR: " + inputs['.bam'] + " doesn't have RG. " + RG + " is generated."
+               RG = '"' + RG + '"'
+               realign += ['-R', RG]
                
         realign += [inputs['.fa'],inputs['.bam']]
 
@@ -75,7 +77,7 @@ class speedseq_realign(stage_wrapper.Stage_Wrapper):
         #[3b]check results--------------------------------------------------
         if err == {}:
             #self.db_stop(run_id,{'output':output},'',True)
-            results = [out_name+'.bam']
+            results = [out_dir + '.bam']
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
                 print("<<<<<<<<<<<<<speedseq realign sucessfull>>>>>>>>>>>>>>>\n")

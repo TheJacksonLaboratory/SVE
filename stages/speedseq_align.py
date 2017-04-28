@@ -40,7 +40,8 @@ class speedseq_align(stage_wrapper.Stage_Wrapper):
             RG = inputs['RG']
 
         #[2]build command args
-        align = [self.tools['SPEEDSEQ'], 'align', '-T', out_name, '-o', out_name, '-R', '"'+RG+'"']
+        RG = '"' + RG + '"'
+        align = [self.tools['SPEEDSEQ'], 'align', '-T', out_name, '-o', out_name, '-R', RG]
         if 'threads' in inputs: align += ['-t', str(inputs['threads'])]
         if 'mem' in inputs: align += ['-M', str(inputs['mem'])]
         align += [inputs['.fa']] + inputs['.fq']

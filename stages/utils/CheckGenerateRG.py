@@ -25,6 +25,7 @@ def CheckRG(samtools,bam,out_name,result):
     return result
 
 def GenerateRG(sample):
+    if sample == '': sample = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(8))
     id = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(8))
     lb = 'Solexa_' + sample
     pl = 'Illumina'
