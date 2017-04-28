@@ -25,7 +25,7 @@ class speedseq_realign(stage_wrapper.Stage_Wrapper):
         #[1b]
         stripped_name = self.strip_path(inputs['.bam'])
         stripped_name = self.strip_in_ext(stripped_name,'.bam')
-        out_dir = inputs['out_dir']
+        out_dir = inputs['out_dir'] + '/' + stripped_name
         #[2]build command args
         realign = [self.tools['SPEEDSEQ'], 'realign', '-T', out_dir, '-o', out_dir]
         if 'threads' in inputs: realign += ['-t', str(inputs['threads'])]
