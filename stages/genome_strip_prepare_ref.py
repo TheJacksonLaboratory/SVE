@@ -115,7 +115,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
-            if not os.path.isfile(gs_ref)
+            if not os.path.isfile(gs_ref):
                 copy = ['cp', inputs['.fa'], gs_ref]
                 output += subprocess.check_output(' '.join(copy),stderr=subprocess.STDOUT,shell=True)
             if not all([os.path.isfile(gs_ref+'.'+suffix) for suffix in ['amb','ann','bwt','pac','sa','rbwt','rpac','rsa']]):

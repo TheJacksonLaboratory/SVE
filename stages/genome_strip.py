@@ -48,7 +48,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         #reused paths and files...
         sv = self.tools['GENOME_STRIP_PATH']
         classpath = sv + '/lib/SVToolkit.jar:' + sv + '/lib/gatk/GenomeAnalysisTK.jar:' + sv + '/lib/gatk/Queue.jar'
-        java  = self.tools['JAVA-1.8']
+        java  = self.tools['JAVA-1.8'] + ' -Xmx4g'
         qcmd  = 'org.broadinstitute.gatk.queue.QCommandLine'
         qs    = sv + '/qscript/SVQScript.q'
         gatk  = sv + '/lib/gatk/GenomeAnalysisTK.jar'
@@ -164,6 +164,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         if '.svmask.fasta' in inputs:  del_discovery += ['-genomeMaskFile ' + inputs['.svmask.fasta']]
         if '.ploidymap.txt' in inputs: del_discovery += ['-ploidyMapFile ' + inputs['.ploidymap.txt']]
 
+        """
         try:
             output = subprocess.check_output(' '.join(del_discovery), stderr=subprocess.STDOUT, shell=True,
                                              env={'SV_DIR': self.tools['GENOME_STRIP_PATH'], 'LD_LIBRARY_PATH': LD_LIB, 'PATH': PATH})
@@ -187,6 +188,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
             print('code: ' + str(E.errno))
             err['code'] = E.errno
         print('output:\n' + output)
+        """
         
         #[2] Genotype Individual Deleteions (this needs the GS_DEL_VCF_splitter.py)
         dg = sv+'/qscript/SVGenotyper.q'
@@ -212,6 +214,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
 
         if '.svmask.fasta' in inputs:  del_genotyping += ['-genomeMaskFile ' + inputs['.svmask.fasta']]
         if '.ploidymap.txt' in inputs: del_genotyping += ['-ploidyMapFile ' + inputs['.ploidymap.txt']]
+        """
         try:
             output = subprocess.check_output(' '.join(del_genotyping), stderr=subprocess.STDOUT, shell=True,
                                              env={'SV_DIR': self.tools['GENOME_STRIP_PATH'], 'LD_LIBRARY_PATH': LD_LIB, 'PATH': PATH})
@@ -235,7 +238,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
             print('code: ' + str(E.errno))
             err['code'] = E.errno
         print('output:\n' + output)
-        
+        """
         #[3] GenomeSTRiP2.0 CNV algorithm (this needs the gs_slpit_merge.py)
         cnv = sv+'/qscript/discovery/cnv/CNVDiscoveryPipeline.q'
         cnv_discovery = [java,'-cp %s'%classpath,
