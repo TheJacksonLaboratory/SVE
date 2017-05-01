@@ -11,7 +11,7 @@ R_INSTALL_DIR=$(R_PACKAGE)/packages
 R_PACKAGE_DEPEN = bzip2-1.0.6 curl-7.47.1 pcre-8.40 xz-5.2.2 zlib-1.2.9
 
 PERL_LIB=$(SVE_DIR)/$(SRC)/perl-lib
-PERL_LIB_DEPEN = GD-2.52 GDTextUtil-0.86 GDGraph-histogram-1.1 GDGraph-1.54
+PERL_LIB_DEPEN = GD-2.52 GDTextUtil-0.86 GDGraph-histogram-1.1 GDGraph-1.54 Statistics-Descriptive-3.0612 List-MoreUtils-0.17
 
 TARBALLS = jre1.8.0_51 picard-tools-2.5.0 svtoolkit_2.00.1736 CNVnator_v0.3.3 samtools-0.1.19 breakdancer-1.4.5
 SUBDIRS = bwa speedseq htslib samtools samtools-0.1.19 bcftools bedtools2 delly lumpy-sv hydra tigra
