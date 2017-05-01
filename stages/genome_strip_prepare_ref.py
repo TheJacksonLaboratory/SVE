@@ -67,7 +67,8 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         fa_path = self.strip_name(inputs['.fa'])
         
         #will have to figure out output file name handling
-        cascade = self.strip_in_ext(inputs['.fa'],'.fa')
+        gs_ref = self.strip_in_ext(inputs['.fa'],'.fa') + '_' + str(self.stage_id) + '.fa'
+        cascade = self.strip_in_ext(gs_ref,'.fa')
         out_names = {'.dict': cascade + '.dict',
                      '.ploidymap.txt':cascade + '.ploidymap.txt',
                      '.rdmask.bed':cascade + '.rdmask.bed',
@@ -114,20 +115,23 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
-            if not all([os.path.isfile(inputs['.fa']+'.'+suffix) for suffix in ['amb','ann','bwt','pac','sa','rbwt','rpac','rsa']]):
-                indexref  = [self.tools['GENOME_STRIP_PATH'] + '/bwa/bwa', 'index', inputs['.fa']]
+            if not os.path.isfile(gs_ref)
+                copy = ['cp', inputs['.fa'], gs_ref]
+                output += subprocess.check_output(' '.join(copy),stderr=subprocess.STDOUT,shell=True)
+            if not all([os.path.isfile(gs_ref+'.'+suffix) for suffix in ['amb','ann','bwt','pac','sa','rbwt','rpac','rsa']]):
+                indexref  = [self.tools['GENOME_STRIP_PATH'] + '/bwa/bwa', 'index', gs_ref]
                 print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
                 print (' '.join(indexref))
                 output += subprocess.check_output(' '.join(indexref),stderr=subprocess.STDOUT,shell=True)
 
-            if not os.path.isfile(inputs['.fa']+'.fai'):
-                faidx     = [self.tools['SAMTOOLS'],'faidx',inputs['.fa']]
+            if not os.path.isfile(gs_ref+'.fai'):
+                faidx     = [self.tools['SAMTOOLS'],'faidx',gs_ref]
                 print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
                 print (' '.join(faidx))
                 output += subprocess.check_output(' '.join(faidx),stderr=subprocess.STDOUT,shell=True)
 
             if not os.path.isfile(out_names['.dict']):
-                dictbuild = [self.tools['JAVA-1.8'], '-jar', self.tools['PICARD'], 'CreateSequenceDictionary', 'R='+inputs['.fa'], 'O='+out_names['.dict']]
+                dictbuild = [self.tools['JAVA-1.8'], '-jar', self.tools['PICARD'], 'CreateSequenceDictionary', 'R='+gs_ref, 'O='+out_names['.dict']]
                 print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
                 print (' '.join(dictbuild))
                 output += subprocess.check_output(' '.join(dictbuild),stderr=subprocess.STDOUT,shell=True)
@@ -135,15 +139,15 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
             if not os.path.isfile(out_names['.svmask.fasta']):
                 LD_LIB = self.tools['GENOME_STRIP_PATH']+'/bwa'
                 if os.environ.has_key('LD_LIBRARY_PATH'): LD_LIB += ':'+os.environ['LD_LIBRARY_PATH']
-                svmask    = [self.tools['JAVA-1.8'], '-cp', classpath, cgm, '-R', inputs['.fa'], '-O', out_names['.svmask.fasta'], '-readLength',str(100)]
+                svmask    = [self.tools['JAVA-1.8'], '-cp', classpath, cgm, '-R', gs_ref, '-O', out_names['.svmask.fasta'], '-readLength',str(100)]
                 print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
                 print (' '.join(svmask))
                 output += subprocess.check_output(' '.join(svmask),stderr=subprocess.STDOUT,shell=True,
                                                  env={'LD_LIBRARY_PATH':LD_LIB})
 
             if not os.path.isfile(out_names['.ploidymap.txt']) or not os.path.isfile(out_names['.rdmask.bed']):
-                seq_n = sr.get_fasta_seq_names(inputs['.fa']) #assume last two are sex chroms
-                seq_l = sr.get_fasta_seq_lens(inputs['.fa'])  #get the lens here
+                seq_n = sr.get_fasta_seq_names(gs_ref) #assume last two are sex chroms
+                seq_l = sr.get_fasta_seq_lens(gs_ref)  #get the lens here
                 if not os.path.isfile(out_names['.ploidymap.txt']): generate_ploidy(seq_n, seq_l, out_names['.ploidymap.txt'])
                 if not os.path.isfile(out_names['.rdmask.bed']): generate_rdmask(seq_n, seq_l, out_names['.rdmask.bed'])
                  
@@ -172,7 +176,8 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         #[3b]check results--------------------------------------------------
         if err == {}:
             #self.db_stop(run_id,{'output':output},'',True)
-            results = {'.svmask.fasta':out_names['.svmask.fasta'],
+            results = {'.fa':gs_ref,
+                       '.svmask.fasta':out_names['.svmask.fasta'],
                        '.ploidymap.txt':out_names['.ploidymap.txt'],
                        '.rdmask.bed':out_names['.rdmask.bed']}
             #for i in results: print i

@@ -88,6 +88,7 @@ elif paras['command'] == "call":
         st = stage.Stage('genome_strip_prepare_ref',dbc)
         gs_ref = st.run(run_id, call_params)
         if gs_ref is None: exit()
+        call_params['.fa'] = gs_ref['.fa']
         call_params['.svmask.fasta']  = gs_ref['.svmask.fasta']
         call_params['.ploidymap.txt'] = gs_ref['.ploidymap.txt']
         call_params['.rdmask.bed']    = gs_ref['.rdmask.bed']

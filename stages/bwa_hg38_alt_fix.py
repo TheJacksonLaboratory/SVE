@@ -31,9 +31,9 @@ class bwa_index(stage_wrapper.Stage_Wrapper):
         path = self.tools['BWA-POSTALT']
         alt_fix = [self.tools['BWA-POSTALT'], '-p', self.files['GRCH38-EXTRA'], self.files['GRCH38-ALT']]
 
-        out_file = inputs['out_file']
-        if out_file is None:
-            out_file = self.strip_in_ext(inputs['.bam'],'.bam') + '.alt.bam'
+        out_file = self.strip_in_ext(inputs['.bam'],'.bam') + '.alt.bam'
+        if 'out_file' in inputs:
+            out_file = inputs['out_file']
         view2 = [samtools, 'view', '-1', '-', '-o', out_file]
         
         #[1a]make start entry which is a new staged_run row

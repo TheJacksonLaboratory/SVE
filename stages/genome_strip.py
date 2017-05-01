@@ -261,6 +261,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
 
         if '.svmask.fasta' in inputs:  cnv_discovery += ['-genomeMaskFile ' + inputs['.svmask.fasta']]
         if '.ploidymap.txt' in inputs: cnv_discovery += ['-ploidyMapFile ' + inputs['.ploidymap.txt']]
+        """
         try:
             output = subprocess.check_output(' '.join(cnv_discovery), stderr=subprocess.STDOUT, shell=True,
                                              env={'SV_DIR': self.tools['GENOME_STRIP_PATH'], 'LD_LIBRARY_PATH': LD_LIB, 'PATH': PATH})
@@ -283,7 +284,8 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
             # the error num
             print('code: ' + str(E.errno))
             err['code'] = E.errno
-        print('output:\n' + output)        
+        print('output:\n' + output)
+        """
         
         # #then some renaming, conversion and clean up
         # move_vcf = ['mv',sub_dir+'/results/gs_cnv.genotypes.vcf.gz'] #this seems to be hard coded
