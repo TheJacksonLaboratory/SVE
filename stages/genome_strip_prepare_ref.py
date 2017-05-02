@@ -72,7 +72,9 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         out_names = {'.dict': cascade + '.dict',
                      '.ploidymap.txt':cascade + '.ploidymap.txt',
                      '.rdmask.bed':cascade + '.rdmask.bed',
-                     '.svmask.fasta':cascade + '.svmask.fasta'}
+                     '.svmask.fasta':cascade + '.svmask.fasta',
+                     '.gendermask.bed':cascade + '.gendermask.bed',
+                     '.gcmask.fasta':cascade + '.gc2mask.fasta'}
 
         # Download genome_strip bundle if there is
         if 'genome' in inputs:
@@ -84,6 +86,8 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                 out_names['.ploidymap.txt'] = bundle_dir + '/Homo_sapiens_assembly19.ploidymap.txt'
                 out_names['.rdmask.bed'] = bundle_dir + '/Homo_sapiens_assembly19.rdmask.bed'
                 out_names['.svmask.fasta'] = bundle_dir + '/Homo_sapiens_assembly19.svmask.fasta'
+                out_names['.gendermask.bed'] = bundle_dir + '/Homo_sapiens_assembly19.gendermask.bed'
+                out_names['.gcmask.fasta'] = bundle_dir + '/Homo_sapiens_assembly19.gcmask.fasta'
             elif inputs['genome'] == 'hg38':
                 bundle_link = "ftp://ftp.broadinstitute.org/pub/svtoolkit/reference_metadata_bundles/Homo_sapiens_assembly38_12Oct2016.tar.gz"
                 bundle_file = self.tools['SVE_HOME'] + '/data/gs_hg38_bundle_file.tar.gz'
@@ -91,6 +95,8 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                 out_names['.ploidymap.txt'] = bundle_dir + '/Homo_sapiens_assembly38.ploidymap.txt'
                 out_names['.rdmask.bed'] = bundle_dir + '/Homo_sapiens_assembly38.rdmask.bed'
                 out_names['.svmask.fasta'] = bundle_dir + '/Homo_sapiens_assembly38.svmask.fasta'
+                out_names['.gendermask.bed'] = bundle_dir + '/Homo_sapiens_assembly38.gendermask.bed'
+                out_names['.gcmask.fasta'] = bundle_dir + '/Homo_sapiens_assembly38.gcmask.fasta'
 
             if not os.path.exists(bundle_dir):
                 if not os.path.isfile(bundle_file):
@@ -177,9 +183,11 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         if err == {}:
             #self.db_stop(run_id,{'output':output},'',True)
             results = {'.fa':gs_ref,
-                       '.svmask.fasta':out_names['.svmask.fasta'],
-                       '.ploidymap.txt':out_names['.ploidymap.txt'],
-                       '.rdmask.bed':out_names['.rdmask.bed']}
+                       '.svmask.fasta':  out_names['.svmask.fasta'],
+                       '.ploidymap.txt': out_names['.ploidymap.txt'],
+                       '.rdmask.bed':    out_names['.rdmask.bed'],
+                       '.gendermask.bed':out_names['.gendermask.bed'],
+                       '.gcmask.fasta':  out_names['.gcmask.fasta']}
             #for i in results: print i
             if all([os.path.isfile(r) for key,r in results.iteritems()]):
                 print("<<<<<<<<<<<<<genome_strip_prepare_ref sucessfull>>>>>>>>>>>>>>>\n")

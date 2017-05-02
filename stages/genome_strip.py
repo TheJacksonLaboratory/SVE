@@ -96,12 +96,16 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                       '-reduceInsertSizeDistributions true',
                       '-computeGCProfiles true',
                       '-bamFilesAreDisjoint true',
+                      '-rmd /home/leew/SVE/data/Homo_sapiens_assembly19/',
                       '-I %s' %bams,
                       '-run']
-        if '.svmask.fasta' in inputs:  preprocess += ['-genomeMaskFile ' + inputs['.svmask.fasta']]
-        if '.ploidymap.txt' in inputs: preprocess += ['-ploidyMapFile ' + inputs['.ploidymap.txt']]
-        if '.rdmask.bed' in inputs:    preprocess += ['-readDepthMaskFile ' + inputs['.rdmask.bed']]
-
+        """
+        if '.svmask.fasta' in inputs:   preprocess += ['-genomeMaskFile ' + inputs['.svmask.fasta']]
+        if '.ploidymap.txt' in inputs:  preprocess += ['-ploidyMapFile ' + inputs['.ploidymap.txt']]
+        if '.rdmask.bed' in inputs:     preprocess += ['-readDepthMaskFile ' + inputs['.rdmask.bed']]
+        if '.gendermask.bed' in inputs: preprocess += ['-genderMaskBedFile ' + inputs['.gendermask.bed']]
+        if '.gcmask.fasta' in inputs:   preprocess += ['-copyNumberMaskFile ' + inputs['.gcmask.fasta']]
+        """
         #script = self.generate_bash_script() + '\n' + (' '.join(preprocess))
         #with open(rd+'/preprocess.sh','w') as f: f.write(script)
         
@@ -111,7 +115,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         LD_LIB = gs_bwa_path 
         if os.environ.has_key('LD_LIBRARY_PATH'): LD_LIB += ':' + os.environ['LD_LIBRARY_PATH']
         output, err = '', {}
-
+        
         try:
             print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print (' '.join(preprocess))
@@ -137,7 +141,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
             print('code: ' + str(E.errno))
             err['code'] = E.errno
         print('output:\n' + output)
-
+        
         #[1] Initial Pooled Deletion Discovery
         dd = sv+'/qscript/SVDiscovery.q'
         del_discovery = [java,'-cp %s'%classpath,
@@ -154,7 +158,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                          '-minimumSize %s' %100,
                          '-maximumSize %s' %1000000,
                          '-genomeMaskFile %s' %gmask,
-                         '-genderMapFile %s' %gender_map,
+                         #'-genderMapFile %s' %gender_map,
                          '-suppressVCFCommandLines',
                          '-P select.validateReadPairs:false',
                          '-I %s'%bams,

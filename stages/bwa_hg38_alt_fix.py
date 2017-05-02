@@ -32,38 +32,16 @@ class bwa_index(stage_wrapper.Stage_Wrapper):
         alt_fix = [self.tools['BWA-POSTALT'], '-p', self.files['GRCH38-EXTRA'], self.files['GRCH38-ALT']]
 
         out_file = self.strip_in_ext(inputs['.bam'],'.bam') + '.alt.bam'
-        if 'out_file' in inputs:
+        if ('out_file' in inputs) and (inputs['out_file'] != ''):
             out_file = inputs['out_file']
         view2 = [samtools, 'view', '-1', '-', '-o', out_file]
         
         #[1a]make start entry which is a new staged_run row
         
         #[3a]execute the command here----------------------------------------------------
-        output,err = '',{}
-        try:
-            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
-            print (' '.join(view + ['|'] + alt_fix + ['|'] + view2))
-            output = subprocess.check_output(' '.join(view + ['|'] + alt_fix + ['|'] + view2),stderr=subprocess.STDOUT, shell=True)
-        #catch all errors that arise under normal behavior
-        except subprocess.CalledProcessError as E:
-            print('call error: '+E.output)             #what you would see in the term
-            err['output'] = E.output
-            #the python exception issues (shouldn't have any...
-            print('message: '+E.message)          #?? empty
-            err['message'] = E.message
-            #return codes used for failure....
-            print('code: '+str(E.returncode))     #return 1 for a fail in art?
-            err['code'] = E.returncode
-        except OSError as E:
-            print('os error: '+E.strerror)             #what you would see in the term
-            err['output'] = E.strerror
-            #the python exception issues (shouldn't have any...
-            print('message: '+E.message)          #?? empty
-            err['message'] = E.message
-            #the error num
-            print('code: '+str(E.errno))
-            err['code'] = E.errno
-        print('output:\n'+output)
+        print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+        print (' '.join(view + ['|'] + alt_fix + ['|'] + view2))
+        subprocess.check_output(' '.join(view + ['|'] + alt_fix + ['|'] + view2),stderr=subprocess.STDOUT, shell=True)
         
         #[3b]check results--------------------------------------------------
         if err == {}:
