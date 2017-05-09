@@ -85,15 +85,16 @@ elif paras['command'] == "call":
     call_params = {'.fa':paras['ref'],'.bam':paras['BAM'],'out_dir':paras['out_dir'],'threads':paras['threads'],'mem':paras['mem']}
     if paras['algorithm'] == 'genome_strip':
         call_params['genome'] = paras['genome']
-        #st = stage.Stage('genome_strip_prepare_ref',dbc)
-        #gs_ref = st.run(run_id, call_params)
-        #if gs_ref is None: exit()
-        #call_params['.fa'] = gs_ref['.fa']
-        #call_params['.svmask.fasta']   = gs_ref['.svmask.fasta']
-        #call_params['.ploidymap.txt']  = gs_ref['.ploidymap.txt']
-        #call_params['.rdmask.bed']     = gs_ref['.rdmask.bed']
-        #call_params['.gendermask.bed'] = gs_ref['.gendermask.bed']
-        #call_params['.gcmask.fasta']   = gs_ref['.gcmask.fasta']
+        st = stage.Stage('genome_strip_prepare_ref',dbc)
+        gs_ref = st.run(run_id, call_params)
+        if gs_ref is None: exit()
+        call_params['.fa'] = gs_ref['.fa']
+        call_params['.svmask.fasta']   = gs_ref['.svmask.fasta']
+        call_params['.ploidymap.txt']  = gs_ref['.ploidymap.txt']
+        call_params['.rdmask.bed']     = gs_ref['.rdmask.bed']
+        call_params['.gendermask.bed'] = gs_ref['.gendermask.bed']
+        call_params['.gcmask.fasta']   = gs_ref['.gcmask.fasta']
+        call_params['bundle_dir']      = gs_ref['bundle_dir']
         st = stage.Stage('genome_strip',dbc)
         st.run(run_id, call_params)
     if paras['algorithm'] == 'tigra':
