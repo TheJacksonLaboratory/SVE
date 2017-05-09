@@ -28,72 +28,38 @@ class gatk_haplo(stage_wrapper.Stage_Wrapper):
         #workflow is to run through the stage correctly and then check for error handles
     
         #[1a]get input names and output names setup
-        in_names  = {'.fa':inputs['.fa'][0],'.bam':inputs['.bam']}
-        
+
+        #[1a]get input names and output names setup
+        if ('.fa' not in inputs) or ('.bam' not in inputs) or ('out_dir' not in inputs):
+            print "ERROR: .fa, .bam, and out_dir are required for genome_strip.py"
+            return None
+                    
+        #will have to figure out output file name handling
         out_exts = self.split_out_exts()
-        if inputs.has_key('out_dir'):
-            out_dir = inputs['out_dir'][0]
-            stripped_name = self.strip_path(self.strip_in_ext(in_names['.bam'][0],'.bam'))
-            out_names = {'.vcf'  : out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[0]}
-        else:
-            cascade = self.strip_in_ext(in_names['.bam'][0],'.bam')
-            out_names = {'.vcf'  :cascade+'_S'+str(self.stage_id)+out_exts[0]} 
+        out_dir = inputs['out_dir'] + '/'
+        stripped_name = self.strip_path(self.strip_in_ext(inputs['.bam'][0],'.bam'))
+        out_names = {'.vcf'   : out_dir+stripped_name+'_S'+str(self.stage_id) + '.vcf',
+                     '.g.vcf' : out_dir+stripped_name+'_S'+str(self.stage_id) + '.g.vcf'}
         
         #[2a]build command args
-        java = self.software_path+'/jre1.8.0_51/bin/java'
-        gatk = self.software_path+'/GATK_3.7/GenomeAnalysisTK.jar'
-        command = [java,'-Xmx12g','-jar',gatk,'-T','HaplotypeCaller',
-                   '-R',in_names['.fa'],'-I'] + in_names['.bam']
-        #add this param function
-        for k in self.params:
-            param = self.params[k]
-            if param['type']=='bool':
-                if param['value']: command += [k]
-            else: command += [k, str(param['value'])]  
-        command += ['-o',out_names['.vcf']]
-        #[2b]make start entry which is a new staged_run row
-        self.command = command
-        print(self.get_command_str())
-        self.db_start(run_id,in_names['.bam'][0])
+        java = self.tools['JAVA']
+        gatk = self.tools['GATK']
+        call    = [java, '-jar', gatk, '-T', 'HaplotypeCaller',
+                   '-R', in_names['.fa'], '-I', in_names['.bam'], '-o', out_names['.g.vcf'],
+                   '-ERC', 'GVCF', '-variant_index_type', 'LINEAR', '-variant_index_parameter', str(128000)]
+        combine = [java, '-jar', gatk, '-T', 'CombineGVCFs',
+                   '-R', in_names['.fa'], '-V', out_names['.g.vcf'], '-o', out_names['.vcf']]
         
         #[3a]execute the command here----------------------------------------------------
-        output,err = '',{}
-        try:
-            output = subprocess.check_output(command,stderr=subprocess.STDOUT)
-        #catch all errors that arise under normal call behavior
-        except subprocess.CalledProcessError as E:
-            print('call error: '+E.output)        #what you would see in the term
-            err['output'] = E.output
-            #the python exception issues (shouldn't have any...
-            print('message: '+E.message)          #?? empty
-            err['message'] = E.message
-            #return codes used for failure....
-            print('code: '+str(E.returncode))     #return 1 for a fail in art?
-            err['code'] = E.returncode
-        except OSError as E:
-            print('os error: '+E.strerror)        #what you would see in the term
-            err['output'] = E.strerror
-            #the python exception issues (shouldn't have any...
-            print('message: '+E.message)          #?? empty
-            err['message'] = E.message
-            #the error num
-            print('code: '+str(E.errno))
-            err['code'] = E.errno
-        print('output:\n'+output)
+        subprocess.check_output(call,stderr=subprocess.STDOUT)
+        subprocess.check_output(combine,stderr=subprocess.STDOUT)
         
         #[3b]check results--------------------------------------------------
-        if err == {}:
-            results = [out_names['.vcf']]
-            #for i in results: print i
-            if all([os.path.exists(r) for r in results]):
-                print("GATK sucessfull........")
-                self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
-                return results   #return a list of names
-            else:
-                print("GATK failure...........")
-                self.db_stop(run_id,{'output':output},'',False)
-                return False
+        results = [out_names['.vcf']]
+        #for i in results: print i
+        if all([os.path.exists(r) for r in results]):
+            print("GATK sucessfull........")
+            return results   #return a list of names
         else:
             print("GATK failure...........")
-            self.db_stop(run_id,{'output':output},err['message'],False)
-            return None
+            return False
