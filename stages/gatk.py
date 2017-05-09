@@ -5,7 +5,7 @@ sys.path.append('../') #go up one in the modules
 import stage_wrapper
 
 #function for auto-making svedb stage entries and returning the stage_id
-class gatk_haplo(stage_wrapper.Stage_Wrapper):
+class gatk(stage_wrapper.Stage_Wrapper):
     #path will be where a node should process the data using the in_ext, out_ext
     #stage_id should be pre-registered with db, set to None will require getting
     #a new stage_id from the  db by writing and registering it in the stages table
@@ -42,17 +42,21 @@ class gatk_haplo(stage_wrapper.Stage_Wrapper):
                      '.g.vcf' : out_dir+stripped_name+'_S'+str(self.stage_id) + '.g.vcf'}
         
         #[2a]build command args
-        java = self.tools['JAVA']
+        java = self.tools['JAVA-1.8']
         gatk = self.tools['GATK']
         call    = [java, '-jar', gatk, '-T', 'HaplotypeCaller',
-                   '-R', in_names['.fa'], '-I', in_names['.bam'], '-o', out_names['.g.vcf'],
+                   '-R', inputs['.fa'], '-I', inputs['.bam'][0], '-o', out_names['.g.vcf'],
                    '-ERC', 'GVCF', '-variant_index_type', 'LINEAR', '-variant_index_parameter', str(128000)]
         combine = [java, '-jar', gatk, '-T', 'CombineGVCFs',
-                   '-R', in_names['.fa'], '-V', out_names['.g.vcf'], '-o', out_names['.vcf']]
+                   '-R', inputs['.fa'], '-V', out_names['.g.vcf'], '-o', out_names['.vcf']]
         
         #[3a]execute the command here----------------------------------------------------
-        subprocess.check_output(call,stderr=subprocess.STDOUT)
-        subprocess.check_output(combine,stderr=subprocess.STDOUT)
+        print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+        print (' '.join(call))
+        subprocess.check_output(' '.join(call), stderr=subprocess.STDOUT, shell=True)
+        print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+        print (' '.join(combine))
+        subprocess.check_output(' '.join(combine), stderr=subprocess.STDOUT, shell=True)
         
         #[3b]check results--------------------------------------------------
         results = [out_names['.vcf']]

@@ -123,7 +123,7 @@ tool_paths:
 	@echo "TOOLS ['TIGRA']         = '$(SVE_DIR)/$(SRC)/tigra/tigra-sv'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['TIGRA-EXT']     = '$(SVE_DIR)/$(SRC)/tigra-ext/TIGRA-ext.pl'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['FATO2BIT']      = '$(SVE_DIR)/$(SRC)/faToTwoBit/faToTwoBit_linux'" >> $(TOOL_PATHS)
-	@echo "TOOLS ['GATK']          = '$(SVE_DIR)/$(SRC)/GATK_3.7/GenomeAnalysisTK.jar' >> $(TOOL_PATHS)"
+	@echo "TOOLS ['GATK']          = '$(SVE_DIR)/$(SRC)/GATK_3.7/GenomeAnalysisTK.jar'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['R_PATH']               = '$(R_PACKAGE)/R-3.3.3'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['R_LIB_PATH']           = '$(R_INSTALL_DIR)'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['PERL_LIB_PATH']        = '$(PERL_LIB)'" >> $(TOOL_PATHS)
