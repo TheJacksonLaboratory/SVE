@@ -51,19 +51,106 @@ class gatk(stage_wrapper.Stage_Wrapper):
                    '-R', inputs['.fa'], '-V', out_names['.g.vcf'], '-o', out_names['.vcf']]
         
         #[3a]execute the command here----------------------------------------------------
-        print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
-        print (' '.join(call))
-        subprocess.check_output(' '.join(call), stderr=subprocess.STDOUT, shell=True)
-        print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
-        print (' '.join(combine))
-        subprocess.check_output(' '.join(combine), stderr=subprocess.STDOUT, shell=True)
+        output, err = '', {}
+        dict = self.strip_in_ext(inputs['.fa'],'.fa') + '.dict'
+        if not os.path.isfile(dict):
+            dictbuild = [self.tools['JAVA-1.8'], '-jar', self.tools['PICARD'], 'CreateSequenceDictionary', 'R='+gs_ref, 'O='dict]
+            try:
+                print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+                print (' '.join(dictbuild))
+                output = subprocess.check_output(' '.join(dictbuild),stderr=subprocess.STDOUT,shell=True)
+            except subprocess.CalledProcessError as E:
+                print('call error: '+E.output)        #what you would see in the term
+                err['output'] = E.output
+                #the python exception issues (shouldn't have any...
+                print('message: '+E.message)          #?? empty
+                err['message'] = E.message
+                #return codes used for failure....
+                print('code: '+str(E.returncode))     #return 1 for a fail in art?
+                err['code'] = E.returncode
+            except OSError as E:
+                print('os error: '+E.strerror)        #what you would see in the term
+                err['output'] = E.strerror
+                #the python exception issues (shouldn't have any...
+                print('message: '+E.message)          #?? empty
+                err['message'] = E.message
+                #the error num
+                print('code: '+str(E.errno))
+                err['code'] = E.errno
+            except Exception as E:
+                print('vcf write os/file IO error')
+                err['output'] = 'vcf write os/file IO error'
+            print('output:\n'+output)
+
+        try:
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+            print (' '.join(call))
+            output = subprocess.check_output(' '.join(call), stderr=subprocess.STDOUT, shell=True)
+        except subprocess.CalledProcessError as E:
+            print('call error: '+E.output)        #what you would see in the term
+            err['output'] = E.output
+            #the python exception issues (shouldn't have any...
+            print('message: '+E.message)          #?? empty
+            err['message'] = E.message
+            #return codes used for failure....
+            print('code: '+str(E.returncode))     #return 1 for a fail in art?
+            err['code'] = E.returncode
+        except OSError as E:
+            print('os error: '+E.strerror)        #what you would see in the term
+            err['output'] = E.strerror
+            #the python exception issues (shouldn't have any...
+            print('message: '+E.message)          #?? empty
+            err['message'] = E.message
+            #the error num
+            print('code: '+str(E.errno))
+            err['code'] = E.errno
+        except Exception as E:
+            print('vcf write os/file IO error')
+            err['output'] = 'vcf write os/file IO error'
+            err['message'] = 'vcf write os/file IO error'
+            err['code'] = 1
+        print('output:\n'+output)
+
+
+        try:
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+            print (' '.join(combine))
+            output = subprocess.check_output(' '.join(combine), stderr=subprocess.STDOUT, shell=True)
+        except subprocess.CalledProcessError as E:
+            print('call error: '+E.output)        #what you would see in the term
+            err['output'] = E.output
+            #the python exception issues (shouldn't have any...
+            print('message: '+E.message)          #?? empty
+            err['message'] = E.message
+            #return codes used for failure....
+            print('code: '+str(E.returncode))     #return 1 for a fail in art?
+            err['code'] = E.returncode
+        except OSError as E:
+            print('os error: '+E.strerror)        #what you would see in the term
+            err['output'] = E.strerror
+            #the python exception issues (shouldn't have any...
+            print('message: '+E.message)          #?? empty
+            err['message'] = E.message
+            #the error num
+            print('code: '+str(E.errno))
+            err['code'] = E.errno
+        except Exception as E:
+            print('vcf write os/file IO error')
+            err['output'] = 'vcf write os/file IO error'
+            err['message'] = 'vcf write os/file IO error'
+            err['code'] = 1
+        print('output:\n'+output)
         
         #[3b]check results--------------------------------------------------
-        results = [out_names['.vcf']]
-        #for i in results: print i
-        if all([os.path.exists(r) for r in results]):
-            print("GATK sucessfull........")
-            return results   #return a list of names
+        if err == {}:
+            results = [out_names['.vcf']]
+            #for i in results: print i
+            if all([os.path.exists(r) for r in results]):
+                print("<<<<<<<<<<<<<GATK sucessfull>>>>>>>>>>>>>>>")
+                return results   #return a list of names
+            else:
+                print("<<<<<<<<<<<<<GATK failure>>>>>>>>>>>>>>>")
+                return None
         else:
-            print("GATK failure...........")
-            return False
+            print("<<<<<<<<<<<<<GATK failure>>>>>>>>>>>>>>>")
+            return None

@@ -103,12 +103,39 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         if os.environ.has_key('PATH'): PATH += ':' + os.environ['PATH']
         LD_LIB = gs_bwa_path 
         if os.environ.has_key('LD_LIBRARY_PATH'): LD_LIB += ':' + os.environ['LD_LIBRARY_PATH']
-        
-        print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
-        print (' '.join(preprocess))
-        subprocess.check_output(' '.join(preprocess), stderr=subprocess.STDOUT, shell=True,
-                                env={'SV_DIR': self.tools['GENOME_STRIP_PATH'], 'LD_LIBRARY_PATH': LD_LIB, 'PATH': PATH})
-        
+       
+        output,err = '', {}
+        try: 
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+            print (' '.join(preprocess))
+            output += subprocess.check_output(' '.join(preprocess), stderr=subprocess.STDOUT, shell=True,
+                                            env={'SV_DIR': self.tools['GENOME_STRIP_PATH'], 'LD_LIBRARY_PATH': LD_LIB, 'PATH': PATH})
+
+        except subprocess.CalledProcessError as E:
+            print('call error: '+E.output)        #what you would see in the term
+            err['output'] = E.output
+            #the python exception issues (shouldn't have any...
+            print('message: '+E.message)          #?? empty
+            err['message'] = E.message
+            #return codes used for failure....
+            print('code: '+str(E.returncode))     #return 1 for a fail in art?
+            err['code'] = E.returncode
+        except OSError as E:
+            print('os error: '+E.strerror)        #what you would see in the term
+            err['output'] = E.strerror
+            #the python exception issues (shouldn't have any...
+            print('message: '+E.message)          #?? empty
+            err['message'] = E.message
+            #the error num
+            print('code: '+str(E.errno))
+            err['code'] = E.errno
+        except Exception as E:
+            print('vcf write os/file IO error')
+            err['output'] = 'vcf write os/file IO error'
+            err['message'] = 'vcf write os/file IO error'
+            err['code'] = 1
+
+        print('output:\n'+output)
         #[1] Initial Pooled Deletion Discovery
         dd = sv+'/qscript/SVDiscovery.q'
         del_discovery = [java,'-cp %s'%classpath,
@@ -135,12 +162,36 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         else:
             if inputs['.svmask.fasta'] != None:  del_discovery += ['-genomeMaskFile ' + inputs['.svmask.fasta']]
             if inputs['.ploidymap.txt'] != None: del_discovery += ['-ploidyMapFile ' + inputs['.ploidymap.txt']]
-        
-        print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
-        print (' '.join(del_discovery))
-        output = subprocess.check_output(' '.join(del_discovery), stderr=subprocess.STDOUT, shell=True,
-                                         env={'SV_DIR': self.tools['GENOME_STRIP_PATH'], 'LD_LIBRARY_PATH': LD_LIB, 'PATH': PATH})
-        
+       
+        try: 
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+            print (' '.join(del_discovery))
+            output += subprocess.check_output(' '.join(del_discovery), stderr=subprocess.STDOUT, shell=True,
+                                             env={'SV_DIR': self.tools['GENOME_STRIP_PATH'], 'LD_LIBRARY_PATH': LD_LIB, 'PATH': PATH})
+        except subprocess.CalledProcessError as E:
+            print('call error: '+E.output)        #what you would see in the term
+            err['output'] = E.output
+            #the python exception issues (shouldn't have any...
+            print('message: '+E.message)          #?? empty
+            err['message'] = E.message
+            #return codes used for failure....
+            print('code: '+str(E.returncode))     #return 1 for a fail in art?
+            err['code'] = E.returncode
+        except OSError as E:
+            print('os error: '+E.strerror)        #what you would see in the term
+            err['output'] = E.strerror
+            #the python exception issues (shouldn't have any...
+            print('message: '+E.message)          #?? empty
+            err['message'] = E.message
+            #the error num
+            print('code: '+str(E.errno))
+            err['code'] = E.errno
+        except Exception as E:
+            print('vcf write os/file IO error')
+            err['output'] = 'vcf write os/file IO error'
+            err['message'] = 'vcf write os/file IO error'
+            err['code'] = 1
+        print('output:\n'+output)
         
         #[2] Genotype Individual Deleteions (this needs the GS_DEL_VCF_splitter.py)
         dg = sv+'/qscript/SVGenotyper.q'
@@ -169,11 +220,36 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         else:
             if inputs['.svmask.fasta'] != None:  del_genotyping += ['-genomeMaskFile ' + inputs['.svmask.fasta']]
             if inputs['.ploidymap.txt'] != None: del_genotyping += ['-ploidyMapFile ' + inputs['.ploidymap.txt']]
-        
-        print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
-        print (' '.join(del_genotyping))
-        subprocess.check_output(' '.join(del_genotyping), stderr=subprocess.STDOUT, shell=True,
-                                env={'SV_DIR': self.tools['GENOME_STRIP_PATH'], 'LD_LIBRARY_PATH': LD_LIB, 'PATH': PATH})
+
+        try:
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+            print (' '.join(del_genotyping))
+            output += subprocess.check_output(' '.join(del_genotyping), stderr=subprocess.STDOUT, shell=True,
+                                    env={'SV_DIR': self.tools['GENOME_STRIP_PATH'], 'LD_LIBRARY_PATH': LD_LIB, 'PATH': PATH})
+        except subprocess.CalledProcessError as E:
+            print('call error: '+E.output)        #what you would see in the term
+            err['output'] = E.output
+            #the python exception issues (shouldn't have any...
+            print('message: '+E.message)          #?? empty
+            err['message'] = E.message
+            #return codes used for failure....
+            print('code: '+str(E.returncode))     #return 1 for a fail in art?
+            err['code'] = E.returncode
+        except OSError as E:
+            print('os error: '+E.strerror)        #what you would see in the term
+            err['output'] = E.strerror
+            #the python exception issues (shouldn't have any...
+            print('message: '+E.message)          #?? empty
+            err['message'] = E.message
+            #the error num
+            print('code: '+str(E.errno))
+            err['code'] = E.errno
+        except Exception as E:
+            print('vcf write os/file IO error')
+            err['output'] = 'vcf write os/file IO error'
+            err['message'] = 'vcf write os/file IO error'
+            err['code'] = 1
+        print('output:\n'+output)
         
         #[3] GenomeSTRiP2.0 CNV algorithm (this needs the gs_slpit_merge.py)
         cnv = sv+'/qscript/discovery/cnv/CNVDiscoveryPipeline.q'
@@ -202,9 +278,35 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         else:
             if inputs['.svmask.fasta'] != None:  cnv_discovery += ['-genomeMaskFile ' + inputs['.svmask.fasta']]
             if inputs['.ploidymap.txt'] != None: cnv_discovery += ['-ploidyMapFile ' + inputs['.ploidymap.txt']]
-        
-        subprocess.check_output(' '.join(cnv_discovery), stderr=subprocess.STDOUT, shell=True,
-                               env={'SV_DIR': self.tools['GENOME_STRIP_PATH'], 'LD_LIBRARY_PATH': LD_LIB, 'PATH': PATH})
+        try:
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+            print (' '.join(del_genotyping))
+            output += subprocess.check_output(' '.join(cnv_discovery), stderr=subprocess.STDOUT, shell=True,
+                                   env={'SV_DIR': self.tools['GENOME_STRIP_PATH'], 'LD_LIBRARY_PATH': LD_LIB, 'PATH': PATH})
+        except subprocess.CalledProcessError as E:
+            print('call error: '+E.output)        #what you would see in the term
+            err['output'] = E.output
+            #the python exception issues (shouldn't have any...
+            print('message: '+E.message)          #?? empty
+            err['message'] = E.message
+            #return codes used for failure....
+            print('code: '+str(E.returncode))     #return 1 for a fail in art?
+            err['code'] = E.returncode
+        except OSError as E:
+            print('os error: '+E.strerror)        #what you would see in the term
+            err['output'] = E.strerror
+            #the python exception issues (shouldn't have any...
+            print('message: '+E.message)          #?? empty
+            err['message'] = E.message
+            #the error num
+            print('code: '+str(E.errno))
+            err['code'] = E.errno
+        except Exception as E:
+            print('vcf write os/file IO error')
+            err['output'] = 'vcf write os/file IO error'
+            err['message'] = 'vcf write os/file IO error'
+            err['code'] = 1
+        print('output:\n'+output)
         
         final_vcf = rd+'/S14.vcf'
         #[3b]check results--------------------------------------------------

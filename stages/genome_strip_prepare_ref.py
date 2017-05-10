@@ -110,38 +110,141 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         classpath = SV_DIR+'/lib/SVToolkit.jar:'+SV_DIR+'/lib/gatk/GenomeAnalysisTK.jar:'+SV_DIR+'/lib/gatk/Queue.jar'
         cgm  = 'org.broadinstitute.sv.apps.ComputeGenomeMask'
 
+        output, err = '', {}
         #[3a]execute the command here----------------------------------------------------
         if not os.path.isfile(gs_ref):
             copy = ['cp', inputs['.fa'], gs_ref]
-            subprocess.check_output(' '.join(copy),stderr=subprocess.STDOUT,shell=True)
+            try:
+                print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+                print (' '.join(indexref))
+                output += subprocess.check_output(' '.join(copy),stderr=subprocess.STDOUT,shell=True)
+            except subprocess.CalledProcessError as E:
+                print('call error: ' + E.output)  # what you would see in the term
+                err['output'] = E.output
+                # the python exception issues (shouldn't have any...
+                print('message: ' + E.message)  # ?? empty
+                err['message'] = E.message
+                # return codes used for failure....
+                print('code: ' + str(E.returncode))  # return 1 for a fail in art?
+                err['code'] = E.returncode
+            except OSError as E:
+                print('os error: ' + E.strerror)  # what you would see in the term
+                err['output'] = E.strerror
+                # the python exception issues (shouldn't have any...
+                print('message: ' + E.message)  # ?? empty
+                err['message'] = E.message
+                # the error num
+                print('code: ' + str(E.errno))
+                err['code'] = E.errno
+            print('output:\n' + output)
 
         if not all([os.path.isfile(gs_ref+'.'+suffix) for suffix in ['amb','ann','bwt','pac','sa','rbwt','rpac','rsa']]):
             indexref  = [self.tools['GENOME_STRIP_PATH'] + '/bwa/bwa', 'index', gs_ref]
-            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
-            print (' '.join(indexref))
-            subprocess.check_output(' '.join(indexref),stderr=subprocess.STDOUT,shell=True)
+            try:
+                print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+                print (' '.join(indexref))
+                output = subprocess.check_output(' '.join(indexref),stderr=subprocess.STDOUT,shell=True)
+            except subprocess.CalledProcessError as E:
+                print('call error: ' + E.output)  # what you would see in the term
+                err['output'] = E.output
+                # the python exception issues (shouldn't have any...
+                print('message: ' + E.message)  # ?? empty
+                err['message'] = E.message
+                # return codes used for failure....
+                print('code: ' + str(E.returncode))  # return 1 for a fail in art?
+                err['code'] = E.returncode
+            except OSError as E:
+                print('os error: ' + E.strerror)  # what you would see in the term
+                err['output'] = E.strerror
+                # the python exception issues (shouldn't have any...
+                print('message: ' + E.message)  # ?? empty
+                err['message'] = E.message
+                # the error num
+                print('code: ' + str(E.errno))
+                err['code'] = E.errno
+            print('output:\n' + output)
 
         if not os.path.isfile(gs_ref+'.fai'):
             faidx     = [self.tools['SAMTOOLS'],'faidx',gs_ref]
-            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
-            print (' '.join(faidx))
-            subprocess.check_output(' '.join(faidx),stderr=subprocess.STDOUT,shell=True)
+            try:
+                print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+                print (' '.join(faidx))
+                output = subprocess.check_output(' '.join(faidx),stderr=subprocess.STDOUT,shell=True)
+            except subprocess.CalledProcessError as E:
+                print('call error: ' + E.output)  # what you would see in the term
+                err['output'] = E.output
+                # the python exception issues (shouldn't have any...
+                print('message: ' + E.message)  # ?? empty
+                err['message'] = E.message
+                # return codes used for failure....
+                print('code: ' + str(E.returncode))  # return 1 for a fail in art?
+                err['code'] = E.returncode
+            except OSError as E:
+                print('os error: ' + E.strerror)  # what you would see in the term
+                err['output'] = E.strerror
+                # the python exception issues (shouldn't have any...
+                print('message: ' + E.message)  # ?? empty
+                err['message'] = E.message
+                # the error num
+                print('code: ' + str(E.errno))
+                err['code'] = E.errno
+            print('output:\n' + output)
+
 
         if not os.path.isfile(out_names['.dict']):
             dictbuild = [self.tools['JAVA-1.8'], '-jar', self.tools['PICARD'], 'CreateSequenceDictionary', 'R='+gs_ref, 'O='+out_names['.dict']]
-            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
-            print (' '.join(dictbuild))
-            subprocess.check_output(' '.join(dictbuild),stderr=subprocess.STDOUT,shell=True)
+            try:
+                print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+                print (' '.join(dictbuild))
+                output = subprocess.check_output(' '.join(dictbuild),stderr=subprocess.STDOUT,shell=True)
+            except subprocess.CalledProcessError as E:
+                print('call error: ' + E.output)  # what you would see in the term
+                err['output'] = E.output
+                # the python exception issues (shouldn't have any...
+                print('message: ' + E.message)  # ?? empty
+                err['message'] = E.message
+                # return codes used for failure....
+                print('code: ' + str(E.returncode))  # return 1 for a fail in art?
+                err['code'] = E.returncode
+            except OSError as E:
+                print('os error: ' + E.strerror)  # what you would see in the term
+                err['output'] = E.strerror
+                # the python exception issues (shouldn't have any...
+                print('message: ' + E.message)  # ?? empty
+                err['message'] = E.message
+                # the error num
+            print('output:\n' + output)
 
         if not os.path.isfile(out_names['.svmask.fasta']):
             LD_LIB = self.tools['GENOME_STRIP_PATH']+'/bwa'
             if os.environ.has_key('LD_LIBRARY_PATH'): LD_LIB += ':'+os.environ['LD_LIBRARY_PATH']
             svmask    = [self.tools['JAVA-1.8'], '-cp', classpath, cgm, '-R', gs_ref, '-O', out_names['.svmask.fasta'], '-readLength',str(100)]
-            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
-            print (' '.join(svmask))
-            subprocess.check_output(' '.join(svmask),stderr=subprocess.STDOUT,shell=True,
+            try:
+                print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+                print (' '.join(svmask))
+                output = subprocess.check_output(' '.join(svmask),stderr=subprocess.STDOUT,shell=True,
                                     env={'LD_LIBRARY_PATH':LD_LIB})
+            except subprocess.CalledProcessError as E:
+                print('call error: ' + E.output)  # what you would see in the term
+                err['output'] = E.output
+                # the python exception issues (shouldn't have any...
+                print('message: ' + E.message)  # ?? empty
+                err['message'] = E.message
+                # return codes used for failure....
+                print('code: ' + str(E.returncode))  # return 1 for a fail in art?
+                err['code'] = E.returncode
+            except OSError as E:
+                print('os error: ' + E.strerror)  # what you would see in the term
+                err['output'] = E.strerror
+                # the python exception issues (shouldn't have any...
+                print('message: ' + E.message)  # ?? empty
+                err['message'] = E.message
+                # the error num
+            print('output:\n' + output)
 
+        if not os.path.isfile(out_names['.svmask.fasta']):
+            LD_LIB = self.tools['GENOME_STRIP_PATH']+'/bwa'
+            if os.environ.has_key('LD_LIBRARY_PATH'): LD_LIB += ':'+os.environ['LD_LIBRARY_PATH']
         if ((out_names['.ploidymap.txt'] != None and not os.path.isfile(out_names['.ploidymap.txt'])) 
             or (out_names['.rdmask.bed'] != None and not os.path.isfile(out_names['.rdmask.bed']))):
             seq_n = sr.get_fasta_seq_names(gs_ref) #assume last two are sex chroms
@@ -157,14 +260,18 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                    '.rdmask.bed':    out_names['.rdmask.bed'],
                    '.gendermask.bed':out_names['.gendermask.bed'],
                    '.gcmask.fasta':  out_names['.gcmask.fasta']}
-        #for i in results: print i
-        if os.path.isfile(results['.fa']) and out_names['bundle_dir'] != None and os.path.exists(out_names['bundle_dir']):
-            print("<<<<<<<<<<<<<genome_strip_prepare_ref sucessfull>>>>>>>>>>>>>>>\n")
-            results['bundle_dir'] = out_names['bundle_dir']
-            return results   #return a list of names
-        elif all([os.path.isfile(r) for key,r in results.iteritems()]):
-            print("<<<<<<<<<<<<<genome_strip_prepare_ref sucessfull>>>>>>>>>>>>>>>\n")
-            return results   #return a list of names
+        #for i in results: print
+        if err == {}:
+            if os.path.isfile(results['.fa']) and out_names['bundle_dir'] != None and os.path.exists(out_names['bundle_dir']):
+                print("<<<<<<<<<<<<<genome_strip_prepare_ref sucessfull>>>>>>>>>>>>>>>\n")
+                results['bundle_dir'] = out_names['bundle_dir']
+                return results   #return a list of names
+            elif all([os.path.isfile(r) for key,r in results.iteritems()]):
+                print("<<<<<<<<<<<<<genome_strip_prepare_ref sucessfull>>>>>>>>>>>>>>>\n")
+                return results   #return a list of names
+            else:
+                print("<<<<<<<<<<<<<genome_strip_prepare_ref failure>>>>>>>>>>>>>>>\n")
+                return None
         else:
             print("<<<<<<<<<<<<<genome_strip_prepare_ref failure>>>>>>>>>>>>>>>\n")
             return None
