@@ -38,23 +38,23 @@ class gatk(stage_wrapper.Stage_Wrapper):
         out_exts = self.split_out_exts()
         out_dir = inputs['out_dir'] + '/'
         stripped_name = self.strip_path(self.strip_in_ext(inputs['.bam'][0],'.bam'))
-        out_names = {'.vcf'   : out_dir+stripped_name+'_S'+str(self.stage_id) + '.vcf',
-                     '.g.vcf' : out_dir+stripped_name+'_S'+str(self.stage_id) + '.g.vcf'}
+        out_names = {'.vcf'   : out_dir+stripped_name+'_S'+str(self.stage_id) + '.vcf'}
+                     #'.g.vcf' : out_dir+stripped_name+'_S'+str(self.stage_id) + '.g.vcf'}
         
         #[2a]build command args
         java = self.tools['JAVA-1.8']
         gatk = self.tools['GATK']
         call    = [java, '-jar', gatk, '-T', 'HaplotypeCaller',
-                   '-R', inputs['.fa'], '-I', inputs['.bam'][0], '-o', out_names['.g.vcf'],
-                   '-ERC', 'GVCF', '-variant_index_type', 'LINEAR', '-variant_index_parameter', str(128000)]
-        combine = [java, '-jar', gatk, '-T', 'CombineGVCFs',
-                   '-R', inputs['.fa'], '-V', out_names['.g.vcf'], '-o', out_names['.vcf']]
+                   '-R', inputs['.fa'], '-I', inputs['.bam'][0], '-o', out_names['.vcf']]
+        #           '-ERC', 'GVCF', '-variant_index_type', 'LINEAR', '-variant_index_parameter', str(128000)]
+        #combine = [java, '-jar', gatk, '-T', 'GenotypeGVCFs',
+        #           '-R', inputs['.fa'], '-V', out_names['.g.vcf'], '-o', out_names['.vcf']]
         
         #[3a]execute the command here----------------------------------------------------
         output, err = '', {}
         dict = self.strip_in_ext(inputs['.fa'],'.fa') + '.dict'
         if not os.path.isfile(dict):
-            dictbuild = [self.tools['JAVA-1.8'], '-jar', self.tools['PICARD'], 'CreateSequenceDictionary', 'R='+gs_ref, 'O='dict]
+            dictbuild = [self.tools['JAVA-1.8'], '-jar', self.tools['PICARD'], 'CreateSequenceDictionary', 'R='+inputs['.fa'], 'O='+dict]
             try:
                 print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
                 print (' '.join(dictbuild))
@@ -111,7 +111,7 @@ class gatk(stage_wrapper.Stage_Wrapper):
             err['code'] = 1
         print('output:\n'+output)
 
-
+        """
         try:
             print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print (' '.join(combine))
@@ -140,7 +140,7 @@ class gatk(stage_wrapper.Stage_Wrapper):
             err['message'] = 'vcf write os/file IO error'
             err['code'] = 1
         print('output:\n'+output)
-        
+        """
         #[3b]check results--------------------------------------------------
         if err == {}:
             results = [out_names['.vcf']]

@@ -37,7 +37,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         else: stripped_name = 'joint'
         out_names = {'.del.vcf' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[0],
                      '.del.genotype.vcf' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[1],
-                     '.cnv.vcf' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[2],}
+                     '.cnv.vcf' :out_dir+stripped_name+'_S'+str(self.stage_id)+out_exts[2]}
 
         #[2a]build command args
         #environment variable passing here
@@ -57,19 +57,16 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         gmask, ploidy, rdmask = '', '', ''
 #        cnmask = in_names['.gcmask.fasta']
         
-        sub_dir = out_dir+stripped_name+'_S'+str(self.stage_id)+'/'
-        if not os.path.exists(sub_dir): os.makedirs(sub_dir)
-        
         #[2] bam file list is needed        
-        bams = sub_dir+'/bam_files.list'
+        bams = SV_TMPDIR+'/bam_files.list'
         bam_names = '\n'.join(inputs['.bam'])
         with open(bams,'w') as f: f.write(bam_names) #try comma, tab and newline
 
-        md   = sub_dir+'/md'
+        md   = SV_TMPDIR+'/md'
         if not os.path.exists(md): os.makedirs(md)
-        rd   = sub_dir+'/run'
+        rd   = SV_TMPDIR+'/run'
         if not os.path.exists(rd): os.makedirs(rd)
-        logs = sub_dir+'/logs'
+        logs = SV_TMPDIR+'/logs'
         if not os.path.exists(logs): os.makedirs(logs)
         scheduler = []
             
@@ -87,8 +84,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                       '-reduceInsertSizeDistributions true',
                       '-computeGCProfiles true',
                       '-bamFilesAreDisjoint true',
-                      '-I %s' %bams,
-                      '-run']
+                      '-I %s' %bams]
         if inputs['bundle_dir'] != None: preprocess += ['-rmd', inputs['bundle_dir']]
         else:
             if inputs['.svmask.fasta'] != None:   preprocess += ['-genomeMaskFile ' + inputs['.svmask.fasta']]
@@ -96,7 +92,8 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
             if inputs['.rdmask.bed'] != None:     preprocess += ['-readDepthMaskFile ' + inputs['.rdmask.bed']]
             if inputs['.gendermask.bed'] != None: preprocess += ['-genderMaskBedFile ' + inputs['.gendermask.bed']]
             if inputs['.gcmask.fasta'] != None:   preprocess += ['-copyNumberMaskFile ' + inputs['.gcmask.fasta']]
-        
+
+        preprocess += ['-run']
         
         gs_bwa_path = self.tools['GENOME_STRIP_PATH'] + '/bwa'
         PATH = self.tools['JAVA-1.8_PATH'] + ':' + self.tools['SAMTOOLS_PATH'] + ':' + self.tools['BCFTOOLS_PATH'] + ':' + self.tools['HTSLIB_PATH'] + ':' + self.tools['R_PATH'] + '/bin'
@@ -108,7 +105,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         try: 
             print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print (' '.join(preprocess))
-            output += subprocess.check_output(' '.join(preprocess), stderr=subprocess.STDOUT, shell=True,
+            output = subprocess.check_output(' '.join(preprocess), stderr=subprocess.STDOUT, shell=True,
                                             env={'SV_DIR': self.tools['GENOME_STRIP_PATH'], 'LD_LIBRARY_PATH': LD_LIB, 'PATH': PATH})
 
         except subprocess.CalledProcessError as E:
@@ -134,8 +131,8 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
             err['output'] = 'vcf write os/file IO error'
             err['message'] = 'vcf write os/file IO error'
             err['code'] = 1
-
         print('output:\n'+output)
+
         #[1] Initial Pooled Deletion Discovery
         dd = sv+'/qscript/SVDiscovery.q'
         del_discovery = [java,'-cp %s'%classpath,
@@ -155,18 +152,17 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                          #'-genderMapFile %s' %gender_map,
                          '-suppressVCFCommandLines',
                          #'-P select.validateReadPairs:false',
-                         '-O %s'%out_names['.del.vcf'],
-                         '-run']
+                         '-O %s'%out_names['.del.vcf']]
 
         if inputs['bundle_dir'] != None: del_discovery += ['-rmd', inputs['bundle_dir']]
         else:
             if inputs['.svmask.fasta'] != None:  del_discovery += ['-genomeMaskFile ' + inputs['.svmask.fasta']]
             if inputs['.ploidymap.txt'] != None: del_discovery += ['-ploidyMapFile ' + inputs['.ploidymap.txt']]
-       
+        del_discovery += ['-run']
         try: 
             print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print (' '.join(del_discovery))
-            output += subprocess.check_output(' '.join(del_discovery), stderr=subprocess.STDOUT, shell=True,
+            output = subprocess.check_output(' '.join(del_discovery), stderr=subprocess.STDOUT, shell=True,
                                              env={'SV_DIR': self.tools['GENOME_STRIP_PATH'], 'LD_LIBRARY_PATH': LD_LIB, 'PATH': PATH})
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
@@ -211,20 +207,19 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                           #'-genderMapFile %s' %gender_map,
                           '-I %s' %bams,
                           '-vcf %s' %out_names['.del.vcf'],
-                          '-O %s' %out_names['.del.genotype.vcf'],
+                          '-O %s' %out_names['.del.genotype.vcf']]
                           #'-parallelRecords 100',
-                          #'-rmd /home/leew/SVE/data/Homo_sapiens_assembly19/',
-                          '-run']
         
-        if inputs['bundle_dir'] != None: del_discovery += ['-rmd', inputs['bundle_dir']]
+        if inputs['bundle_dir'] != None: del_genotyping += ['-rmd', inputs['bundle_dir']]
         else:
             if inputs['.svmask.fasta'] != None:  del_genotyping += ['-genomeMaskFile ' + inputs['.svmask.fasta']]
             if inputs['.ploidymap.txt'] != None: del_genotyping += ['-ploidyMapFile ' + inputs['.ploidymap.txt']]
+        del_genotyping += ['-run']
 
         try:
             print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print (' '.join(del_genotyping))
-            output += subprocess.check_output(' '.join(del_genotyping), stderr=subprocess.STDOUT, shell=True,
+            output = subprocess.check_output(' '.join(del_genotyping), stderr=subprocess.STDOUT, shell=True,
                                     env={'SV_DIR': self.tools['GENOME_STRIP_PATH'], 'LD_LIBRARY_PATH': LD_LIB, 'PATH': PATH})
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
@@ -271,13 +266,13 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                          '-tilingWindowOverlap %s' %2500,
                          '-maximumReferenceGapLength %s' %25000,
                          '-boundaryPrecision %s' %200,
-                         '-minimumRefinedLength %s' %2500,
+                         '-minimumRefinedLength %s' %2500]
                          #'-rmd /home/leew/SVE/data/Homo_sapiens_assembly19/',
-                         '-run']
-        if inputs['bundle_dir'] != None: del_discovery += ['-rmd', inputs['bundle_dir']]
+        if inputs['bundle_dir'] != None: cnv_discovery += ['-rmd', inputs['bundle_dir']]
         else:
             if inputs['.svmask.fasta'] != None:  cnv_discovery += ['-genomeMaskFile ' + inputs['.svmask.fasta']]
             if inputs['.ploidymap.txt'] != None: cnv_discovery += ['-ploidyMapFile ' + inputs['.ploidymap.txt']]
+        cnv_discovery += ['-run']
         try:
             print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print (' '.join(del_genotyping))
