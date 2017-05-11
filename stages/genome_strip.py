@@ -266,7 +266,9 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                          '-tilingWindowOverlap %s' %2500,
                          '-maximumReferenceGapLength %s' %25000,
                          '-boundaryPrecision %s' %200,
-                         '-minimumRefinedLength %s' %2500]
+                         '-minimumRefinedLength %s' %2500,
+                         '-jobRunner Shell',
+                         '-gatkJobRunner Shell']
                          #'-rmd /home/leew/SVE/data/Homo_sapiens_assembly19/',
         if inputs['bundle_dir'] != None: cnv_discovery += ['-rmd', inputs['bundle_dir']]
         else:
