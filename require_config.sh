@@ -43,6 +43,8 @@ pip install --user -I subprocess32
 pip install --user -I pysam
 pip install --user -I pysamstats
 pip install --user -I HTSeq
+pip install --user -I crossmap
+
 #echo "checking SVE executables"
 #scripts/variant_processor.py -h
 

@@ -56,7 +56,7 @@ class breakseq(stage_wrapper.Stage_Wrapper):
 #                    ['--nthreads',str(4),'--min_span',str(2),'--window',max(100,w),
 #                     '--min_overlap',str(2),'--junction_length',max(200,j)] #junctio =2x lead length
 
-        call      = [python,breakseq,'--bwa',bwa,'--samtools',samtools, '--reference',inputs['.fa'],'--work',sub_dir,'--bams'] + inputs['.bam']
+        call      = [python,breakseq,'--bwa',bwa,'--samtools',samtools, '--reference',inputs['.fa'],'--work',sub_dir,'--bams', '--nthreads',str(4),'--min_span',str(2),'--window', str(100), '--min_overlap',str(2)] + inputs['.bam']
         if 'threads' in inputs: call += ['--nthreads', str(inputs['threads'])]
         if gff != '': call += ['--bplib_gff', gff]
 

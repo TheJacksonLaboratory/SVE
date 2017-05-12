@@ -1,4 +1,6 @@
 
+INCLUDES=-I /opt/compsci/python/2.7.3/include/python2.7
+
 export MKFILE_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 SRC=src
 TARGET_BIN=bin
@@ -17,12 +19,15 @@ TARBALLS = jre1.8.0_51 picard-tools-2.5.0 svtoolkit_2.00.1736 CNVnator_v0.3.3 sa
 SUBDIRS = bwa speedseq htslib samtools samtools-0.1.19 bcftools bedtools2 delly lumpy-sv hydra tigra
 
 # all
-all: unzip_tarballs configure build CNVnator_v0.3.3 perl-lib breakdancer
+all: unzip_tarballs configure build CNVnator_v0.3.3 perl-lib breakdancer fusorSV
 	@test -d $(SVE_DIR)/data || tar -zxvf data.tar.gz # unzip data
 	@test -d $(SVE_DIR)/$(TARGET_BIN) || mkdir $(SVE_DIR)/$(TARGET_BIN)
 	$(MAKE) tool_paths
 	@cp $(PROGRAM) $(SVE_DIR)/$(TARGET_BIN)
 .PHONY: all
+
+fusorSV: fusion_utils.c
+	$(CC) -rdynamic fusion_utils.c -shared -o fusion_utils.so $(INCLUDES) -fPIC
 
 unzip_tarballs:
 	@cd $(SVE_DIR)/$(SRC); \
