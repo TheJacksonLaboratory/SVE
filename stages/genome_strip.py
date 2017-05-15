@@ -69,7 +69,17 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         logs = SV_TMPDIR+'/logs'
         if not os.path.exists(logs): os.makedirs(logs)
         scheduler = []
-            
+
+        gender_map = SV_TMPDIR + '/gender.map'
+        if os.path.isfile(gender_map): os.remove(gender_map)  
+        for b in inputs['.bam']:
+          print b
+          sample_name_command = [self.tools['SAMTOOLS'], 'view', '-H', b]
+          sample_name_command += ['| grep "RG" | awk -F\'\\t\' \'{for (i=1;i<NF;++i) if ($i ~ \"SM:\") print $i}\' | awk -F\':\' \'{print $2}\' | sort | uniq']
+          sample_name_command += ['| awk \'{print $1\"\\t\"\"M\"}\'']
+          sample_name_command += ['>>', gender_map]
+          subprocess.check_output(' '.join(sample_name_command), stderr=subprocess.STDOUT, shell=True)
+        
         #[0] Preprocess The Bam Data and Generate MetaData
         preprocess = [java+' -cp ' + classpath,
                       qcmd,
@@ -259,7 +269,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
                          '-runDirectory %s' %rd,
                          '-md %s' %md,
                          '-jobLogDir %s' %logs,
-#                         '-genderMapFile %s' %gender_map,
+                         '-genderMapFile %s' %gender_map,
 #                          '-ploidyMapFile %s'%ploidy,
                          '-I %s' %bams,
                          '-tilingWindowSize %s' %5000,
@@ -277,7 +287,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         cnv_discovery += ['-run']
         try:
             print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
-            print (' '.join(del_genotyping))
+            print (' '.join(cnv_discovery))
             output += subprocess.check_output(' '.join(cnv_discovery), stderr=subprocess.STDOUT, shell=True,
                                    env={'SV_DIR': self.tools['GENOME_STRIP_PATH'], 'LD_LIBRARY_PATH': LD_LIB, 'PATH': PATH})
         except subprocess.CalledProcessError as E:
