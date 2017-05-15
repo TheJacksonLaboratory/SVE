@@ -49,7 +49,7 @@ class cnvnator(stage_wrapper.Stage_Wrapper):
         cnv2vcf  = self.tools['CNVNATOR2VCF']
 
         #[self.strip_in_ext(self.strip_path(i),'.fa') for i in in_names['.fa']] #by using the input list
-        w = str(self.get_params()['window']['value'])
+        w = str(400)
         refd = self.strip_name(inputs['.fa']) #this is a bit hackish
         
         extr     = [cnvnator, '-unique','-root', out_names['.root']+'.tree.root','-tree']+ inputs['.bam']

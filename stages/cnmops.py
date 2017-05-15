@@ -51,10 +51,9 @@ class cnmops(stage_wrapper.Stage_Wrapper):
         else: defaults['mode']['value'] = 0
 	defaults['normal']['value'] = 3
         defaults['cir_seg']['value'] = True
-        defaults['window']['value'] = 667
+        defaults['window']['value'] = 400
         
         params = [k+'='+str(defaults[k]['value']) for k in defaults]        
-        print(params)
             
         command = [rscript, cnmops_r, 
                    'ref_seq='+inputs['.fa'],
@@ -69,6 +68,7 @@ class cnmops(stage_wrapper.Stage_Wrapper):
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print (' '.join(command))
             output = subprocess.check_output(' '.join(command),stderr=subprocess.STDOUT,shell=True)
                                              #env={'R_LIBS':R_LIBS,'PATH':PATH})
@@ -98,11 +98,11 @@ class cnmops(stage_wrapper.Stage_Wrapper):
             results = [out_names['.vcf']]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("<<<<<<<<<<<<<cnmops sucessfull>>>>>>>>>>>>>>>\n")
                 return results   #return a list of names
             else:
-                print("failure...........")
+                print("<<<<<<<<<<<<<cnmops failure>>>>>>>>>>>>>>>\n")
                 return False
         else:
-            print("failure...........")
+            print("<<<<<<<<<<<<<cnmops failure>>>>>>>>>>>>>>>\n")
             return None

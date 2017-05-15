@@ -48,23 +48,24 @@ class breakseq(stage_wrapper.Stage_Wrapper):
         samtools  = self.tools['SAMTOOLS']
         bwa       = self.tools['BWA']
         breakseq  = self.tools['BREAKSEQ']
-        w = str(self.get_params()['window']['value']) 
-        j = str(self.get_params()['junction']['value'])
 #        call      = [python,breakseq,'--bwa',bwa,'--samtools',samtools,
 #                     '--reference',in_names['.fa'],'--bplib_gff',gff,
 #                     '--work',sub_dir,'--bams']+in_names['.bam']+\
 #                    ['--nthreads',str(4),'--min_span',str(2),'--window',max(100,w),
 #                     '--min_overlap',str(2),'--junction_length',max(200,j)] #junctio =2x lead length
 
-        call      = [python,breakseq,'--bwa',bwa,'--samtools',samtools, '--reference',inputs['.fa'],'--work',sub_dir,'--bams', '--nthreads',str(4),'--min_span',str(2),'--window', str(100), '--min_overlap',str(2)] + inputs['.bam']
+        call      = [python,breakseq,'--bwa',bwa,'--samtools',samtools, 
+                     '--reference',inputs['.fa'],'--work',sub_dir,'--bams',
+                     '--min_span',str(2),'--window', str(100), '--min_overlap',str(2), '--junction_length',str(200)] + inputs['.bam']
+
         if 'threads' in inputs: call += ['--nthreads', str(inputs['threads'])]
         if gff != '': call += ['--bplib_gff', gff]
 
-        clean     = ['rm','-rf',sub_dir]
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
-            print(" ".join(call))
+            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
+            print (" ".join(call))
             output += subprocess.check_output(' '.join(call),
                                               stderr=subprocess.STDOUT,shell=True,
                                               env={'PYTHONPATH':self.tools['BREAKSEQ_PATH']})
@@ -73,7 +74,7 @@ class breakseq(stage_wrapper.Stage_Wrapper):
                     gz_in = in_file.read()
                 with open(out_names['.vcf'],'w') as f:
                     f.write(gz_in)
-            output += subprocess.check_output('rm -rf %s' %sub_dir, stderr=subprocess.STDOUT, shell=True)
+            os.remove(sub_dir)
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
             err['output'] = E.output

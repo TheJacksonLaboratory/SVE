@@ -66,6 +66,8 @@ class breakdancer(stage_wrapper.Stage_Wrapper):
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
             table = bd.read_breakdancer(out_names['.calls'])
             bd.write_vcf(out_names['.vcf'],bd.vcf_header(inputs['.fa']),bd.build_vcf(table))
+            os.remove(out_names['.calls'])
+            os.remove(cfg)
 #            output += subprocess.check_output(' '.join(['rm',out_names['.calls']]),
 #                                              stderr=subprocess.STDOUT,shell=True)+'\n'
 #            output += subprocess.check_output(' '.join(['rm',cfg]),
@@ -101,11 +103,11 @@ class breakdancer(stage_wrapper.Stage_Wrapper):
             results = [out_names['.vcf']]
             #for i in results: print i
             if all([os.path.exists(r) for r in results]):
-                print("sucessfull........")
+                print("<<<<<<<<<<<<<breakdancer sucessfull>>>>>>>>>>>>>>>\n")
                 return results   #return a list of names
             else:
-                print("failure...........")
+                print("<<<<<<<<<<<<<breakdancer failure>>>>>>>>>>>>>>>\n")
                 return False
         else:
-            print("failure...........")
+            print("<<<<<<<<<<<<<breakdancer failure>>>>>>>>>>>>>>>\n")
             return None

@@ -59,10 +59,10 @@ class delly(stage_wrapper.Stage_Wrapper):
             count = 0
             # Delly call
             for bam in inputs['.bam']:
-                delly_call = [delly, 'call', '-g',inputs['.fa']]
+                delly_call = [delly, 'call', '-g', inputs['.fa']]
                 if excl != '': delly_call += ['-x', excl]
                 for type in type_list:
-                    type_call = delly_call + ['-t', type.upper(), '-o', sub_dir+str(count)+'.'+type+'.bcf'] + [bam]
+                    type_call = delly_call + ['-t', type.upper(), '-s 5', '-o', sub_dir+str(count)+'.'+type+'.bcf'] + [bam]
                     print (" ".join(type_call))
                     output += subprocess.check_output(' '.join(type_call), stderr=subprocess.STDOUT,shell=True)+'\n'
                 count += 1

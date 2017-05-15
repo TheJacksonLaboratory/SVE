@@ -40,7 +40,7 @@ class lumpy(stage_wrapper.Stage_Wrapper):
         #[2a]build command args       
         lumpy   = self.tools['LUMPY-EXPRESS']
         temp_dir = out_dir+stripped_name+'_S'+str(self.stage_id)+'/temp'
-        sv_call = [lumpy,'-B'] + [','.join(inputs['.bam'])] + ['-T',temp_dir,'-P','-o',out_names['.vcf']] #more work on params
+        sv_call = [lumpy,'-B'] + [','.join(inputs['.bam'])] + ['-T',temp_dir,'-P','-m 2', '-o',out_names['.vcf']] #more work on params
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
