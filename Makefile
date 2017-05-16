@@ -18,6 +18,9 @@ PERL_LIB_DEPEN = GD-2.52 GDTextUtil-0.86 GDGraph-histogram-1.1 GDGraph-1.54 Stat
 TARBALLS = jre1.8.0_51 picard-tools-2.5.0 svtoolkit_2.00.1736 CNVnator_v0.3.3 samtools-0.1.19 breakdancer-1.4.5 GATK_3.7
 SUBDIRS = bwa speedseq htslib samtools samtools-0.1.19 bcftools bedtools2 delly lumpy-sv hydra tigra
 
+AUTOCONF = autoconf
+AUTOHEADER = autoheader
+
 # all
 all: unzip_tarballs configure build CNVnator_v0.3.3 perl-lib breakdancer fusorSV
 	@test -d $(SVE_DIR)/data || tar -zxvf data.tar.gz # unzip data
@@ -40,15 +43,15 @@ unzip_tarballs:
 	cd $(SVE_DIR)
 
 configure:
-	@echo "- Configuring in htslib"
-	@cd $(SVE_DIR)/$(SRC)/htslib
-	@autoheader && autoconf
-	@./configure --disable-lzma
-	@$(MAKE) 
-	@cd $(SVE_DIR)
+	@cp $(SVE_DIR)/$(SRC)/htslib/configure.ac $(SVE_DIR)/$(SRC)/htslib/configure.ac~
+	@sed -i 's/make print-version//g' $(SVE_DIR)/$(SRC)/htslib/configure.ac
+	@cd $(SVE_DIR)/$(SRC)/htslib && $(AUTOHEADER) && $(AUTOCONF) && ./configure --disable-lzma && $(MAKE)
+	@cp $(SVE_DIR)/$(SRC)/htslib/configure.ac~ $(SVE_DIR)/$(SRC)/htslib/configure.ac
 	@echo "- Configuring in lumpy"
-	@cd $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib && autoheader && autoconf
-	@cd $(SVE_DIR)
+	@cp $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac~
+	@sed -i 's/make print-version//g' $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac
+	@cd $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib && $(AUTOHEADER) && $(AUTOCONF) && ./configure --disable-lzma && $(MAKE)
+	@cp $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac~ $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac
 	@echo "- Configuring in breakseq2"
 	@cd $(SVE_DIR)/$(SRC)/breakseq2 && python setup.py && cd $(SVE_DIR) || true
 	@echo "- Configuring in tigra"
