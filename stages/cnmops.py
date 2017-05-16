@@ -51,7 +51,8 @@ class cnmops(stage_wrapper.Stage_Wrapper):
         else: defaults['mode']['value'] = 0
 	defaults['normal']['value'] = 3
         defaults['cir_seg']['value'] = True
-        defaults['window']['value'] = 400
+        defaults['window']['value'] = 1000
+        if 'threads' in inputs: defaults['core']['value'] = inputs['threads']
         
         params = [k+'='+str(defaults[k]['value']) for k in defaults]        
             
