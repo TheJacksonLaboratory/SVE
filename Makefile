@@ -34,14 +34,17 @@ unzip_tarballs:
 	for module in $(TARBALLS); do \
 		if [ ! -d $$module ]; then \
 			echo "- Unzip $$module"; \
-			tar -zxvf $$module.tar.gz; \
+			test -f $$module.tar.gz && tar -zxvf $$module.tar.gz; \
 		fi; \
 	done; \
 	cd $(SVE_DIR)
 
 configure:
 	@echo "- Configuring in htslib"
-	@cd $(SVE_DIR)/$(SRC)/htslib && autoheader && autoconf && ./configure --disable-lzma && $(MAKE) 
+	@cd $(SVE_DIR)/$(SRC)/htslib
+	@autoheader && autoconf
+	@./configure --disable-lzma
+	@$(MAKE) 
 	@cd $(SVE_DIR)
 	@echo "- Configuring in lumpy"
 	@cd $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib && autoheader && autoconf
