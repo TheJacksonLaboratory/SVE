@@ -18,7 +18,11 @@ class delly(stage_wrapper.Stage_Wrapper):
 
     def __exit__(self, type, value, traceback):
         return 0  
-    
+
+    def call(command, output):
+      output = subprocess.check_output(' '.join(command), stderr=subprocess.STDOUT,shell=True)+'\n'
+      return output
+
     #override this function in each wrapper...
     #this is an older pipeline and not for somatic, will do a new somatic
     def run(self,run_id,inputs):
@@ -58,13 +62,16 @@ class delly(stage_wrapper.Stage_Wrapper):
         try: #should split these up for better robustness...
             count = 0
             # Delly call
+            if threads in inputs: p1 = mp.Pool(processes = inputs['threads'])
+            p1 = mp.Pool(processes = 1)
             for bam in inputs['.bam']:
                 delly_call = [delly, 'call', '-g', inputs['.fa']]
                 if excl != '': delly_call += ['-x', excl]
                 for type in type_list:
                     type_call = delly_call + ['-t', type.upper(), '-s 5', '-o', sub_dir+str(count)+'.'+type+'.bcf'] + [bam]
                     print (" ".join(type_call))
-                    output += subprocess.check_output(' '.join(type_call), stderr=subprocess.STDOUT,shell=True)+'\n'
+                    p1.apply_async(call,args=(type_call, output),callback=collect_results)
+                    #output += subprocess.check_output(' '.join(type_call), stderr=subprocess.STDOUT,shell=True)+'\n'
                 count += 1
 
             # Delly merge

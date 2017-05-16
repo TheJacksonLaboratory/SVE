@@ -40,14 +40,14 @@ class lumpy(stage_wrapper.Stage_Wrapper):
         #[2a]build command args       
         lumpy   = self.tools['LUMPY-EXPRESS']
         temp_dir = out_dir+stripped_name+'_S'+str(self.stage_id)+'/temp'
-        sv_call = [lumpy,'-B'] + [','.join(inputs['.bam'])] + ['-T',temp_dir,'-P','-m 2', '-o',out_names['.vcf']] #more work on params
+        sv_call = [lumpy,'-B'] + [','.join(inputs['.bam'])] + ['-T',temp_dir,'-P','-m 3', '-o',out_names['.vcf']] #more work on params
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
             print (' '.join(sv_call))
             output += subprocess.check_output(' '.join(sv_call),
                                               stderr=subprocess.STDOUT,shell=True)+'\n'
-            output += subprocess.check_output('rm -rf %s' %temp_dir, stderr=subprocess.STDOUT,shell=True)+'\n'
+            os.remove(temp_dir)
         except subprocess.CalledProcessError as E:
             print('call error: '+E.output)        #what you would see in the term
             err['output'] = E.output
