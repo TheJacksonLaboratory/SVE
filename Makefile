@@ -48,7 +48,7 @@ unzip_tarballs:
 configure:
 	@echo "- Configuring in htslib"
 	@cp $(SVE_DIR)/$(SRC)/htslib/configure.ac $(SVE_DIR)/$(SRC)/htslib/configure.ac~
-	
+	@sed -i 's/make print-version//g' $(SVE_DIR)/$(SRC)/htslib/configure.ac
 	@cd $(SVE_DIR)/$(SRC)/htslib && $(AUTOHEADER) && $(AUTOCONF) && ./configure --disable-lzma && $(MAKE)
 	@mv $(SVE_DIR)/$(SRC)/htslib/configure.ac~ $(SVE_DIR)/$(SRC)/htslib/configure.ac
 	@echo "- Configuring in lumpy"
