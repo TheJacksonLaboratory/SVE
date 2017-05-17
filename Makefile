@@ -17,7 +17,7 @@ R_PACKAGE_DEPEN = bzip2-1.0.6 curl-7.47.1 pcre-8.40 xz-5.2.2 zlib-1.2.9
 PERL_LIB=$(SVE_DIR)/$(SRC)/perl-lib
 PERL_LIB_DEPEN = GD-2.52 GDTextUtil-0.86 GDGraph-histogram-1.1 GDGraph-1.54 Statistics-Descriptive-3.0612 List-MoreUtils-0.17
 
-TARBALLS = jre1.8.0_51 picard-tools-2.5.0 svtoolkit_2.00.1736 CNVnator_v0.3.3 samtools-0.1.19 breakdancer-1.4.5 GATK_3.7
+TARBALLS = jre1.8.0_51 picard-tools-2.5.0 svtoolkit_2.00.1736 GATK_3.7
 SUBDIRS = bwa speedseq htslib samtools samtools-0.1.19 bcftools bedtools2 delly lumpy-sv hydra tigra
 
 AUTOCONF = autoconf
@@ -49,6 +49,7 @@ unzip_tarballs:
 	cd $(SVE_DIR)
 
 bwa_samtools:
+	@cd $(SVE_DIR)/$(SRC) && tar -zxvf samtools-0.1.19.tar.gz
 	@for dir in bwa samtools samtools-0.1.19; do \
 		echo "- Building in $$dir"; \
 		$(MAKE) --no-print-directory -C $(SRC)/$$dir;\
@@ -96,13 +97,15 @@ htslib:
 
 CNVnator_v0.3.3:
 	@echo "- Building in CNVnator_v0.3.3"
+	@cd $(SVE_DIR)/$(SRC) && tar -zxvf CNVnator_v0.3.3.tar.gz
 	$(MAKE) --no-print-directory -C $(SRC)/CNVnator_v0.3.3/src/samtools
 	$(MAKE) --no-print-directory -C $(SRC)/CNVnator_v0.3.3/src
 
 breakdancer:
 	@echo "- Building in breakdancer"
+	@cd $(SVE_DIR)/$(SRC) && tar -zxvf breakdancer-1.4.5.tar.gz
 	@cd $(SVE_DIR)/$(SRC)/breakdancer-1.4.5; \
-	test -d build; rm -rf build; \
+	test -d build && rm -rf build; \
 	mkdir build; cd build; \
 	cmake .. -DCMAKE_BUILD_TYPE=release; \
 	$(MAKE)
@@ -155,7 +158,7 @@ R-package:
 	@cd $(R_PACKAGE)/pcre-8.40 && ./configure --prefix=$(R_INSTALL_DIR) --enable-utf8 && $(MAKE) && $(MAKE) install
 	@cd $(R_PACKAGE)/xz-5.2.2 && ./configure --prefix=$(R_INSTALL_DIR) && $(MAKE) -j3 && $(MAKE) install
 	@cd $(R_PACKAGE)/zlib-1.2.9 && ./configure --prefix=$(R_INSTALL_DIR) && $(MAKE) && $(MAKE) install
-	@cd $(R_PACKAGE)/R-3.3.3 && ./configure --prefix=$(R_INSTALL_DIR) LDFLAGS='-L$(R_INSTALL_DIR)/lib' CFLAGS='-I$(R_INSTALL_DIR)/include' && $(MAKE) || true
+	@cd $(R_PACKAGE)/R-3.3.3 && ./configure --prefix=$(R_INSTALL_DIR)
 	@$(MAKE) -C $(R_PACKAGE)/R-3.3.3
 
 
@@ -215,6 +218,7 @@ clean:
 			rm -rf $(SRC)/$$module; \
 		fi; \
 	done
+	@cd $(SVE_DIR)/$(SRC) && rm -rf samtools-0.1.19 CNVnator_v0.3.3 breakdancer-1.4.5
 	@for module in $(R_PACKAGE_DEPEN); do \
 		if [ -d $(R_PACKAGE)/$$module ]; then \
 			rm -rf $(R_PACKAGE)/$$module; \
