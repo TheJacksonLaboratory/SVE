@@ -151,7 +151,7 @@ R-package:
 	@sed -i "/CFLAGS=/d" $(R_PACKAGE)/bzip2-1.0.6/Makefile
 	@sed -i '23 a CFLAGS=-Wall -Winline -O2 -g -fPIC $$(BIGFILES)' $(R_PACKAGE)/bzip2-1.0.6/Makefile
 	@cd $(R_PACKAGE)/bzip2-1.0.6 && $(MAKE) clean && $(MAKE) -f Makefile-libbz2_so && $(MAKE) clean && $(MAKE) && $(MAKE) -n install PREFIX=$(R_INSTALL_DIR) && $(MAKE) install PREFIX=$(R_INSTALL_DIR)
-	@cd $(R_PACKAGE)/curl-7.47.1 && ./configure --prefix=$(R_INSTALL_DIR) && $(MAKE) -j3 && $(MAKE) install
+	@cd $(R_PACKAGE)/curl-7.47.1 && ./configure --prefix=$(R_INSTALL_DIR) && $(MAKE) && $(MAKE) install
 	@cd $(R_PACKAGE)/pcre-8.40 && ./configure --prefix=$(R_INSTALL_DIR) --enable-utf8 && $(MAKE) && $(MAKE) install
 	@cd $(R_PACKAGE)/xz-5.2.2 && ./configure --prefix=$(R_INSTALL_DIR) && $(MAKE) -j3 && $(MAKE) install
 	@cd $(R_PACKAGE)/zlib-1.2.9 && ./configure --prefix=$(R_INSTALL_DIR) && $(MAKE) && $(MAKE) install
