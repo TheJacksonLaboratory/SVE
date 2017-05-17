@@ -1,8 +1,7 @@
 
-
 export MKFILE_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-CFLAGS=-I /usr/include/python2.7 -I /home/leew/tools/boost_1_64_0 -I /home/leew/.local/lib/python2.7/site-packages/numpy
+CFLAGS=-I /usr/include/python2.7
 LDFLAGS=
 
 SRC=src
@@ -24,9 +23,12 @@ SUBDIRS = bwa speedseq htslib samtools samtools-0.1.19 bcftools bedtools2 delly 
 AUTOCONF = autoconf
 AUTOHEADER = autoheader
 PYTHON = `which python`
+RSCRIPT = `which Rscript`
 
 # all
-all: unzip_tarballs configure build CNVnator_v0.3.3 perl-lib breakdancer lumpy_config
+all: unzip_tarballs perl-lib bwa_samtools speedseq bcftools bedtools2 delly hydra tigra CNVnator_v0.3.3 breakdancer lumpy
+	$(MAKE) bwa_samtools
+	$()
 	@test -d $(SVE_DIR)/data || tar -zxvf data.tar.gz # unzip data
 	@test -d $(SVE_DIR)/$(TARGET_BIN) || mkdir $(SVE_DIR)/$(TARGET_BIN)
 	$(MAKE) tool_paths
@@ -46,46 +48,82 @@ unzip_tarballs:
 	done; \
 	cd $(SVE_DIR)
 
-configure:
-	@echo "- Configuring in htslib"
-	@rm -f $(SVE_DIR)/$(SRC)/htslib/configure
-	@rm -rf $(SVE_DIR)/$(SRC)/htslib/autom4te.cache
-	@cp $(SVE_DIR)/$(SRC)/htslib/configure.ac $(SVE_DIR)/$(SRC)/htslib/configure.ac~
-	@sed -i 's#m4_esyscmd_s(\[make print-version\]),##g' $(SVE_DIR)/$(SRC)/htslib/configure.ac
-	@cd $(SVE_DIR)/$(SRC)/htslib && $(AUTOHEADER) && $(AUTOCONF) && ./configure --disable-lzma
-	@test -f $(SVE_DIR)/$(SRC)/htslib/configure.ac~ && mv $(SVE_DIR)/$(SRC)/htslib/configure.ac~ $(SVE_DIR)/$(SRC)/htslib/configure.ac
-	@echo "- Configuring in breakseq2"
-	@cd $(SVE_DIR)/$(SRC)/breakseq2 && $(PYTHON) setup.py build
-	@echo "- Configuring in tigra"
+bwa_samtools:
+	@for dir in bwa samtools samtools-0.1.19; do \
+		echo "- Building in $$dir"; \
+		$(MAKE) --no-print-directory -C $(SRC)/$$dir;\
+	done
+
+speedseq:
+	@echo "- Building in speedseq"
+	$(MAKE) --no-print-directory -C $(SRC)/speedseq
+
+bcftools:
+	@echo "- Building in bcftools"
+	$(MAKE) --no-print-directory -C $(SRC)/bcftools
+
+bedtools2:
+	@echo "- Building in bedtools2"
+	$(MAKE) --no-print-directory -C $(SRC)/bedtools2
+
+delly:
+	@echo "- Building in delly"
+	$(MAKE) --no-print-directory -C $(SRC)/delly
+
+hydra:
+	@echo "- Building in hydra"
+	$(MAKE) --no-print-directory -C $(SRC)/hydra
+
+tigra:
+	@echo "- Building in tigra"
 	@sed -i "/SAMTOOLS=/d" $(SVE_DIR)/$(SRC)/tigra/Makefile
 	@sed -i "/HTSLIB=/d" $(SVE_DIR)/$(SRC)/tigra/Makefile
 	@sed -i "/SAMHTSLIB=/d" $(SVE_DIR)/$(SRC)/tigra/Makefile
 	@sed -i "2 a SAMHTSLIB=$(SVE_DIR)/$(SRC)/htslib/htslib" $(SVE_DIR)/$(SRC)/tigra/Makefile
 	@sed -i "2 a HTSLIB=$(SVE_DIR)/$(SRC)/htslib" $(SVE_DIR)/$(SRC)/tigra/Makefile
 	@sed -i "2 a SAMTOOLS=$(SVE_DIR)/$(SRC)/samtools" $(SVE_DIR)/$(SRC)/tigra/Makefile
+	$(MAKE) --no-print-directory -C $(SRC)/tigra
 
-build:
+htslib:
+	@echo "- Building in htslib"
+	@rm -f $(SVE_DIR)/$(SRC)/htslib/configure
+	@rm -rf $(SVE_DIR)/$(SRC)/htslib/autom4te.cache
+	@cp $(SVE_DIR)/$(SRC)/htslib/configure.ac $(SVE_DIR)/$(SRC)/htslib/configure.ac~
+	@sed -i 's#m4_esyscmd_s(\[make print-version\]),##g' $(SVE_DIR)/$(SRC)/htslib/configure.ac
+	@cd $(SVE_DIR)/$(SRC)/htslib && $(AUTOHEADER) && $(AUTOCONF) && ./configure --disable-lzma
+	$(MAKE) --no-print-directory -C $(SVE_DIR)/$(SRC)/htslib
+	@test -f $(SVE_DIR)/$(SRC)/htslib/configure.ac~ && mv $(SVE_DIR)/$(SRC)/htslib/configure.ac~ $(SVE_DIR)/$(SRC)/htslib/configure.ac
+
+CNVnator_v0.3.3:
+	@echo "- Building in CNVnator_v0.3.3"
+	$(MAKE) --no-print-directory -C $(SRC)/CNVnator_v0.3.3/src/samtools
+	$(MAKE) --no-print-directory -C $(SRC)/CNVnator_v0.3.3/src
+
+breakdancer:
+	@echo "- Building in breakdancer"
+	@cd $(SVE_DIR)/$(SRC)/breakdancer-1.4.5; \
+	test -d build; rm -rf build; \
+	mkdir build; cd build; \
+	cmake .. -DCMAKE_BUILD_TYPE=release; \
+	$(MAKE)
+
+breakseq2:
+	@echo "- Building in breakseq2"
+	@cd $(SVE_DIR)/$(SRC)/breakseq2 && $(PYTHON) setup.py build
+	$(MAKE) --no-print-directory -C $(SRC)/breakseq2
+
+lumpy:
+	@echo "- Building in lumpy"
 	@rm -f $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure
 	@rm -rf $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/autom4te.cache
 	@cp $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac~
 	@sed -i 's#m4_esyscmd_s(\[make print-version\]),##g' $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac
 	@cd $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib && $(AUTOHEADER) && $(AUTOCONF) && ./configure --disable-lzma
-	@for dir in $(SUBDIRS); do \
-		echo "- Building in $$dir"; \
-		$(MAKE) --no-print-directory -C $(SRC)/$$dir;\
-	done
+	$(MAKE) --no-print-directory -C $(SVE_DIR)/$(SRC)/lumpy-sv
 	@test -f $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac~ && mv $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac~ $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac
-
-CNVnator_v0.3.3:
-	$(MAKE) --no-print-directory -C $(SRC)/CNVnator_v0.3.3/src/samtools
-	$(MAKE) --no-print-directory -C $(SRC)/CNVnator_v0.3.3/src
-
-breakdancer:
-	@cd $(SVE_DIR)/$(SRC)/breakdancer-1.4.5; \
-	mkdir build; \
-	cd build; \
-	cmake .. -DCMAKE_BUILD_TYPE=release; \
-	$(MAKE)
+	@sed -i "s#SAMBLASTER=\$$#SAMBLASTER=$(SVE_DIR)/$(SRC)/speedseq/bin/samblaster#g" $(SVE_DIR)/$(SRC)/lumpy-sv/bin/lumpyexpress.config
+	@sed -i "s#SAMBAMBA=\$$#SAMBAMBA=$(SVE_DIR)/$(SRC)/speedseq/bin/sambamba#g" $(SVE_DIR)/$(SRC)/lumpy-sv/bin/lumpyexpress.config
+	@sed -i "s#SAMTOOLS=\$$#SAMTOOLS=$(SVE_DIR)/$(SRC)/samtools/samtools#g" $(SVE_DIR)/$(SRC)/lumpy-sv/bin/lumpyexpress.config
 
 perl-lib:
 	@cd $(PERL_LIB); \
@@ -120,10 +158,6 @@ R-package:
 	@cd $(R_PACKAGE)/R-3.3.3 && ./configure --prefix=$(R_INSTALL_DIR) LDFLAGS='-L$(R_INSTALL_DIR)/lib' CFLAGS='-I$(R_INSTALL_DIR)/include' && $(MAKE) || true
 	@$(MAKE) -C $(R_PACKAGE)/R-3.3.3
 
-lumpy_config:
-	@sed -i "s#SAMBLASTER=\$$#SAMBLASTER=$(SVE_DIR)/$(SRC)/speedseq/bin/samblaster#g" $(SVE_DIR)/$(SRC)/lumpy-sv/bin/lumpyexpress.config
-	@sed -i "s#SAMBAMBA=\$$#SAMBAMBA=$(SVE_DIR)/$(SRC)/speedseq/bin/sambamba#g" $(SVE_DIR)/$(SRC)/lumpy-sv/bin/lumpyexpress.config
-	@sed -i "s#SAMTOOLS=\$$#SAMTOOLS=$(SVE_DIR)/$(SRC)/samtools/samtools#g" $(SVE_DIR)/$(SRC)/lumpy-sv/bin/lumpyexpress.config
 
 tool_paths:
 	@echo "TOOLS={}" > $(TOOL_PATHS)
@@ -147,8 +181,8 @@ tool_paths:
 	@echo "TOOLS ['TIGRA-EXT']     = '$(SVE_DIR)/$(SRC)/tigra-ext/TIGRA-ext.pl'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['FATO2BIT']      = '$(SVE_DIR)/$(SRC)/faToTwoBit/faToTwoBit_linux'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['GATK']          = '$(SVE_DIR)/$(SRC)/GATK_3.7/GenomeAnalysisTK.jar'" >> $(TOOL_PATHS)
-	@echo "TOOLS ['R_PATH']               = '$(R_PACKAGE)/R-3.3.3'" >> $(TOOL_PATHS)
-	@echo "TOOLS ['R_LIB_PATH']           = '$(R_INSTALL_DIR)'" >> $(TOOL_PATHS)
+	@echo "TOOLS ['R_PATH']               =" >> $(TOOL_PATHS)
+	@echo "TOOLS ['RSCRIPT']              = '$(RSCRIPT)'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['PERL_LIB_PATH']        = '$(PERL_LIB)'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['HYDRA_PATH']           = '$(SVE_DIR)/$(SRC)/hydra'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['BREAKDANCER_PATH']     = '$(SVE_DIR)/$(SRC)/breakdancer-1.4.5'" >> $(TOOL_PATHS)

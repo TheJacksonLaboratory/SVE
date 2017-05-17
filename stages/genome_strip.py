@@ -106,7 +106,7 @@ class genome_strip(stage_wrapper.Stage_Wrapper):
         preprocess += ['-run']
         
         gs_bwa_path = self.tools['GENOME_STRIP_PATH'] + '/bwa'
-        PATH = self.tools['JAVA-1.8_PATH'] + ':' + self.tools['SAMTOOLS_PATH'] + ':' + self.tools['BCFTOOLS_PATH'] + ':' + self.tools['HTSLIB_PATH'] + ':' + self.tools['R_PATH'] + '/bin'
+        PATH = self.tools['JAVA-1.8_PATH'] + ':' + self.tools['SAMTOOLS_PATH'] + ':' + self.tools['BCFTOOLS_PATH'] + ':' + self.tools['HTSLIB_PATH']
         if os.environ.has_key('PATH'): PATH += ':' + os.environ['PATH']
         LD_LIB = gs_bwa_path 
         if os.environ.has_key('LD_LIBRARY_PATH'): LD_LIB += ':' + os.environ['LD_LIBRARY_PATH']
