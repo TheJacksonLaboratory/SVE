@@ -75,7 +75,7 @@ hydra:
 	@echo "- Building in hydra"
 	$(MAKE) --no-print-directory -C $(SRC)/hydra
 
-tigra:
+tigra: bwa_samtools htslib
 	@echo "- Building in tigra"
 	@sed -i "/SAMTOOLS=/d" $(SVE_DIR)/$(SRC)/tigra/Makefile
 	@sed -i "/HTSLIB=/d" $(SVE_DIR)/$(SRC)/tigra/Makefile
