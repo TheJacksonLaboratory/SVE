@@ -1,7 +1,10 @@
 
-INCLUDES=-I /usr/include/python2.7 -I /home/leew/tools/boost_1_64_0 -I /home/leew/.local/lib/python2.7/site-packages/numpy
 
 export MKFILE_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+
+CFLAGS=-I /usr/include/python2.7 -I /home/leew/tools/boost_1_64_0 -I /home/leew/.local/lib/python2.7/site-packages/numpy -I /home/leew/tools/root/include
+LDFLAGS=-L /home/leew/tools/root/lib
+
 SRC=src
 TARGET_BIN=bin
 TOOL_PATHS=$(TARGET_BIN)/tools.py
@@ -30,7 +33,7 @@ all: unzip_tarballs configure build CNVnator_v0.3.3 perl-lib breakdancer
 .PHONY: all
 
 fusorSV: fusion_utils.c
-	$(CC) -rdynamic fusion_utils.c -shared -o fusion_utils.so $(INCLUDES) -fPIC
+	$(CC) -rdynamic fusion_utils.c -shared -o fusion_utils.so -fPIC $(CFLAGS) $(LDFLAGS)
 
 unzip_tarballs:
 	@cd $(SVE_DIR)/$(SRC); \
@@ -45,7 +48,7 @@ unzip_tarballs:
 configure:
 	@echo "- Configuring in htslib"
 	@cp $(SVE_DIR)/$(SRC)/htslib/configure.ac $(SVE_DIR)/$(SRC)/htslib/configure.ac~
-	@sed -i 's/make print-version//g' $(SVE_DIR)/$(SRC)/htslib/configure.ac
+	
 	@cd $(SVE_DIR)/$(SRC)/htslib && $(AUTOHEADER) && $(AUTOCONF) && ./configure --disable-lzma && $(MAKE)
 	@mv $(SVE_DIR)/$(SRC)/htslib/configure.ac~ $(SVE_DIR)/$(SRC)/htslib/configure.ac
 	@echo "- Configuring in lumpy"
