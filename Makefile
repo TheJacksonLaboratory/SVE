@@ -1,5 +1,5 @@
 
-INCLUDES=-I /opt/compsci/python/2.7.3/include/python2.7
+INCLUDES=-I /usr/include/python2.7 -I /home/leew/tools/boost_1_64_0 -I /home/leew/.local/lib/python2.7/site-packages/numpy
 
 export MKFILE_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 SRC=src
@@ -22,7 +22,7 @@ AUTOCONF = autoconf
 AUTOHEADER = autoheader
 
 # all
-all: unzip_tarballs configure build CNVnator_v0.3.3 perl-lib breakdancer fusorSV
+all: unzip_tarballs configure build CNVnator_v0.3.3 perl-lib breakdancer
 	@test -d $(SVE_DIR)/data || tar -zxvf data.tar.gz # unzip data
 	@test -d $(SVE_DIR)/$(TARGET_BIN) || mkdir $(SVE_DIR)/$(TARGET_BIN)
 	$(MAKE) tool_paths
@@ -43,15 +43,16 @@ unzip_tarballs:
 	cd $(SVE_DIR)
 
 configure:
+	@echo "- Configuring in htslib"
 	@cp $(SVE_DIR)/$(SRC)/htslib/configure.ac $(SVE_DIR)/$(SRC)/htslib/configure.ac~
 	@sed -i 's/make print-version//g' $(SVE_DIR)/$(SRC)/htslib/configure.ac
 	@cd $(SVE_DIR)/$(SRC)/htslib && $(AUTOHEADER) && $(AUTOCONF) && ./configure --disable-lzma && $(MAKE)
-	@cp $(SVE_DIR)/$(SRC)/htslib/configure.ac~ $(SVE_DIR)/$(SRC)/htslib/configure.ac
+	@mv $(SVE_DIR)/$(SRC)/htslib/configure.ac~ $(SVE_DIR)/$(SRC)/htslib/configure.ac
 	@echo "- Configuring in lumpy"
 	@cp $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac~
 	@sed -i 's/make print-version//g' $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac
 	@cd $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib && $(AUTOHEADER) && $(AUTOCONF) && ./configure --disable-lzma && $(MAKE)
-	@cp $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac~ $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac
+	@mv $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac~ $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac
 	@echo "- Configuring in breakseq2"
 	@cd $(SVE_DIR)/$(SRC)/breakseq2 && python setup.py && cd $(SVE_DIR) || true
 	@echo "- Configuring in tigra"
@@ -111,7 +112,6 @@ R-package:
 	@cd $(R_PACKAGE)/zlib-1.2.9 && ./configure --prefix=$(R_INSTALL_DIR) && $(MAKE) && $(MAKE) install
 	@cd $(R_PACKAGE)/R-3.3.3 && ./configure --prefix=$(R_INSTALL_DIR) LDFLAGS='-L$(R_INSTALL_DIR)/lib' CFLAGS='-I$(R_INSTALL_DIR)/include' && $(MAKE) || true
 	@$(MAKE) -C $(R_PACKAGE)/R-3.3.3
-	@cd $(SVE_DIR)
 
 tool_paths:
 	@echo "TOOLS={}" > $(TOOL_PATHS)
