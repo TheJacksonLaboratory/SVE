@@ -27,8 +27,6 @@ RSCRIPT = `which Rscript`
 
 # all
 all: unzip_tarballs perl-lib bwa_samtools speedseq bcftools bedtools2 delly hydra tigra CNVnator_v0.3.3 breakdancer lumpy
-	$(MAKE) bwa_samtools
-	$()
 	@test -d $(SVE_DIR)/data || tar -zxvf data.tar.gz # unzip data
 	@test -d $(SVE_DIR)/$(TARGET_BIN) || mkdir $(SVE_DIR)/$(TARGET_BIN)
 	$(MAKE) tool_paths
