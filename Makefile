@@ -54,13 +54,6 @@ configure:
 	@sed -i 's/make print-version//g' $(SVE_DIR)/$(SRC)/htslib/configure.ac
 	@cd $(SVE_DIR)/$(SRC)/htslib && $(AUTOHEADER) && $(AUTOCONF) && ./configure --disable-lzma
 	@test -f $(SVE_DIR)/$(SRC)/htslib/configure.ac~ && mv $(SVE_DIR)/$(SRC)/htslib/configure.ac~ $(SVE_DIR)/$(SRC)/htslib/configure.ac
-	@echo "- Configuring in lumpy"
-	@rm -f $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure
-	@rm -rf $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/autom4te.cache
-	@cp $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac~
-	@sed -i 's/make print-version//g' $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac
-	@cd $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib && $(AUTOHEADER) && $(AUTOCONF) && ./configure --disable-lzma
-	@test -f $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac~ && mv $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac~ $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac
 	@echo "- Configuring in breakseq2"
 	@cd $(SVE_DIR)/$(SRC)/breakseq2 && $(PYTHON) setup.py build
 	@echo "- Configuring in tigra"
@@ -72,8 +65,11 @@ configure:
 	@sed -i "2 a SAMTOOLS=$(SVE_DIR)/$(SRC)/samtools" $(SVE_DIR)/$(SRC)/tigra/Makefile
 
 build:
+	@rm -f $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure
+	@rm -rf $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/autom4te.cache
 	@cp $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac~
 	@sed -i 's/make print-version//g' $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac
+	@cd $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib && $(AUTOHEADER) && $(AUTOCONF) && ./configure --disable-lzma
 	@for dir in $(SUBDIRS); do \
 		echo "- Building in $$dir"; \
 		$(MAKE) --no-print-directory -C $(SRC)/$$dir;\
