@@ -23,6 +23,7 @@ SUBDIRS = bwa speedseq htslib samtools samtools-0.1.19 bcftools bedtools2 delly 
 
 AUTOCONF = autoconf
 AUTOHEADER = autoheader
+PYTHON = `which python`
 
 # all
 all: unzip_tarballs configure build CNVnator_v0.3.3 perl-lib breakdancer lumpy_config
@@ -47,17 +48,21 @@ unzip_tarballs:
 
 configure:
 	@echo "- Configuring in htslib"
+	@rm -f $(SVE_DIR)/$(SRC)/htslib/configure
+	@rm -rf $(SVE_DIR)/$(SRC)/htslib/autom4te.cache
 	@cp $(SVE_DIR)/$(SRC)/htslib/configure.ac $(SVE_DIR)/$(SRC)/htslib/configure.ac~
 	@sed -i 's/make print-version//g' $(SVE_DIR)/$(SRC)/htslib/configure.ac
 	@cd $(SVE_DIR)/$(SRC)/htslib && $(AUTOHEADER) && $(AUTOCONF) && ./configure --disable-lzma && $(MAKE)
 	@mv $(SVE_DIR)/$(SRC)/htslib/configure.ac~ $(SVE_DIR)/$(SRC)/htslib/configure.ac
 	@echo "- Configuring in lumpy"
+	@rm -f $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure
+	@rm -rf $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/autom4te.cache
 	@cp $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac~
 	@sed -i 's/make print-version//g' $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac
 	@cd $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib && $(AUTOHEADER) && $(AUTOCONF) && ./configure --disable-lzma && $(MAKE)
 	@mv $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac~ $(SVE_DIR)/$(SRC)/lumpy-sv/lib/htslib/configure.ac
 	@echo "- Configuring in breakseq2"
-	@cd $(SVE_DIR)/$(SRC)/breakseq2 && python setup.py && cd $(SVE_DIR) || true
+	@cd $(SVE_DIR)/$(SRC)/breakseq2 && $(PYTHON) setup.py build
 	@echo "- Configuring in tigra"
 	@sed -i "/SAMTOOLS=/d" $(SVE_DIR)/$(SRC)/tigra/Makefile
 	@sed -i "/HTSLIB=/d" $(SVE_DIR)/$(SRC)/tigra/Makefile
