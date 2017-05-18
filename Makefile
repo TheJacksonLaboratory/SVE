@@ -1,7 +1,7 @@
 
 export MKFILE_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-CFLAGS=-I /usr/include/python2.7
+CFLAGS_FUSOR_SV=-I /usr/include/python2.7/ -I ~/.local/lib/python2.7/site-packages/numpy/core/include/
 LDFLAGS=
 
 SRC=src
@@ -10,6 +10,7 @@ TOOL_PATHS=$(TARGET_BIN)/tools.py
 PROGRAM=sve
 
 SVE_DIR=$(shell pwd)
+FUSORSV_DIR=$(SVE_DIR)/scripts/FusorSV
 R_PACKAGE=$(SVE_DIR)/$(SRC)/R-package
 R_INSTALL_DIR=$(R_PACKAGE)/packages
 R_PACKAGE_DEPEN = bzip2-1.0.6 curl-7.47.1 pcre-8.40 xz-5.2.2 zlib-1.2.9
@@ -33,8 +34,9 @@ all: unzip_tarballs perl-lib bwa_samtools speedseq bcftools bedtools2 delly hydr
 	@cp $(SVE_DIR)/scripts/$(PROGRAM).py $(SVE_DIR)/$(TARGET_BIN)/$(PROGRAM)
 .PHONY: all
 
-#fusorSV: fusion_utils.c
-#	$(CC) -rdynamic fusion_utils.c -shared -o fusion_utils.so -fPIC $(CFLAGS) $(LDFLAGS)
+FusorSV: $(FUSORSV_DIR)/FusorSV.py $(FUSORSV_DIR)/fusion_utils.c
+	#$(PYTHON) $(FUSORSV_DIR)FusorSV.py build
+	$(CC) -rdynamic $(FUSORSV_DIR)/fusion_utils.c -shared -o $(FUSORSV_DIR)/fusion_utils.so -fPIC $(CFLAGS_FUSOR_SV) $(LDFLAGS)
 
 unzip_tarballs:
 	@cd $(SVE_DIR)/$(SRC); \
