@@ -37,6 +37,7 @@ all: unzip_tarballs perl-lib bwa_samtools speedseq bcftools bedtools2 delly hydr
 FusorSV: $(FUSORSV_DIR)/FusorSV.py $(FUSORSV_DIR)/fusion_utils.c
 	#$(PYTHON) $(FUSORSV_DIR)FusorSV.py build
 	$(CC) -rdynamic $(FUSORSV_DIR)/fusion_utils.c -shared -o $(FUSORSV_DIR)/fusion_utils.so -fPIC $(CFLAGS_FUSOR_SV) $(LDFLAGS)
+	@cd $(FUSORSV_DIR) && tar -zxvf data.tar.gz
 
 unzip_tarballs:
 	@cd $(SVE_DIR)/$(SRC); \
