@@ -1,9 +1,5 @@
-import art_illumina
 import bam_clean
 import bam_stats
-import bam2cram
-import bam_split_all
-import bam_split_simple
 import breakdancer
 import breakseq
 import bwa_aln
@@ -13,8 +9,6 @@ import bwa_mem
 import bwa_sampe
 import cnvnator
 import cnmops
-import cram2bam
-import cram2bam_split_all
 import delly
 import fq_to_bam_piped
 import fa_to_2bit
@@ -23,8 +17,6 @@ import genome_strip
 import genome_strip_prepare_ref
 import hydra
 import lumpy
-import mrfast_divet
-import mrfast_index
 import picard_index
 import picard_dict
 import picard_mark_duplicates
@@ -41,6 +33,5 @@ import samtools_fasta_index
 import samtools_snp
 import speedseq_align
 import speedseq_realign
-import variationhunter
 import vcftools_filter
 import tigra
