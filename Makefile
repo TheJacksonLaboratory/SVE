@@ -156,7 +156,8 @@ R-package:
 	@cd $(R_PACKAGE)/pcre-8.40 && ./configure --prefix=$(R_INSTALL_DIR) --enable-utf8 && $(MAKE) && $(MAKE) install
 	@cd $(R_PACKAGE)/xz-5.2.2 && ./configure --prefix=$(R_INSTALL_DIR) && $(MAKE) -j3 && $(MAKE) install
 	@cd $(R_PACKAGE)/zlib-1.2.9 && ./configure --prefix=$(R_INSTALL_DIR) && $(MAKE) && $(MAKE) install
-	@cd $(R_PACKAGE)/R-3.3.3 && ./configure --prefix=$(R_INSTALL_DIR)
+	@cd $(R_PACKAGE)/R-3.3.3 && ./configure --prefix=$(R_INSTALL_DIR) \
+		'LDFLAGS=-L$(R_INSTALL_DIR)/lib' CFLAGS='-I$(R_INSTALL_DIR)/include' --with-readline=no --without-recommended-packages
 	@$(MAKE) -C $(R_PACKAGE)/R-3.3.3
 
 
@@ -204,7 +205,8 @@ tool_paths:
 	@echo "FILES ['DELLY-HG38'] = '$(SVE_DIR)/$(SRC)/delly/excludeTemplates/human.hg38.excl.tsv'"  >> $(TOOL_PATHS)
 	@echo "FILES ['BREAKSEQ-HG19'] = '$(SVE_DIR)/data/breakseq_bplib/breakseq2_bplib_20150129.gff'"  >> $(TOOL_PATHS)
 	@echo "FILES ['BREAKSEQ-HG38'] = '$(SVE_DIR)/data/breakseq_bplib/breakseq2_bplib_20150129_hg38.gff'"  >> $(TOOL_PATHS)
-clean:
+
+clean: clean-R-package
 	@echo "- Clean up"
 	@for dir in $(SUBDIRS); do \
 		if [ -d $$dir ]; then \
@@ -223,16 +225,17 @@ clean:
 		fi; \
 	done;
 	@rm -rf $(R_INSTALL_DIR)
-	@rm -rf $(R_PACKAGE)/R-3.3.3
-	@for module in $(PERL_LIB_DEPEN); do \
-		if [ -d $(PERL_LIB)/$$module ]; then \
-			rm -rf $(PERL_LIB)/$$module; \
-		fi; \
-	done;
 	@if [ -d $(SVE_DIR)/data ]; then \
 		chmod -R 777 $(SVE_DIR)/data; \
 		rm -rf $(SVE_DIR)/data; \
 	fi
 	@rm -rf $(TARGET_BIN)
 
+clean-R-package:
+	@rm -rf $(R_PACKAGE)/R-3.3.3
+	@for module in $(PERL_LIB_DEPEN); do \
+		if [ -d $(PERL_LIB)/$$module ]; then \
+			rm -rf $(PERL_LIB)/$$module; \
+		fi; \
+	done;
 .PHONY: clean
