@@ -7,7 +7,7 @@ LDFLAGS=
 SRC=src
 TARGET_BIN=bin
 TOOL_PATHS=$(TARGET_BIN)/tools.py
-PROGRAM=$(SVE_DIR)/scripts/sve
+PROGRAM=sve
 
 SVE_DIR=$(shell pwd)
 R_PACKAGE=$(SVE_DIR)/$(SRC)/R-package
@@ -30,7 +30,7 @@ all: unzip_tarballs perl-lib bwa_samtools speedseq bcftools bedtools2 delly hydr
 	@test -d $(SVE_DIR)/data || tar -zxvf data.tar.gz # unzip data
 	@test -d $(SVE_DIR)/$(TARGET_BIN) || mkdir $(SVE_DIR)/$(TARGET_BIN)
 	$(MAKE) tool_paths
-	@cp $(PROGRAM) $(SVE_DIR)/$(TARGET_BIN)
+	@cp $(SVE_DIR)/scripts/$(PROGRAM).py $(SVE_DIR)/$(TARGET_BIN)/$(PROGRAM)
 .PHONY: all
 
 #fusorSV: fusion_utils.c
