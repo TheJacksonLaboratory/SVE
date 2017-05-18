@@ -33,8 +33,8 @@ all: unzip_tarballs perl-lib bwa_samtools speedseq bcftools bedtools2 delly hydr
 	@cp $(PROGRAM) $(SVE_DIR)/$(TARGET_BIN)
 .PHONY: all
 
-fusorSV: fusion_utils.c
-	$(CC) -rdynamic fusion_utils.c -shared -o fusion_utils.so -fPIC $(CFLAGS) $(LDFLAGS)
+#fusorSV: fusion_utils.c
+#	$(CC) -rdynamic fusion_utils.c -shared -o fusion_utils.so -fPIC $(CFLAGS) $(LDFLAGS)
 
 unzip_tarballs:
 	@cd $(SVE_DIR)/$(SRC); \
