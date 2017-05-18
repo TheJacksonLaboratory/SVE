@@ -55,6 +55,7 @@ bwa_samtools:
 
 speedseq:
 	@echo "- Building in speedseq"
+	sed -i 's#CXX    = g++ $$(ROOTFLAGS)#CXX    = g++ -std=c++11 $$(ROOTFLAGS)#g' $(SRC)/speedseq/src/cnvnator/Makefile
 	$(MAKE) --no-print-directory -C $(SRC)/speedseq
 
 bcftools:
@@ -183,7 +184,6 @@ tool_paths:
 	@echo "TOOLS ['TIGRA-EXT']     = '$(SVE_DIR)/$(SRC)/tigra-ext/TIGRA-ext.pl'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['FATO2BIT']      = '$(SVE_DIR)/$(SRC)/faToTwoBit/faToTwoBit_linux'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['GATK']          = '$(SVE_DIR)/$(SRC)/GATK_3.7/GenomeAnalysisTK.jar'" >> $(TOOL_PATHS)
-	@echo "TOOLS ['R_PATH']               =" >> $(TOOL_PATHS)
 	@echo "TOOLS ['RSCRIPT']              = '$(RSCRIPT)'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['PERL_LIB_PATH']        = '$(PERL_LIB)'" >> $(TOOL_PATHS)
 	@echo "TOOLS ['HYDRA_PATH']           = '$(SVE_DIR)/$(SRC)/hydra'" >> $(TOOL_PATHS)
