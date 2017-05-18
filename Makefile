@@ -27,7 +27,7 @@ PYTHON = `which python`
 RSCRIPT = `which Rscript`
 
 # all
-all: unzip_tarballs perl-lib bwa_samtools speedseq bcftools bedtools2 delly hydra tigra CNVnator_v0.3.3 breakdancer lumpy
+all: unzip_tarballs perl-lib htslib bwa_samtools speedseq bcftools bedtools2 delly hydra tigra CNVnator_v0.3.3 breakdancer lumpy
 	@test -d $(SVE_DIR)/data || tar -zxvf data.tar.gz # unzip data
 	@test -d $(SVE_DIR)/$(TARGET_BIN) || mkdir $(SVE_DIR)/$(TARGET_BIN)
 	$(MAKE) tool_paths
@@ -61,7 +61,7 @@ speedseq:
 	sed -i 's#CXX    = g++ $$(ROOTFLAGS)#CXX    = g++ -std=c++11 $$(ROOTFLAGS)#g' $(SRC)/speedseq/src/cnvnator/Makefile
 	$(MAKE) --no-print-directory -C $(SRC)/speedseq
 
-bcftools:
+bcftools: htslib
 	@echo "- Building in bcftools"
 	$(MAKE) --no-print-directory -C $(SRC)/bcftools
 
