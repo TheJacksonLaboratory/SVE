@@ -95,10 +95,18 @@ htslib:
 	@test -f $(SVE_DIR)/$(SRC)/htslib/configure.ac~ && mv $(SVE_DIR)/$(SRC)/htslib/configure.ac~ $(SVE_DIR)/$(SRC)/htslib/configure.ac
 
 CNVnator_v0.3.3:
+ifeq ($(ROOTSYS),)
+	@echo "\nERROR: CNVnator_v0.3.3 cannot be compiled because the ROOT package is not installed."
+	@echo "\tYou may download Root version 6.09/02 from https://root.cern.ch/content/release-60902."
+	@echo "\tAfter installing Root, please do\n"
+	@echo "\texport ROOTSYS=<path_to_root>"
+	@echo "\texport LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$ROOTSYS/lib"
+else
 	@echo "- Building in CNVnator_v0.3.3"
 	@cd $(SVE_DIR)/$(SRC) && tar -zxvf CNVnator_v0.3.3.tar.gz
 	$(MAKE) --no-print-directory -C $(SRC)/CNVnator_v0.3.3/src/samtools
 	$(MAKE) --no-print-directory -C $(SRC)/CNVnator_v0.3.3/src
+endif
 
 breakdancer:
 	@echo "- Building in breakdancer"
