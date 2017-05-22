@@ -51,7 +51,7 @@ class hydra(stage_wrapper.Stage_Wrapper):
         if os.environ.has_key('PATH'): PATH += ':' + os.environ['PATH']
 
         #[0] stub file generation        
-        bams = sub_dir+'bam.stub'
+        bams = 'bam.stub'
         bam_names = '\n'.join(['sample%s'%i+'\t'+inputs['.bam'][i] for i in range(len(inputs['.bam']))])
         with open(bams,'w') as f: f.write(bam_names) #follow readme.md tenplate
         
