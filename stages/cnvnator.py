@@ -28,9 +28,6 @@ class cnvnator(stage_wrapper.Stage_Wrapper):
         if ('.fa' not in inputs) or ('.bam' not in inputs) or ('out_dir' not in inputs):
             print "ERROR: .fa, .bam, and out_dir are required for genome_strip.py"
             return None
-        #if self.db_get_ref_name(run_id): ref_name = self.ref_name        
-        #else: ref_name = in_names['.fa'][0].rsplit('/')[-1].rsplit('.')[0]
-        ref_name = inputs['.fa'].rsplit('/')[-1].rsplit('.')[0]
         
         out_exts = self.split_out_exts()
         out_dir = inputs['out_dir'] + '/'
@@ -49,15 +46,15 @@ class cnvnator(stage_wrapper.Stage_Wrapper):
         cnv2vcf  = self.tools['CNVNATOR2VCF']
 
         #[self.strip_in_ext(self.strip_path(i),'.fa') for i in in_names['.fa']] #by using the input list
-        w = str(800)
-        refd = self.strip_name(inputs['.fa']) #this is a bit hackish
+        bin_size = str(300)
+        #refd = self.strip_name(inputs['.fa']) #this is a bit hackish
         
         extr     = [cnvnator, '-unique','-root', out_names['.root']+'.tree.root','-tree']+ inputs['.bam']
-        hist     = [cnvnator, '-genome', ref_name, '-root', out_names['.root']+'.tree.root',
-                    '-outroot',out_names['.root']+'.his.root','-his', w, '-d', refd]
-        stats    = [cnvnator, '-root', out_names['.root']+'.his.root', '-stat', w]
-        sig      = [cnvnator, '-root', out_names['.root']+'.his.root', '-partition', w]
-        call     = [cnvnator, '-root', out_names['.root']+'.his.root','-call', w, '>', out_names['.calls']]
+        hist     = [cnvnator, '-root', out_names['.root']+'.tree.root',
+                    '-outroot',out_names['.root']+'.his.root','-his', bin_size, '-d', sub_dir]
+        stats    = [cnvnator, '-root', out_names['.root']+'.his.root', '-stat', bin_size]
+        sig      = [cnvnator, '-root', out_names['.root']+'.his.root', '-partition', bin_size]
+        call     = [cnvnator, '-root', out_names['.root']+'.his.root','-call', bin_size, '>', out_names['.calls']]
         conv     = ['perl', cnv2vcf, out_names['.calls'], '>', out_names['.vcf']]
         
         #[2b]make start entry which is a new staged_run row
