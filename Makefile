@@ -1,7 +1,7 @@
 
 export MKFILE_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-CFLAGS_FUSOR_SV=-I /usr/include/python2.7/ -I ~/.local/lib/python2.7/site-packages/numpy/core/include/
+CFLAGS_FUSOR_SV=-I /opt/compsci/python/2.7.3/include/python2.7/ -I ~/.local/lib/python2.7/site-packages/numpy/core/include/numpy/
 LDFLAGS=
 
 SRC=src

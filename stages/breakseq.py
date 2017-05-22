@@ -48,15 +48,10 @@ class breakseq(stage_wrapper.Stage_Wrapper):
         samtools  = self.tools['SAMTOOLS']
         bwa       = self.tools['BWA']
         breakseq  = self.tools['BREAKSEQ']
-#        call      = [python,breakseq,'--bwa',bwa,'--samtools',samtools,
-#                     '--reference',in_names['.fa'],'--bplib_gff',gff,
-#                     '--work',sub_dir,'--bams']+in_names['.bam']+\
-#                    ['--nthreads',str(4),'--min_span',str(2),'--window',max(100,w),
-#                     '--min_overlap',str(2),'--junction_length',max(200,j)] #junctio =2x lead length
 
         call      = [python,breakseq, '--bwa', bwa, '--samtools', samtools,
-                     '--reference', inputs['.fa'], '--work',sub_dir, '--min_span',str(2),'--window', str(202), 
-                     '--min_overlap',str(2), '--junction_length',str(404), '--bams'] + inputs['.bam']
+                     '--reference', inputs['.fa'], '--work',sub_dir, '--min_span',str(2),'--window', str(100), 
+                     '--min_overlap',str(2), '--junction_length',str(200), '--bams'] + inputs['.bam']
 
         if 'threads' in inputs: call += ['--nthreads', str(inputs['threads'])]
         if gff != '': call += ['--bplib_gff', gff]
