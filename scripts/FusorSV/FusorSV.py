@@ -177,7 +177,7 @@ def post_model_partition(apply_fusion_model_path,snames,t,b,k,callers,caller_exc
     B,J,D,E,alpha,n,K = fusor.import_fusion_model(apply_fusion_model_path)      #import the existing model
     #[2] load new input data partitions
     P = fusor.read_partitions_by_caller(out_dir+'/svul/',callers,caller_exclude,t,b,False)   #all samples
-    J_new = fusor.all_samples_all_pairs_magnitudes(P,snames)                 #pool all feature magnitudes   
+    J_new = fusor.all_samples_all_pairs_magnitudes(P,snames)                 #pool all feature magnitudes
     #[3] construct the posterior estimator using:        the prior data, new data and imputed true row==k
     J_post = fusor.additive_magnitude_smoothing(J,J_new,k)        #k is used to swap a row J_prime into J
     D_post,NN_post = fusor.pooled_distance(J_post)                      #get the new data distance matrix
@@ -335,6 +335,7 @@ if __name__ == '__main__':
     
     
     #||||||||||||||||||||||||||||||||||||||BY SAMPLE|||||||||||||||||||||||||||||||||||||||||||||
+
     #[1] read, parse, structure, select, partition and write out data for each sample if not done
     if total_partitions<1: #skip this step if you have already read and partitioned the data set      
         print('reading, parsing, partitioning and writing sample VCFs')
@@ -359,7 +360,6 @@ if __name__ == '__main__':
         print('finished reading %s out of %s samples generating %s partitions in %s sec'%\
               (len(snames),len(samples),total_partitions,round(stop-start,2)))
     #||||||||||||||||||||||||||||||||||||||BY SAMPLE|||||||||||||||||||||||||||||||||||||||||||||
-    
     if n_cross>1 and cross_fold>1: #for each run will permute using the k_fold divisor to partition
             print('employing crossfold validation measures...runs=%s\tkfold=%s'%(n_cross,cross_fold))
     for n_k in range(n_cross): #default is 1 and cross_fold = 0

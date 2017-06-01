@@ -221,7 +221,7 @@ def slice_samples(L,exclude=[]):
         for c in i[1]:
             for t in i[1][c]:
                 all_types.add(t)
-    all_types    = list(all_types)            
+    all_types    = list(all_types)      
     #target_types = list(set([j for x in [s[1][k].keys() for s in L] for j in x])) #target types
     Q = {}
     for t in all_types:
@@ -472,7 +472,7 @@ def all_samples_all_pairs_magnitudes(P,snames,self_merge=True):
                 for s in snames:
                     C1,C2 = [],[]
                     if P[t][b][i].has_key(s): C1 = P[t][b][i][s]
-                    if P[t][b][j].has_key(s): C2 = P[t][b][j][s]                    
+                    if P[t][b][j].has_key(s): C2 = P[t][b][j][s]                   
                     F = fu.feature_magnitudes(C1,C2,self_merge)
                     N[0] += np.uint64(F[0])
                     N[1] += np.uint64(F[1])
@@ -737,7 +737,7 @@ def pooled_distance(M,mode='j'):
                     j = np.float128(M[t][b][g][0])/np.float128(M[t][b][g][1])
                     u = np.float128(M[t][b][g][2])/(np.float128(M[t][b][g][2])+np.float128(M[t][b][g][3]))
                     D[t][b][g] = np.float128(1.0)-np.float128(2.0)*(j*u)/(j+u)
-            K = sorted(list(set([v for w in M[t][b] for v in w])))                   
+            K = sorted(list(set([v for w in M[t][b] for v in w])))        
             for k in K:
                 N = []
                 for i,j in sorted(M[t][b].keys()): #distance then key

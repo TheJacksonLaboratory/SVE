@@ -1170,4 +1170,5 @@ def filter_regions2(C,R):
         if j>=m: j,i = m,i+1 #sticky indecies wait for eachother
     while len(C) > 0 and C[-1][0] > upper:  C.pop()    
     while len(R) > 0 and R[-1][0] > upper:  R.pop()
-    return [C[i] for i in sorted(set(range(len(C))).difference(set(D[1:])))]    
+    return [C[i] for i in sorted(set(range(len(C))).difference(set(D[1:])))]
+
