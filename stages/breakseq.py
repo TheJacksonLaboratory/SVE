@@ -50,7 +50,7 @@ class breakseq(stage_wrapper.Stage_Wrapper):
         breakseq  = self.tools['BREAKSEQ']
 
         call      = [python,breakseq, '--bwa', bwa, '--samtools', samtools,
-                     '--reference', inputs['.fa'], '--work',sub_dir, '--min_span',str(2),'--window', str(100), 
+                     '--reference', inputs['.fa'], '--work',sub_dir, '--min_span',str(2),'--window', str(500), 
                      '--min_overlap',str(2), '--junction_length',str(200), '--bams'] + inputs['.bam']
 
         if 'threads' in inputs: call += ['--nthreads', str(inputs['threads'])]
