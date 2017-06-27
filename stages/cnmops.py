@@ -52,7 +52,7 @@ class cnmops(stage_wrapper.Stage_Wrapper):
 	defaults['normal']['value'] = 3
         defaults['cir_seg']['value'] = True
         defaults['window']['value'] = 1000
-        if 'threads' in inputs: defaults['core']['value'] = inputs['threads']
+        if 'threads' in inputs: defaults['cores']['value'] = inputs['threads']
         
         params = [k+'='+str(defaults[k]['value']) for k in defaults]        
             
