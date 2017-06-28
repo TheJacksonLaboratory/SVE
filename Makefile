@@ -40,11 +40,10 @@ FusorSV: $(FUSORSV_DIR)/FusorSV.py $(FUSORSV_DIR)/fusion_utils.c
 	@cd $(FUSORSV_DIR) && tar -zxvf data.tar.gz
 
 unzip_tarballs:
-	@cd $(SVE_DIR)/$(SRC); \
-	for module in $(TARBALLS); do \
-		if [ ! -d $$module ]; then \
+	@for module in $(TARBALLS); do \
+		if [ ! -d $(SVE_DIR)/$(SRC)/$$module ]; then \
 			echo "- Unzip $$module"; \
-			test -f $$module.tar.gz && tar -zxvf $$module.tar.gz; \
+			cd $(SVE_DIR)/$(SRC) && test -f $$module.tar.gz && tar -zxvf $$module.tar.gz; \
 		fi; \
 	done; \
 	cd $(SVE_DIR)
@@ -139,11 +138,10 @@ lumpy:
 	@sed -i "s#SAMTOOLS=\$$#SAMTOOLS=$(SVE_DIR)/$(SRC)/samtools/samtools#g" $(SVE_DIR)/$(SRC)/lumpy-sv/bin/lumpyexpress.config
 
 perl-lib:
-	@cd $(PERL_LIB); \
-	for module in $(PERL_LIB_DEPEN); do \
-		if [ ! -d $$module ]; then \
+	@for module in $(PERL_LIB_DEPEN); do \
+		if [ ! -d $(PERL_LIB)/$$module ]; then \
 			echo "- Unzip $$module"; \
-			tar -zxvf $$module.tar.gz; \
+			cd $(PERL_LIB) && tar -zxvf $$module.tar.gz; \
 			cd $(PERL_LIB)/$$module; \
 			perl Makefile.PL INSTALL_BASE=$(PERL_LIB); \
 			$(MAKE) && $(MAKE) install; \
@@ -152,11 +150,10 @@ perl-lib:
 
 R-package:
 	@test -d $(R_INSTALL_DIR) || mkdir -p $(R_INSTALL_DIR)
-	@cd $(R_PACKAGE); \
-	for module in $(R_PACKAGE_DEPEN); do \
-		if [ ! -d $$module ]; then \
+	@for module in $(R_PACKAGE_DEPEN); do \
+		if [ ! -d $(R_PACKAGE)/$$module ]; then \
 			echo "- Unzip $$module"; \
-			tar -zxvf $$module.tar.gz; \
+			cd $(R_PACKAGE) && tar -zxvf $$module.tar.gz; \
 		fi; \
 	done; \
 	test -d R-3.3.3 || tar -zxvf R-3.3.3.tar.gz; \
