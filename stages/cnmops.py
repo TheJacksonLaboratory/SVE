@@ -42,7 +42,7 @@ class cnmops(stage_wrapper.Stage_Wrapper):
         #[2a]build command args
         
         #split the ref seq into seperate chroms...
-        rscript  = self.tools['RSCRIPT'] + '/bin/Rscript'
+        rscript  = self.tools['RSCRIPT'] # + '/bin/Rscript'
         cnmops_r = self.tools['SVE_HOME'] + '/stages/utils/cnmops.R'
         #load up params to pass to the Rscript cmd_parser.R
         defaults,params = self.params,[]
