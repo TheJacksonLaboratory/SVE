@@ -25,9 +25,10 @@ AUTOCONF = autoconf
 AUTOHEADER = autoheader
 PYTHON = `which python`
 RSCRIPT = `which Rscript`
+R = `which R`
 
 # all
-all: unzip_tarballs perl-lib htslib bwa_samtools speedseq bcftools bedtools2 delly hydra tigra CNVnator_v0.3.3 breakdancer lumpy
+all: unzip_tarballs perl-lib htslib bwa_samtools speedseq bcftools bedtools2 delly hydra tigra CNVnator_v0.3.3 breakdancer lumpy R-package
 	@test -d $(SVE_DIR)/data || tar -zxvf data.tar.gz # unzip data
 	@test -d $(SVE_DIR)/$(TARGET_BIN) || mkdir $(SVE_DIR)/$(TARGET_BIN)
 	$(MAKE) tool_paths
@@ -148,16 +149,15 @@ perl-lib:
 		fi; \
 	done; \
 
-R-package:
-	@test -d $(R_INSTALL_DIR) || mkdir -p $(R_INSTALL_DIR)
+R-install:
+	@mkdir -p $(R_INSTALL_DIR)
 	@for module in $(R_PACKAGE_DEPEN); do \
 		if [ ! -d $(R_PACKAGE)/$$module ]; then \
 			echo "- Unzip $$module"; \
 			cd $(R_PACKAGE) && tar -zxvf $$module.tar.gz; \
 		fi; \
-	done; \
-	test -d R-3.3.3 || tar -zxvf R-3.3.3.tar.gz; \
-	cd $(SVE_DIR)
+	done;
+	@test -d $(R_PACKAGE)/R-3.3.3 || (cd $(R_PACKAGE) && tar -zxvf R-3.3.3.tar.gz); 
 	@sed -i "/CFLAGS=/d" $(R_PACKAGE)/bzip2-1.0.6/Makefile
 	@sed -i '23 a CFLAGS=-Wall -Winline -O2 -g -fPIC $$(BIGFILES)' $(R_PACKAGE)/bzip2-1.0.6/Makefile
 	@cd $(R_PACKAGE)/bzip2-1.0.6 && $(MAKE) clean && $(MAKE) -f Makefile-libbz2_so && $(MAKE) clean && $(MAKE) && $(MAKE) -n install PREFIX=$(R_INSTALL_DIR) && $(MAKE) install PREFIX=$(R_INSTALL_DIR)
@@ -168,6 +168,9 @@ R-package:
 	@cd $(R_PACKAGE)/R-3.3.3 && ./configure --prefix=$(R_INSTALL_DIR) \
 		'LDFLAGS=-L$(R_INSTALL_DIR)/lib' CFLAGS='-I$(R_INSTALL_DIR)/include' --with-readline=no --without-recommended-packages
 	@$(MAKE) -C $(R_PACKAGE)/R-3.3.3
+
+R-package:
+	@cd $(R_PACKAGE) && $(R) CMD BATCH installPackage.r logInstall
 
 
 tool_paths:
