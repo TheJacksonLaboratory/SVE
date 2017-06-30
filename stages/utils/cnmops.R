@@ -27,6 +27,11 @@ options(warn=-1);
 #Rscript cmd_parser.R commands...
 cmd_args <- commandArgs();
 scriptpath <- gsub('cnmops.R','',gsub('--file=','',cmd_args[4]));
+# change library path
+#print(scriptpath)
+localLib <- paste(scriptpath,"../../src/R-package",sep="")
+.libPaths(localLib)
+#print(.libPaths())
 source(paste(scriptpath,'cmd_parser.R',sep='')); #after this runs => args = a list of list object
 in_bams  <- args['in_bams'][[1]]
 in_chroms<- args['in_chroms'][[1]]
@@ -53,9 +58,9 @@ window   <- args['window'][[1]]
 mode     <- args['mode'][[1]]
 
 #start up the dynamically loaded libraries and run cn.mops
-source("https://bioconductor.org/biocLite.R")
-biocLite("Rsamtools");
-biocLite("cn.mops");
+source("http://bioconductor.org/biocLite.R")
+#biocLite("Rsamtools");
+#biocLite("cn.mops");
 library('Rsamtools');
 library('cn.mops');
 f_names <- in_bams;
