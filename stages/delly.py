@@ -65,7 +65,7 @@ class delly(stage_wrapper.Stage_Wrapper):
             #if threads in inputs: p1 = mp.Pool(processes = inputs['threads'])
             #p1 = mp.Pool(processes = 1)
             for bam in inputs['.bam']:
-                delly_call = [delly, 'call', '-g', inputs['.fa']]
+                delly_call = [delly, 'call', '-g', inputs['.fa'], '-n']
                 if excl != '': delly_call += ['-x', excl]
                 for type in type_list:
                     type_call = delly_call + ['-t', type.upper(), '-o', sub_dir+str(count)+'.'+type+'.bcf'] + [bam]
