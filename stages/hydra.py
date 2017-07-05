@@ -49,6 +49,7 @@ class hydra(stage_wrapper.Stage_Wrapper):
         PATH = hydra+'bin:'+hydra+'scripts:'+\
                self.tools['SAMTOOLS-0.1.19_PATH']
         if os.environ.has_key('PATH'): PATH += ':' + os.environ['PATH']
+        LD_LIBRARY_PATH = os.environ['LD_LIBRARY_PATH']
 
         #[0] stub file generation        
         bams = 'bam.stub'
@@ -69,7 +70,7 @@ class hydra(stage_wrapper.Stage_Wrapper):
         #[3] run hydra router
         #hydra-router -config config.hydra.txt -routedList routed-files.txt
         routed_bams = sub_dir+'bam.routed'
-        route   =  ['hydra-router',
+        route   =  [hydra+'bin/hydra-router',
                     '-config',cfg,'-routedList',routed_bams]
         
         #[4] assemble SV breakpoint clusters
@@ -117,13 +118,14 @@ class hydra(stage_wrapper.Stage_Wrapper):
         #[3a]execute the command here----------------------------------------------------
         output,err = '',{}
         try:
+            
             print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print('making the hydra configuration')
             print(' '.join(make_cfg))
             output += subprocess.check_output(' '.join(make_cfg),
                                               stderr=subprocess.STDOUT,shell=True,
                                               env={'PATH':PATH})+'\n'
-
+            
                                               
             for k in ['sample%s'%i for i in range(len(inputs['.bam']))]:
                 print('extracting discordants for %s'%k)
@@ -137,14 +139,14 @@ class hydra(stage_wrapper.Stage_Wrapper):
             print(' '.join(route))
             output += subprocess.check_output(' '.join(route),
                                               stderr=subprocess.STDOUT,shell=True,
-                                              env={'PATH':PATH})+'\n'
+                                              env={'PATH':PATH,'LD_LIBRARY_PATH':LD_LIBRARY_PATH}) + '\n'
                                               
             print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print('combining hydra assembly files')
             print(' '.join(assemble))
             output += subprocess.check_output(' '.join(assemble),
                                               stderr=subprocess.STDOUT,shell=True,
-                                              env={'PATH':PATH})+'\n'
+                                              env={'PATH':PATH,'LD_LIBRARY_PATH':LD_LIBRARY_PATH})+'\n'
                                               
             print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
             print('merging results')
@@ -211,8 +213,8 @@ class hydra(stage_wrapper.Stage_Wrapper):
         print('computing hydra breakpoints')
         print(' '.join(bkpts))
         try:
-            output = subprocess.check_output(' '.join(bkpts),
-                                              stderr=subprocess.STDOUT,shell=True)+'\n'
+            #output = subprocess.check_output(' '.join(bkpts),
+            #                                  stderr=subprocess.STDOUT,shell=True)+'\n'
             #if os.path.exists(out_names['.vcf']):
             #    output += subprocess.check_output(' '.join(clean),
             #                                      stderr=subprocess.STDOUT,shell=True)
