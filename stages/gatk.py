@@ -3,6 +3,7 @@ import sys
 import subprocess32 as subprocess
 sys.path.append('../') #go up one in the modules
 import stage_wrapper
+from stages.utils.CheckVcf import GetCallCount
 
 #function for auto-making svedb stage entries and returning the stage_id
 class gatk(stage_wrapper.Stage_Wrapper):
@@ -111,46 +112,12 @@ class gatk(stage_wrapper.Stage_Wrapper):
             err['code'] = 1
         print('output:\n'+output)
 
-        """
-        try:
-            print ("<<<<<<<<<<<<<SVE command>>>>>>>>>>>>>>>\n")
-            print (' '.join(combine))
-            output = subprocess.check_output(' '.join(combine), stderr=subprocess.STDOUT, shell=True)
-        except subprocess.CalledProcessError as E:
-            print('call error: '+E.output)        #what you would see in the term
-            err['output'] = E.output
-            #the python exception issues (shouldn't have any...
-            print('message: '+E.message)          #?? empty
-            err['message'] = E.message
-            #return codes used for failure....
-            print('code: '+str(E.returncode))     #return 1 for a fail in art?
-            err['code'] = E.returncode
-        except OSError as E:
-            print('os error: '+E.strerror)        #what you would see in the term
-            err['output'] = E.strerror
-            #the python exception issues (shouldn't have any...
-            print('message: '+E.message)          #?? empty
-            err['message'] = E.message
-            #the error num
-            print('code: '+str(E.errno))
-            err['code'] = E.errno
-        except Exception as E:
-            print('vcf write os/file IO error')
-            err['output'] = 'vcf write os/file IO error'
-            err['message'] = 'vcf write os/file IO error'
-            err['code'] = 1
-        print('output:\n'+output)
-        """
         #[3b]check results--------------------------------------------------
-        if err == {}:
-            results = [out_names['.vcf']]
-            #for i in results: print i
-            if all([os.path.exists(r) for r in results]):
-                print("<<<<<<<<<<<<<GATK sucessfull>>>>>>>>>>>>>>>")
-                return results   #return a list of names
-            else:
-                print("<<<<<<<<<<<<<GATK failure>>>>>>>>>>>>>>>")
-                return None
+        if err != {}:
+            print err
+        if GetCallCount(out_names['.vcf']) > 0:
+            print("<<<<<<<<<<<<<gatk sucessfull>>>>>>>>>>>>>>>\n")
+            return out_names['.vcf']   #return a list of names
         else:
-            print("<<<<<<<<<<<<<GATK failure>>>>>>>>>>>>>>>")
+            print("<<<<<<<<<<<<<gatk failure>>>>>>>>>>>>>>>\n")
             return None

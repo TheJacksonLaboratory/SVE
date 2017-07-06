@@ -4,6 +4,7 @@ import subprocess32 as subprocess
 sys.path.append('../') #go up one in the modules
 import stage_wrapper
 import read_utils as sr
+from stages.utils.CheckVcf import GetCallCount
 
 #function for auto-making svedb stage entries and returning the stage_id
 class cnvnator(stage_wrapper.Stage_Wrapper):
@@ -106,18 +107,11 @@ class cnvnator(stage_wrapper.Stage_Wrapper):
         print('output:\n'+output)
         
         #[3b]check results--------------------------------------------------
-        if err == {}:
-            results = [out_names['.vcf']]
-            #for i in results: print i
-            if all([os.path.exists(r) for r in results]):
-                print("<<<<<<<<<<<<<cnvnator sucessfull>>>>>>>>>>>>>>>\n")
-                #self.db_stop(run_id,self.vcf_to_vca(out_names['.vcf']),'',True)
-                return results   #return a list of names
-            else:
-                print("<<<<<<<<<<<<<cnvnator failure>>>>>>>>>>>>>>>\n")
-                #self.db_stop(run_id,{'output':output},'',False)
-                return False
+        if err != {}:
+            print err
+        if GetCallCount(out_names['.vcf']) > 0:
+            print("<<<<<<<<<<<<<cnvnator sucessfull>>>>>>>>>>>>>>>\n")
+            return out_names['.vcf']   #return a list of names
         else:
-            print("<<<<<<<<<<<<<cnvnator failure>>>>>>>>>>>>>>>")
-            #self.db_stop(run_id,{'output':output},err['message'],False)
+            print("<<<<<<<<<<<<<cnvnator failure>>>>>>>>>>>>>>>\n")
             return None
