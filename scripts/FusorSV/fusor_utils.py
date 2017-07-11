@@ -1523,7 +1523,7 @@ def filter_bin(A,alpha,t,b,s=None,E_post=None,wx=4,wy=5,idx=6,leave_in=False):
                     if a[i][wx]>=alpha[t][b] and a[i][wy]>=alpha[t][b]:
                         C += [a[i][0:wx]+[xw,yw]+a[i][wy+1:]+[1]]
                     # SL: print SVult
-                    print ["Filter_bin", ';', t, ';', b, ';', s, ';', g, ';', [a[i][0:wx]+[xw,yw]+a[i][wy+1:]+[1]], ';', a[i][wx], ';', a[i][wy], ';', alpha[t][b], ';', a[i][wx]>=alpha[t][b], ';', a[i][wy]>=alpha[t][b]]
+                    #print ["Filter_bin", ';', t, ';', b, ';', s, ';', g, ';', [a[i][0:wx]+[xw,yw]+a[i][wy+1:]+[1]], ';', a[i][wx], ';', a[i][wy], ';', alpha[t][b], ';', a[i][wx]>=alpha[t][b], ';', a[i][wy]>=alpha[t][b]]
             C = fu.merge_regions(C)    
     return C
 #given a piled and filtered set, merge back into one call set
