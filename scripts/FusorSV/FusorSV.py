@@ -465,31 +465,31 @@ if __name__ == '__main__':
         cross_fold_stats,hist,detailed_stats = fusor.assemble_stats(L)
         ref_seq = {'.'.join(ref_path.rsplit('/')[-1].rsplit('.')[0:-1]):ru.read_fasta(ref_path,True)}
         #compute cross_fold averages
-        if not apply_fusion_model_path is None: 
-            for c in cross_fold_stats:
-                print('%s--------------------------------------------------------------'%callers[c])
-                for t in cross_fold_stats[c]:
-                    if len(cross_fold_stats[c][t])>0:#have all samples here to plot/look at!
-                        #idea[1] look at scatterplot with a line
-                        prec = round(np.mean([i[2] for i in cross_fold_stats[c][t]]),2)
-                        rec  = round(np.mean([i[3] for i in cross_fold_stats[c][t]]),2)
-                        f1   = round(np.mean([i[4] for i in cross_fold_stats[c][t]]),2)
-                        j    = round(np.mean([i[5] for i in cross_fold_stats[c][t]]),2)
-                        n    = round(np.mean([i[7] for i in cross_fold_stats[c][t]]),2)
-                        m    = round(np.mean([i[8] for i in cross_fold_stats[c][t]]),2)
-                        l_mu = round(np.mean([i[9] for i in cross_fold_stats[c][t]]),2)
-                        r_mu = round(np.mean([i[10] for i in cross_fold_stats[c][t]]),2)
-                        print('average for t=%s\tprec=%s\trec=%s\tf1=%s\tj=%s\tn=%s\tm=%s\tl_mu=%s\tr_mu=%s'%\
-                              (types[t],prec,rec,f1,j,n,m,l_mu,r_mu))
-            #CHECK-SCORES-----------------------------------------------------------------------------------------------
-            fusor.export_caller_performance(cross_fold_stats,callers,
-                                            out_dir+'/visual/cross_fold_stats.'+tst_str+'.tsv')
-            fusor.export_detailed_performance(detailed_stats,callers,
-                                              out_dir+'/visual/detailed_stats.'+tst_str+'.tsv')
-            fusor.export_caller_by_type_and_bin(E,alpha,callers,types,bins,
-                                                out_dir+'/visual/callers_tbj.'+tst_str+'.tsv')
-            fusor.export_distance_matrix(D,callers,types,bins,
-                                         out_dir+'/visual/sim_matrix.'+tst_str+'.tsv',sim=True)
+        #if not apply_fusion_model_path is None: 
+        for c in cross_fold_stats:
+            print('%s--------------------------------------------------------------'%callers[c])
+            for t in cross_fold_stats[c]:
+                if len(cross_fold_stats[c][t])>0:#have all samples here to plot/look at!
+                    #idea[1] look at scatterplot with a line
+                    prec = round(np.mean([i[2] for i in cross_fold_stats[c][t]]),2)
+                    rec  = round(np.mean([i[3] for i in cross_fold_stats[c][t]]),2)
+                    f1   = round(np.mean([i[4] for i in cross_fold_stats[c][t]]),2)
+                    j    = round(np.mean([i[5] for i in cross_fold_stats[c][t]]),2)
+                    n    = round(np.mean([i[7] for i in cross_fold_stats[c][t]]),2)
+                    m    = round(np.mean([i[8] for i in cross_fold_stats[c][t]]),2)
+                    l_mu = round(np.mean([i[9] for i in cross_fold_stats[c][t]]),2)
+                    r_mu = round(np.mean([i[10] for i in cross_fold_stats[c][t]]),2)
+                    print('average for t=%s\tprec=%s\trec=%s\tf1=%s\tj=%s\tn=%s\tm=%s\tl_mu=%s\tr_mu=%s'%\
+                          (types[t],prec,rec,f1,j,n,m,l_mu,r_mu))
+        #CHECK-SCORES-----------------------------------------------------------------------------------------------
+        fusor.export_caller_performance(cross_fold_stats,callers,
+                                        out_dir+'/visual/cross_fold_stats.'+tst_str+'.tsv')
+        fusor.export_detailed_performance(detailed_stats,callers,
+                                          out_dir+'/visual/detailed_stats.'+tst_str+'.tsv')
+        fusor.export_caller_by_type_and_bin(E,alpha,callers,types,bins,
+                                            out_dir+'/visual/callers_tbj.'+tst_str+'.tsv')
+        fusor.export_distance_matrix(D,callers,types,bins,
+                                     out_dir+'/visual/sim_matrix.'+tst_str+'.tsv',sim=True)
         #(a) check for an Rscript engine
         #(b) use the command parser to fire up the Rscript and check
         #(c) for the drawing libraries to ggplot, ect to use
