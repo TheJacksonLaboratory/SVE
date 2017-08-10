@@ -101,7 +101,7 @@ elif paras['command'] == "call":
 	call_params['.vcf'] = paras['vcf']
 	st = stage.Stage('tigra',dbc)
         st.run(run_id, call_params)
-    if paras['algorithm'] in ['cnvnator', 'lumpy', 'cnmops', 'hydra', 'breakdancer', 'gatk']:
+    if paras['algorithm'] in ['cnvnator', 'lumpy', 'cnmops', 'hydra', 'breakdancer']:
         st = stage.Stage(paras['algorithm'],dbc)
         st.run(run_id, call_params)
     if paras['algorithm'] in ['delly', 'breakseq']:
