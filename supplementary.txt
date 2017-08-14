@@ -1,0 +1,16 @@
+Reference paper:
+FusorSV: An algorithm for optimally combining data from multiple structural variation detection methods
+Timothy Becker1,2, Wan-Ping Leeq, Joseph Leone1, Qihui Zhu1, Chengsheng Zhang1, Silvia Liu1, Jack Sargent1, Kritika Shanker1, Adam Mil-homens1, Eliza Cerveira1, Mallory Romanovitch1, Jane Cha1, Fabio C. P. Navarro3, Timur Galeev3, Mark Gerstein3, Ryan Mills4,5, Dong-Guk Shin2,6, Charles Lee1,7, Ankit Malhotra1,7
+
+1 The Jackson Laboratory for Genomic Medicine, Farmington, CT
+2 Department of Computer Science and Engineering, University of Connecticut, Storrs, CT
+3 Yale University Medical School, Computational Biology and Bioinformatics Program, New Haven, CT
+4 Department of Computational Medicine and Bioinformatics, University of Michigan, Ann Arbor, MI
+5 Department of Human Genetics, University of Michigan, Ann Arbor, MI
+6 senior authors
+7 senior and corresponding authors
+
+Supplementary Material:
+The raw VCF calls from individual callers and FusorSV is available at - ftp://ftp.jax.org/leew/FusorSV_data.tar.gz
+
+
