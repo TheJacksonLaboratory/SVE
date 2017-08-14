@@ -1,4 +1,6 @@
 
+![Alt text](fusorSVlogo.jpg?raw=true "Logo")<br>
+
 ##Structural Variation Engine<br>
 (c) 2017 Timothy Becker & Wan-Ping Lee<br><br>
 A python script based execution engine for SV calling that abstracts separate SV calling pipelines into a stage.
