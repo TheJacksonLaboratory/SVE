@@ -1,3 +1,4 @@
+![Alt text](fusorSVlogo.jpg?raw=true "Logo")<br>
 <<<<<<< HEAD
 Structural Variation Engine (SVE)
 =================================
