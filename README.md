@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Structural Variation Engine (SVE)
 =================================
 
@@ -25,6 +26,25 @@ FusorSV requires the following to run.
 Installation
 ------------
 For SVE
+=======
+
+![Alt text](fusorSVlogo.jpg?raw=true "Logo")<br>
+
+##Structural Variation Engine<br>
+(c) 2017 Timothy Becker & Wan-Ping Lee<br><br>
+A python script based execution engine for SV calling that abstracts separate SV calling pipelines into a stage.
+Each stage has a set of configurations for runtime which is stored as a JSON format parameter map.
+Each SV caller stage has access to a set of standard inputs as well as reference specific and SV caller
+specific files and ecosystems that are needed for execution.  Additional metadata files directories are
+automatically generated at runtime into user specified directories. Each SV calling stage produces
+a VCF formated file for use as input to the FusorSV data fusion and arbitration method. Additional features include process spawning, output checking, file conversion and database integration.  Adapted for use on single systems, clusters or
+cloud systems via docker images.  Easily extensible for addition of new SV calling algorithms
+and data sources.  Several common pre and post processing stages are included.<br>
+
+###Requirements (docker) full SVE
+docker toolbox (or engine) version 1.13.0+<br>
+a full docker image can be obtained by:<br>
+>>>>>>> master
 ```bash
 git clone --recursive https://github.com/wanpinglee/SVE.git
 cd SVE
@@ -42,15 +62,33 @@ Usage
 ------------
 align
 ```
-align [options] <-r FASTA> <FASTQ1 [FASTQ2]>
+bin/sve align [options] <-r FASTA> <FASTQ1 [FASTQ2]>
 ```
 
 realign
 ```
-realign <-r FASTA> <BAM>
+bin/sve realign <-r FASTA> <BAM>
 ```
 
 SV call
 ```
-call <-r FASTA> <-g hg19|hg38|others> <-a breakdancer|breakseq|cnvnator|hydra|delly|lumpy|cnmops> <BAM [BAM ...]>
+bin/sve call <-r FASTA> <-g hg19|hg38|others> <-a breakdancer|breakseq|cnvnator|hydra|delly|lumpy|cnmops> <BAM [BAM ...]>
+```
+
+After calling, each sample may have mulitple VCFs depending on how many callers used.
+Please collect VCFs of a sample in a folder.
+
+Example input vcf files can be organized as follows. Please note that vcfFiles is the argument for -i for FusorSV.
+vcfFiles/sample1/sample1_S11.vcf  ## S11 is for delly, please check the table for tool and ID matching
+vcfFiles/sample1/sample1_S10.vcf
+vcfFiles/sample1/sample1_S4.vcf
+vcfFiles/sample1/sample1_S0.vcf  ## optional, for truth
+vcfFiles/sample2/sample2_S11.vcf
+vcfFiles/sample2/sample2_S10.vcf
+vcfFiles/sample2/sample2_S4.vcf
+vcfFiles/sample2/sample2_S0.vcf  ## optional, for truth
+
+Merge VCFs
+```
+python scripts/FusorSV/FusorSV.py -f scripts/FusorSV/data/models/human_g1k_v37_decoy.P3.INV2.11and17.pickle -L DEFAULT <-r FASTA> -i <vcfFiles> -p <THREADS> -o <OUT_DIR>
 ```

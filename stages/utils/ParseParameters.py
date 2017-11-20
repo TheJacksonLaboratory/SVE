@@ -77,7 +77,7 @@ Command:\talign\tFASTQ->BAM
     def call(self):
         parser = argparse.ArgumentParser(usage = "prepare_bam call [options] <-r FILE> <-g hg19|hg38|others> <BAM [BAM ...]>")
         self.aln_common(parser)
-        parser.add_argument('-a', dest='algorithm', type=str, metavar='STR', choices=['breakdancer', 'breakseq', 'cnvnator', 'hydra', 'delly', 'lumpy', 'genome_strip', 'cnmops', 'gatk', 'tigra'], help='the method used for SV calling: breakdancer, breakseq, cnvnator, hydra, delly, lumpy, genome_strip, cnmops, gatk, or tigra\t[NULL]')
+        parser.add_argument('-a', dest='algorithm', type=str, metavar='STR', choices=['breakdancer', 'breakseq', 'cnvnator', 'hydra', 'delly', 'lumpy', 'genome_strip', 'cnmops', 'tigra'], help='the method used for SV calling: breakdancer, breakseq, cnvnator, hydra, delly, lumpy, genome_strip, cnmops, or tigra\t[NULL]')
         parser.add_argument('-g', dest='genome', type=str, metavar='STR', choices=['hg19', 'hg38', 'others'], help='tell us the input reference: hg19, hg38 or others\t[NULL]')
         parser.add_argument('-v', dest='vcf', type=str, metavar='STR', help='the input vcf\t[NULL]')
         parser.add_argument('BAM', nargs='+', help='input BAM [null]')
