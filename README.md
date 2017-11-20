@@ -1,7 +1,8 @@
-![Alt text](fusorSVlogo.jpg?raw=true "Logo")<br>
 <<<<<<< HEAD
 Structural Variation Engine (SVE)
 =================================
+
+![Alt text](fusorSVlogo.jpg?raw=true "Logo")<br>
 
 SVE is a python script based execution engine for Structural Variation (SV) detection and can be used for any levels of data inputs, raw FASTQs, aligned BAMs, or variant call format (VCFs), and generates a unified VCF as its output.
 By design, SVE consists of alignment, realignment and the ensemble of eight state-of-the-art SV-calling algorithms by default. 
