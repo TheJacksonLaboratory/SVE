@@ -1,16 +1,16 @@
-<<<<<<< HEAD
-Structural Variation Engine (SVE)
+#Structural Variation Engine (SVE)
+(c) 2017 Timothy Becker & Wan-Ping Lee<br><br>
 =================================
 
 ![Alt text](fusorSVlogo.jpg?raw=true "Logo")<br>
 
 SVE is a python script based execution engine for Structural Variation (SV) detection and can be used for any levels of data inputs, raw FASTQs, aligned BAMs, or variant call format (VCFs), and generates a unified VCF as its output.
-By design, SVE consists of alignment, realignment and the ensemble of eight state-of-the-art SV-calling algorithms by default. 
-They are BreakDancer, BreakSeq, cnMOPS, CNVnator, DELLY, GenomeSTRiP, Hydra and LUMPY.
+By design, SVE consists of alignment, realignment and the ensemble of state-of-the-art SV-calling algorithms by default. 
+They are BreakDancer, BreakSeq, cnMOPS, CNVnator, DELLY, Hydra and LUMPY.
 FusorSV is also embedded that is a data mining approach to assess performance and merge callsets from an ensemble of SV-calling algorithms.
 ![Alt text](overview.jpg?raw=true "SVE")
 
-Requirements
+##Requirements
 ------------
 SVE requires the following to run.
 	- python 2.7, numpy, scipy, subprocess32, scp, HTSeq
@@ -25,28 +25,13 @@ Please set ROOT enviorment.
 FusorSV requires the following to run.
 	- python 2.7, numpy, scipy, subprocess32, scp, HTSeq
 
-Installation
+##Installation
 ------------
-For SVE
+###For SVE
 =======
 
 ![Alt text](fusorSVlogo.jpg?raw=true "Logo")<br>
 
-##Structural Variation Engine<br>
-(c) 2017 Timothy Becker & Wan-Ping Lee<br><br>
-A python script based execution engine for SV calling that abstracts separate SV calling pipelines into a stage.
-Each stage has a set of configurations for runtime which is stored as a JSON format parameter map.
-Each SV caller stage has access to a set of standard inputs as well as reference specific and SV caller
-specific files and ecosystems that are needed for execution.  Additional metadata files directories are
-automatically generated at runtime into user specified directories. Each SV calling stage produces
-a VCF formated file for use as input to the FusorSV data fusion and arbitration method. Additional features include process spawning, output checking, file conversion and database integration.  Adapted for use on single systems, clusters or
-cloud systems via docker images.  Easily extensible for addition of new SV calling algorithms
-and data sources.  Several common pre and post processing stages are included.<br>
-
-###Requirements (docker) full SVE
-docker toolbox (or engine) version 1.13.0+<br>
-a full docker image can be obtained by:<br>
->>>>>>> master
 ```bash
 git clone --recursive https://github.com/wanpinglee/SVE.git
 cd SVE
