@@ -10,13 +10,17 @@ FusorSV is also embedded that is a data mining approach to assess performance an
 Requirements
 ------------
 SVE requires the following to run.
-*[python 2.7, numpy, scipy, subprocess32, scp, HTSeq]
-*[gcc 4.8 or greater]
-*[Root](https://root.cern.ch/)
-
+	- python 2.7, numpy, scipy, subprocess32, scp, HTSeq
+	- gcc 4.8 or greater
+	- cmake(https://cmake.org/)
+	- Root(https://root.cern.ch/)
+	- R
+Please set ROOT enviorment.
+	- export ROOTSYS=/ROOT_Build_Path
+	- export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ROOTSYS/lib
 
 FusorSV requires the following to run.
-*[python 2.7, numpy, scipy, subprocess32, scp, HTSeq]
+	- python 2.7, numpy, scipy, subprocess32, scp, HTSeq
 
 Installation
 ------------
@@ -27,9 +31,26 @@ cd SVE
 make
 ```
 
+Please check python2.7 header files and modify "CFLAGS_FUSOR_SV" in Makefile.
+The header files may be on "/usr/include/python2.7" and use "CFLAGS_FUSOR_SV=-I /usr/include/python2.7" instead.
 For FusorSVE
 ```bash
 make FusorSV
 ```
 
+Usage
+------------
+align
+```
+align [options] <-r FASTA> <FASTQ1 [FASTQ2]>
+```
 
+realign
+```
+realign <-r FASTA> <BAM>
+```
+
+SV call
+```
+call <-r FASTA> <-g hg19|hg38|others> <-a breakdancer|breakseq|cnvnator|hydra|delly|lumpy|cnmops> <BAM [BAM ...]>
+```
