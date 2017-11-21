@@ -1,8 +1,8 @@
-#Structural Variation Engine (SVE)
-(c) 2017 Timothy Becker & Wan-Ping Lee<br><br>
+Structural Variation Engine (SVE)
 =================================
 
 ![Alt text](fusorSVlogo.jpg?raw=true "Logo")<br>
+(c) 2017 Timothy Becker & Wan-Ping Lee<br><br>
 
 SVE is a python script based execution engine for Structural Variation (SV) detection and can be used for any levels of data inputs, raw FASTQs, aligned BAMs, or variant call format (VCFs), and generates a unified VCF as its output.
 By design, SVE consists of alignment, realignment and the ensemble of state-of-the-art SV-calling algorithms by default. 
@@ -10,7 +10,7 @@ They are BreakDancer, BreakSeq, cnMOPS, CNVnator, DELLY, Hydra and LUMPY.
 FusorSV is also embedded that is a data mining approach to assess performance and merge callsets from an ensemble of SV-calling algorithms.
 ![Alt text](overview.jpg?raw=true "SVE")
 
-##Requirements
+Requirements
 ------------
 SVE requires the following to run.
 	- python 2.7, numpy, scipy, subprocess32, scp, HTSeq
@@ -25,9 +25,9 @@ Please set ROOT enviorment.
 FusorSV requires the following to run.
 	- python 2.7, numpy, scipy, subprocess32, scp, HTSeq
 
-##Installation
+Installation
 ------------
-###For SVE
+For SVE
 =======
 
 ![Alt text](fusorSVlogo.jpg?raw=true "Logo")<br>
