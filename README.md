@@ -74,6 +74,18 @@ Example input vcf files can be organized as follows. Please note that vcfFiles i
 * vcfFiles/sample2/sample2_S10.vcf
 * vcfFiles/sample2/sample2_S4.vcf
 
+The vcfs should use SVE IDs to indicate the callers.
+
+SVE ID | Caller
+--- | ---
+4 | BreakDancer
+9 | cn.MOPS
+10 | CNVnator
+11 | Delly
+17 | Hydra
+18 | Lumpy
+35 | BreakSeq
+
 ```
 python scripts/FusorSV/FusorSV.py -f scripts/FusorSV/data/models/default.pickle -L DEFAULT -r <FASTA> -i <vcfFiles> -p <THREADS> -o <OUT_DIR>
 ```
