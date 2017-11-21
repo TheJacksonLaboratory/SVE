@@ -47,18 +47,18 @@ tar -zxvf data.tar.gz
 ### Align
 Short reads in FASTQ will be mapped against the given FASTA and a sorted BAM will be generated.
 ```
-bin/sve align [options] <-r FASTA> <FASTQ1 [FASTQ2]>
+bin/sve align [options] -r <FASTA> <FASTQ1 [FASTQ2]>
 ```
 ### Realign
 If the reads are given by BAM format, realign will remap reads against FASTA and generate a sorted BAM.
 We use SpeedSeq to accomplish realign.
 ```
-bin/sve realign <-r FASTA> <BAM>
+bin/sve realign -r <FASTA> <BAM>
 ```
 ### Call SVs
 There are seven SV calling algorithms that can be used for SV calling. VCF will be generated.
 ```
-bin/sve call <-r FASTA> <-g hg19|hg38|others> <-a breakdancer|breakseq|cnvnator|hydra|delly|lumpy|cnmops> <BAM [BAM ...]>
+bin/sve call -r <FASTA> -g <hg19|hg38|others> -a <breakdancer|breakseq|cnvnator|hydra|delly|lumpy|cnmops> <BAM [BAM ...]>
 ```
 
 ### Merge VCFs
@@ -75,7 +75,7 @@ Example input vcf files can be organized as follows. Please note that vcfFiles i
 * vcfFiles/sample2/sample2_S4.vcf
 
 ```
-python scripts/FusorSV/FusorSV.py -f scripts/FusorSV/data/models/human_g1k_v37_decoy.P3.INV2.11and17.pickle -L DEFAULT -r <FASTA> -i <vcfFiles> -p <THREADS> -o <OUT_DIR>
+python scripts/FusorSV/FusorSV.py -f scripts/FusorSV/data/models/default.pickle -L DEFAULT -r <FASTA> -i <vcfFiles> -p <THREADS> -o <OUT_DIR>
 ```
 
 ## Docker
