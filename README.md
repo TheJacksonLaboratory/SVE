@@ -85,6 +85,7 @@ SVE ID | Caller
 17 | Hydra
 18 | Lumpy
 35 | BreakSeq
+0 | Truth (optional)
 
 ```
 python scripts/FusorSV/FusorSV.py -f scripts/FusorSV/data/models/default.pickle -L DEFAULT -r <FASTA> -i <vcfFiles> -p <THREADS> -o <OUT_DIR>
