@@ -13,24 +13,31 @@ FusorSV is also embedded that is a data mining approach to assess performance an
 Requirements
 ------------
 SVE requires the following to run.
-	- python 2.7, numpy, scipy, subprocess32, scp, HTSeq
-	- gcc 4.8 or greater
-	- cmake(https://cmake.org/)
-	- Root(https://root.cern.ch/)
-	- R
+
+	* python 2.7, numpy, scipy, subprocess32, HTSeq
+	
+	* gcc 4.8 or greater
+	
+	* cmake(https://cmake.org/)
+	
+	* Root(https://root.cern.ch/)
+	
+	* R
+	
 Please set ROOT enviorment.
-	- export ROOTSYS=/ROOT_Build_Path
-	- export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ROOTSYS/lib
+```
+export ROOTSYS=/ROOT_Build_Path
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ROOTSYS/lib
+```
 
 FusorSV requires the following to run.
-	- python 2.7, numpy, scipy, subprocess32, scp, HTSeq
+
+	* python 2.7, HTSeq, numpy, scipy, subprocess32, bx-python, CrossMap and mygene
 
 Installation
 ------------
 For SVE
 =======
-
-![Alt text](fusorSVlogo.jpg?raw=true "Logo")<br>
 
 ```bash
 git clone --recursive https://github.com/wanpinglee/SVE.git
@@ -41,7 +48,7 @@ make
 Please check python2.7 header files and modify "CFLAGS_FUSOR_SV" in Makefile.
 The header files may be on "/usr/include/python2.7" and use "CFLAGS_FUSOR_SV=-I /usr/include/python2.7" instead.
 For FusorSVE
-```bash
+```
 make FusorSV
 ```
 
@@ -77,5 +84,5 @@ vcfFiles/sample2/sample2_S0.vcf  ## optional, for truth
 
 Merge VCFs
 ```
-python scripts/FusorSV/FusorSV.py -f scripts/FusorSV/data/models/human_g1k_v37_decoy.P3.INV2.11and17.pickle -L DEFAULT <-r FASTA> -i <vcfFiles> -p <THREADS> -o <OUT_DIR>
+python scripts/FusorSV/FusorSV.py -f scripts/FusorSV/data/models/human_g1k_v37_decoy.P3.INV2.11and17.pickle -L DEFAULT -r <FASTA> -i <vcfFiles> -p <THREADS> -o <OUT_DIR>
 ```
