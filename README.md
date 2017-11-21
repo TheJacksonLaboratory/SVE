@@ -8,7 +8,7 @@ SVE is a python script based execution engine for Structural Variation (SV) dete
 By design, SVE consists of alignment, realignment and the ensemble of state-of-the-art SV-calling algorithms by default. 
 They are BreakDancer, BreakSeq, cnMOPS, CNVnator, DELLY, Hydra and LUMPY.
 FusorSV is also embedded that is a data mining approach to assess performance and merge callsets from an ensemble of SV-calling algorithms.
-![Alt text](overview.jpg?raw=true "SVE")
+![Alt text](overview.jpg?raw=true "SVE" height="72px")
 
 Requirements
 ------------
