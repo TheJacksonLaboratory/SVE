@@ -65,15 +65,6 @@ bin/sve call -r <FASTA> -g <hg19|hg38|others> -a <breakdancer|breakseq|cnvnator|
 After calling, each sample may have mulitple VCFs depending on how many callers used.
 Please collect VCFs of a sample in a folder.
 
-Example input vcf files can be organized as follows. Please note that vcfFiles is the argument for -i for FusorSV.
-* vcfFiles/sample1/sample1_S11.vcf
-* vcfFiles/sample1/sample1_S10.vcf
-* vcfFiles/sample1/sample1_S4.vcf
-* vcfFiles/sample1/sample1_S0.vcf
-* vcfFiles/sample2/sample2_S11.vcf
-* vcfFiles/sample2/sample2_S10.vcf
-* vcfFiles/sample2/sample2_S4.vcf
-
 The vcfs should use SVE IDs to indicate the callers.
 
 SVE ID | Caller
@@ -82,13 +73,40 @@ SVE ID | Caller
 9 | cn.MOPS
 10 | CNVnator
 11 | Delly
+14 | GenomeSTRiP
 17 | Hydra
 18 | Lumpy
 35 | BreakSeq
 0 | Truth (optional)
 
+Note: Because of license issue, GenomeSTRiP VCF file is not generated via 'Call SVs' step. But it can be merged with other callers in the 'Merge VCFs' step.
+
+#### Using default model
+Example input vcf files can be organized as follows. Please note that vcfFiles is the argument for -i for FusorSV.
+* vcfFiles/sample1/sample1_S11.vcf
+* vcfFiles/sample1/sample1_S10.vcf
+* vcfFiles/sample1/sample1_S4.vcf
+* vcfFiles/sample2/sample2_S11.vcf
+* vcfFiles/sample2/sample2_S10.vcf
+* vcfFiles/sample2/sample2_S4.vcf
+
 ```
 python scripts/FusorSV/FusorSV.py -f scripts/FusorSV/data/models/default.pickle -L DEFAULT -r <FASTA> -i <vcfFiles> -p <THREADS> -o <OUT_DIR>
+```
+
+#### Using self-training model
+Example input vcf files can be organized as follows (truth S0 is required).
+* vcfFiles/sample1/sample1_S11.vcf
+* vcfFiles/sample1/sample1_S10.vcf
+* vcfFiles/sample1/sample1_S4.vcf
+* vcfFiles/sample1/sample1_S0.vcf
+* vcfFiles/sample2/sample2_S11.vcf
+* vcfFiles/sample2/sample2_S10.vcf
+* vcfFiles/sample2/sample2_S4.vcf
+* vcfFiles/sample2/sample2_S0.vcf
+
+```
+python scripts/FusorSV/FusorSV.py -L DEFAULT -r <FASTA> -i <vcfFiles> -p <THREADS> -o <OUT_DIR>
 ```
 
 ## Docker
