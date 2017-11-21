@@ -79,11 +79,11 @@ python scripts/FusorSV/FusorSV.py -f scripts/FusorSV/data/models/human_g1k_v37_d
 ```
 
 ## Docker
-[Dockerfile](https://github.com/TheJacksonLaboratory/SVE/blob/master/Dockerfile) is provided for docker users.
+[Dockerfile](Dockerfile) is provided for docker users.
 ```
 cd SVE
 docker build .
 ```
 
 ## License
-The project is licensed under the GPL-3.0 License.
+The project is licensed under the GPL-3.0 License. Please see [LICENSE](LICENSE) for details.
