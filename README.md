@@ -79,7 +79,7 @@ python scripts/FusorSV/FusorSV.py -f scripts/FusorSV/data/models/human_g1k_v37_d
 ```
 
 ## Docker
-Dockerfile is provided for docker users.
+[Dockerfile](https://github.com/TheJacksonLaboratory/SVE/blob/master/Dockerfile) is provided for docker users.
 ```
 cd SVE
 docker build .
