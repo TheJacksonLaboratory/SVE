@@ -70,14 +70,14 @@ The vcfs should use SVE IDs to indicate the callers.
 
 SVE ID | Caller
 --- | ---
-4 | BreakDancer v1.4.5
+4 | BreakDancer (v1.4.5)
 9 | cn.MOPS
-10 | CNVnator v0.3.3
-11 | DELLY v2
+10 | CNVnator (v0.3.3)
+11 | DELLY (v2)
 14 | GenomeSTRiP
 17 | Hydra
 18 | LUMPY
-35 | BreakSeq v2.2
+35 | BreakSeq (v2.2)
 0 | Truth (optional)
 
 Note: Because of license issue, [GenomeSTRiP](http://software.broadinstitute.org/software/genomestrip/) is not embedded in SVE. However, FusorSV default model is able to handle GenomeSTRiP VCF.
