@@ -95,8 +95,8 @@ Example input vcf files can be organized as follows. Please note that vcfFiles i
 python scripts/FusorSV/FusorSV.py -f scripts/FusorSV/data/models/default.pickle -L DEFAULT -r <FASTA> -i <vcfFiles> -p <THREADS> -o <OUT_DIR>
 ```
 
-#### Using self-training model (if S0 vcf is provided)
-According to S0 VCF, a new model will be generated and VCFs will be merged by the new model.
+#### Using self-training model (if S0.vcf is provided)
+According to S0.vcf, a new model will be generated and VCFs will be merged by the new model.
 
 ```
 python scripts/FusorSV/FusorSV.py -L DEFAULT -r <FASTA> -i <vcfFiles> -p <THREADS> -o <OUT_DIR>
