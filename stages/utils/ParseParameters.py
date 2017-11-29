@@ -53,7 +53,7 @@ Command:\talign\tFASTQ->BAM
 
     ##### sub commands #####
     def align(self):
-        parser = argparse.ArgumentParser(usage = "prepare_bam align [options] <-r FILE> <FASTQ1 [FASTQ2]>")
+        parser = argparse.ArgumentParser(usage = "sve align [options] <-r FILE> <FASTQ1 [FASTQ2]>")
         self.aln_common(parser)
         parser.add_argument('-a', dest='algorithm', type=str, metavar='STR', choices=['bwa_aln', 'bwa_mem', 'speed_seq'], default='speed_seq', help='the method used for alignment\t[speed_seq]')
         parser.add_argument('-R', dest='RG',type=str, metavar='STR', help='read group header line such as "@RG\\tID:id\\tSM:sampleName\\tLB:lib\\tPL:ILLUMINA"[null]')
@@ -61,23 +61,23 @@ Command:\talign\tFASTQ->BAM
         return parser
 
     def realign(self):
-        parser = argparse.ArgumentParser(usage = "prepare_bam realign [options] <-r FILE> <BAM>")
+        parser = argparse.ArgumentParser(usage = "sve realign [options] <-r FILE> <BAM>")
         self.aln_common(parser)
         parser.add_argument('-R', dest='RG',type=str, metavar='STR', help='read group header line such as "@RG\\tID:id\\tSM:sampleName\\tLB:lib\\tPL:ILLUMINA"\t[RG_in_input_BAM]')
         parser.add_argument('BAM', nargs=1, help='input BAM [null]')
         return parser
 
     def hg38fix(self):
-        parser = argparse.ArgumentParser(usage = "prepare_bam hg38fix [options] <BAM>")
+        parser = argparse.ArgumentParser(usage = "sve hg38fix [options] <BAM>")
         #parser.add_argument('-p', dest='ref_alt', nargs='+', type=str, metavar='FILE', help='\t[hs38DH-extra hs38DH.fa.alt]')
         parser.add_argument('-o', dest='out_file', type=str, metavar='STR', help='output BAM\t[in_prefix.alt.bam]')
         parser.add_argument('BAM', nargs=1, help='input BAM [null]')
         return parser
 
     def call(self):
-        parser = argparse.ArgumentParser(usage = "prepare_bam call [options] <-r FILE> <-g hg19|hg38|others> <BAM [BAM ...]>")
+        parser = argparse.ArgumentParser(usage = "sve call [options] <-r FILE> <-g hg19|hg38|others> <BAM [BAM ...]>")
         self.aln_common(parser)
-        parser.add_argument('-a', dest='algorithm', type=str, metavar='STR', choices=['breakdancer', 'breakseq', 'cnvnator', 'hydra', 'delly', 'lumpy', 'genome_strip', 'cnmops', 'tigra'], help='the method used for SV calling: breakdancer, breakseq, cnvnator, hydra, delly, lumpy, genome_strip, cnmops, or tigra\t[NULL]')
+        parser.add_argument('-a', dest='algorithm', type=str, metavar='STR', choices=['breakdancer', 'breakseq', 'cnvnator', 'hydra', 'delly', 'lumpy', 'cnmops'], help='the method used for SV calling: breakdancer, breakseq, cnvnator, hydra, delly, lumpy, or cnmops\t[NULL]')
         parser.add_argument('-g', dest='genome', type=str, metavar='STR', choices=['hg19', 'hg38', 'others'], help='tell us the input reference: hg19, hg38 or others\t[NULL]')
         parser.add_argument('-v', dest='vcf', type=str, metavar='STR', help='the input vcf\t[NULL]')
         parser.add_argument('BAM', nargs='+', help='input BAM [null]')
