@@ -8,7 +8,7 @@ By design, SVE consists of alignment, realignment and the ensemble of state-of-t
 They are BreakDancer, BreakSeq, cnMOPS, CNVnator, DELLY, Hydra and LUMPY.
 FusorSV is also embedded that is a data mining approach to assess performance and merge callsets from an ensemble of SV-calling algorithms.
 
-.center[![Alt text](overview.jpg?raw=true "SVE")]
+![Alt text](overview.jpg?raw=true "SVE")
 
 ## Requirements
 * python 2.7, HTSeq, numpy, scipy, subprocess32, bx-python, CrossMap and mygene
