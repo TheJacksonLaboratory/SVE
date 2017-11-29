@@ -12,8 +12,8 @@ FusorSV is also embedded that is a data mining approach to assess performance an
 ## Requirements
 * python 2.7, HTSeq, numpy, scipy, subprocess32, bx-python, CrossMap and mygene
 * gcc 4.8 or greater
-* cmake(https://cmake.org/)
-* Root(https://root.cern.ch/)
+* cmake (https://cmake.org/)
+* Root (https://root.cern.ch/)
 * R 3.2 or greater
 	
 Please set ROOT enviorment.
@@ -72,16 +72,16 @@ SVE ID | Caller
 4 | BreakDancer
 9 | cn.MOPS
 10 | CNVnator
-11 | Delly
+11 | DELLY
 14 | GenomeSTRiP
 17 | Hydra
-18 | Lumpy
+18 | LUMPY
 35 | BreakSeq
 0 | Truth (optional)
 
-Note: Because of license issue, GenomeSTRiP VCF file is not generated via 'Call SVs' step. But it can be merged with other callers in the 'Merge VCFs' step.
+Note: Because of license issue, GenomeSTRiP (http://software.broadinstitute.org/software/genomestrip/) is not embedded in SVE. However, FusorSV default model is able to handle GenomeSTRiP VCF.
 
-#### Using default model
+#### Using default model (if S0 vcf is not provided)
 Example input vcf files can be organized as follows. Please note that vcfFiles is the argument for -i for FusorSV.
 * vcfFiles/sample1/sample1_S11.vcf
 * vcfFiles/sample1/sample1_S10.vcf
@@ -94,16 +94,8 @@ Example input vcf files can be organized as follows. Please note that vcfFiles i
 python scripts/FusorSV/FusorSV.py -f scripts/FusorSV/data/models/default.pickle -L DEFAULT -r <FASTA> -i <vcfFiles> -p <THREADS> -o <OUT_DIR>
 ```
 
-#### Using self-training model
-Example input vcf files can be organized as follows (truth S0 is required).
-* vcfFiles/sample1/sample1_S11.vcf
-* vcfFiles/sample1/sample1_S10.vcf
-* vcfFiles/sample1/sample1_S4.vcf
-* vcfFiles/sample1/sample1_S0.vcf
-* vcfFiles/sample2/sample2_S11.vcf
-* vcfFiles/sample2/sample2_S10.vcf
-* vcfFiles/sample2/sample2_S4.vcf
-* vcfFiles/sample2/sample2_S0.vcf
+#### Using self-training model (if S0 vcf is provided)
+According to S0 VCF, a new model will be generated and VCFs will be merged by the new model.
 
 ```
 python scripts/FusorSV/FusorSV.py -L DEFAULT -r <FASTA> -i <vcfFiles> -p <THREADS> -o <OUT_DIR>
