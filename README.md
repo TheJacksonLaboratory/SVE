@@ -80,7 +80,7 @@ SVE ID | Caller
 35 | BreakSeq
 0 | Truth (optional)
 
-Note: Because of license issue, GenomeSTRiP (http://software.broadinstitute.org/software/genomestrip/) is not embedded in SVE. However, FusorSV default model is able to handle GenomeSTRiP VCF.
+Note: Because of license issue, [GenomeSTRiP](http://software.broadinstitute.org/software/genomestrip/) is not embedded in SVE. However, FusorSV default model is able to handle GenomeSTRiP VCF.
 
 #### Using default model (if S0 vcf is not provided)
 Example input vcf files can be organized as follows. Please note that vcfFiles is the argument for -i for FusorSV.
