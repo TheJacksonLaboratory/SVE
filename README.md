@@ -15,7 +15,7 @@ FusorSV is also embedded that is a data mining approach to assess performance an
 * gcc 4.8 or greater
 * cmake (https://cmake.org/)
 * Root (https://root.cern.ch/)
-* R 3.2 or greater
+* R 3.3 or greater
 	
 Please set ROOT enviorment.
 ```
