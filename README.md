@@ -72,7 +72,7 @@ SVE ID | Caller
 --- | ---
 4 | BreakDancer (v1.4.5)
 9 | cn.MOPS (v1.20)
-10^ | CNVnator (v0.3.3)
+10 | CNVnator (v0.3.3)
 11 | DELLY (v2)
 14* | GenomeSTRiP
 17 | Hydra
@@ -81,8 +81,6 @@ SVE ID | Caller
 0 | Truth (optional)
 
 Note*: Because of license issue, [GenomeSTRiP](http://software.broadinstitute.org/software/genomestrip/) is not embedded in SVE. However, FusorSV default model is able to handle GenomeSTRiP VCF.
-
-Note^: Please make sure the version of cn.MOPS is v1.20 due to biocLite() always installs the up-to-date version.
 
 #### Using default model (if S0 vcf is not provided)
 Example input vcf files can be organized as follows. Please note that vcfFiles is the argument for -i for FusorSV.
