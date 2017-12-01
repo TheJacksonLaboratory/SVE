@@ -10,10 +10,10 @@ RUN apt-get update && apt-get install -y \
 	libbz2-dev \
 	libroot-core-dev \
 	vim \
-	r-base-core \
 	perl \
 	python2.7-dev \
-	python-numpy
+	python-numpy \
+	openjdk-7-*
 
 # Make a folder for tools
 RUN cd / && mkdir -p tools && cd /tools
@@ -47,11 +47,18 @@ RUN pip install HTSeq \
 	CrossMap \
 	mygene
 
-# Install SVE
+# Install R-3.3.3
 RUN cd /tools \
-	&& git clone --recursive https://github.com/TheJacksonLaboratory/SVE.git \
-	&& cd SVE \
-	&& make
+        && git clone --recursive https://github.com/TheJacksonLaboratory/SVE.git \
+        && cd SVE \
+        && make R-install
+
+# Copy R to /usr/bin
+RUN ln -s -t /usr/bin/ /tools/SVE/src/R-package/R-3.3.3/bin/R
+
+# Install SVE
+RUN cd /tools/SVE \
+        && make
 
 # Upgrade bx-python; otherwise CrossMap won't work
 # Build FusorSV
