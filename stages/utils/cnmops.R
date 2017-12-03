@@ -89,8 +89,7 @@ if(mode==0){ #mode = 0 -> cn.mops(regular multi sample WGS)
 	tryCatch({
 		cat('----------using cn.mops->multi sample WGS mode\n');
 		data <- getReadCountsFromBAM(BAMFiles=f_names, sampleNames=s_names, 
-                            	 	 refSeqName = ref, WL=window, 
-                             	 	 parallel=(cores-1));              
+                            	 	 refSeqName = ref, WL=window);              
 		cat(paste('----------finished reading ',dim(mcols(data))[1],' bins\n',sep=''));
 		#cleaning routine to suppress zero count issues.....cnmopsBUG
 		for(contig in ref){ #remove from ref before runing anlaysis...
@@ -107,7 +106,7 @@ if(mode==0){ #mode = 0 -> cn.mops(regular multi sample WGS)
 		res  <- suppressWarnings(cn.mops(data,
                 		  	     I = c(0.025, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4),
                 	      	     classes = paste('CN',seq(0,8,1),sep=''),
-                	      	     priorImpact = prior, parallel = (cores-1),
+                	      	     priorImpact = prior,
                 	      	     normType = normal, normQu = cutoff, norm = 1,
                 	      	     upperThreshold = upper, lowerThreshold = lower,
                 	      	     minWidth = min_seg, minReadCount = min_cnt)); #took out DNAcopy
@@ -131,17 +130,15 @@ if(mode==1){ #mode = 1 -> referencecn.mops(case ctrl WGS)
 	case_f_names <- as.vector(f_names[2]);
 	case_s_names <- as.vector(s_names[2]);
 	case_data <- getReadCountsFromBAM(BAMFiles=case_f_names, sampleNames=case_s_names, 
-                             	      refSeqName = ref, WL=window, 
-                             	      parallel=(cores-1));
+                             	      refSeqName = ref, WL=window);
     cat(paste('----------finished reading ',dim(mcols(data))[1],' case bins\n',sep='')); 
     ctrl_data <- getReadCountsFromBAM(BAMFiles=ctrl_f_names, sampleNames=ctrl_s_names, 
-                             	      refSeqName = ref, WL=window, 
-                             	      parallel=(cores-1));
+                             	      refSeqName = ref, WL=window);
     cat(paste('----------finished reading ',dim(mcols(data))[1],' ctrl bins\n',sep=''));                          	              
 	res  <- referencecn.mops(cases=case_data,controls=ctrl_data,
                 	I = c(0.025, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4),
                 	classes = paste('CN',seq(0,8,1),sep=''),
-                	priorImpact = prior, parallel = (cores-1),
+                	priorImpact = prior,
                 	normType = normal, normQu = cutoff, norm = 1,
                 	upperThreshold = upper, lowerThreshold = lower,
                 	minWidth = min_seg, minReadCount = min_cnt,segAlgorithm = cir_seg);
@@ -153,8 +150,7 @@ if(mode==2){ #mode = 2 -> exomecn.mops(whole exome sequencing WES)
 	tryCatch({
 		cat('----------using exomecn.mops->WES mode\n');
 		data <- getReadCountsFromBAM(BAMFiles=f_names, sampleNames=s_names, 
-                            	 	 refSeqName = ref, WL=window, 
-                             	 	 parallel=(cores-1));              
+                            	 	 refSeqName = ref, WL=window);              
 		cat(paste('----------finished reading ',dim(mcols(data))[1],' bins\n',sep=''));
 		#cleaning routine to suppress zero count issues.....cnmopsBUG
 		for(contig in ref){ #remove from ref before runing anlaysis...
@@ -171,7 +167,7 @@ if(mode==2){ #mode = 2 -> exomecn.mops(whole exome sequencing WES)
 		res  <- suppressWarnings(exomecn.mops(data,
                 		  	     I = c(0.025, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4),
                 	      	     classes = paste('CN',seq(0,8,1),sep=''),
-                	      	     priorImpact = prior, parallel = (cores-1),
+                	      	     priorImpact = prior,
                 	      	     normType = normal, normQu = cutoff, norm = 1,
                 	      	     upperThreshold = upper, lowerThreshold = lower,
                 	      	     minWidth = min_seg, minReadCount = min_cnt)); #took out DNAcopy
@@ -194,8 +190,7 @@ if(mode==3){ #mode = 3 -> singlecn.mops(single sample WGS)
 	tryCatch({
 		cat('----------using singlecn.mops->single sample WGS mode\n');
 		data <- getReadCountsFromBAM(BAMFiles=f_names, sampleNames=s_names, 
-                            	 	 refSeqName = ref, WL=window, 
-                             	 	 parallel=(cores-1));              
+                            	 	 refSeqName = ref, WL=window);              
 		cat(paste('----------finished reading ',dim(mcols(data))[1],' bins\n',sep=''));
 		#cleaning routine to suppress zero count issues.....cnmopsBUG
 		for(contig in ref){ #remove from ref before runing anlaysis...
@@ -212,7 +207,7 @@ if(mode==3){ #mode = 3 -> singlecn.mops(single sample WGS)
 		res  <- suppressWarnings(singlecn.mops(data,
                 		  	     I = c(0.025, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4),
                 	      	     classes = paste('CN',seq(0,8,1),sep=''),
-                	      	     priorImpact = prior, parallel = (cores-1),
+                	      	     priorImpact = prior,
                 	      	     normType = normal, normQu = cutoff, norm = 1,
                 	      	     upperThreshold = upper, lowerThreshold = lower,
                 	      	     minWidth = min_seg, minReadCount = min_cnt)); #took out DNAcopy
