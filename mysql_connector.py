@@ -7,7 +7,7 @@ import os
 import re
 import sys
 import getpass
-import mysql.connector as msc #pyodbc not easy to configure on mac, pypyodbc not encoding/decoding
+import mysql_connector as msc #pyodbc not easy to configure on mac, pypyodbc not encoding/decoding
 
 class MYSQL:
     
