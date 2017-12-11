@@ -108,6 +108,14 @@ python scripts/FusorSV/FusorSV.py -L DEFAULT -r <FASTA> -i <vcfFiles> -p <THREAD
 cd SVE
 docker build .
 ```
+Or pull docker image from [our repository](https://hub.docker.com/r/wanpinglee/sve/).
+```
+docker pull wanpinglee/sve
+```
+SVE is built on /tools/SVE. Check the help by
+```
+/tools/SVE/bin/sve
+```
 
 ## License
 The project is licensed under the GPL-3.0 License. Please see [LICENSE](LICENSE) for details.
