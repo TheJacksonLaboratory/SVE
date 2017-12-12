@@ -13,7 +13,9 @@ RUN apt-get update && apt-get install -y \
 	perl \
 	python2.7-dev \
 	python-numpy \
-	openjdk-7-*
+	openjdk-7-* \
+	gawk \
+	libgd-gd2-perl
 
 # Make a folder for tools
 RUN cd / && mkdir -p tools && cd /tools
@@ -45,7 +47,8 @@ RUN pip install HTSeq \
 	numpy \
 	bx-python \
 	CrossMap \
-	mygene
+	mygene \
+	biopython
 
 # Install R-3.3.3
 RUN cd /tools \
@@ -55,6 +58,7 @@ RUN cd /tools \
 
 # Copy R to /usr/bin
 RUN ln -s -t /usr/bin/ /tools/SVE/src/R-package/R-3.3.3/bin/R
+RUN ln -s -t /usr/bin/ /tools/SVE/src/R-package/R-3.3.3/bin/Rscript
 
 # Install SVE
 RUN cd /tools/SVE \
@@ -69,4 +73,4 @@ RUN cd /tools/SVE/scripts/FusorSV \
 	&& tar -zxvf data.tar.gz
 
 # Define default command.
-CMD ["bash"]
+CMD ["/tools/SVE/bin/sve"]
