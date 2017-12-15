@@ -24,14 +24,15 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ROOTSYS/lib
 ```
 
 ## Installation
-### For SVE
+### From Git
+#### For SVE
 
 ```bash
 git clone --recursive https://github.com/TheJacksonLaboratory/SVE.git
 cd SVE
 make
 ```
-### For FusorSV
+#### For FusorSV
 Please check python2.7 header files and modify "CFLAGS_FUSOR_SV" in Makefile.
 The header files may be on "/usr/include/python2.7" and use "CFLAGS_FUSOR_SV=-I /usr/include/python2.7" instead.
 ```
@@ -44,7 +45,7 @@ python setup.py build_ext --inplace
 tar -zxvf data.tar.gz
 ```
 
-### Docker
+### From Docker
 Alternatively, [Dockerfile](Dockerfile) and [Docker image](https://hub.docker.com/r/wanpinglee/sve/) are provided.
 ```
 cd SVE
