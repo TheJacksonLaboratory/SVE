@@ -45,7 +45,7 @@ tar -zxvf data.tar.gz
 ```
 
 ### Docker
-Alternatively, [Dockerfile](Dockerfile) and Docker image(https://hub.docker.com/r/wanpinglee/sve/) are provided.
+Alternatively, [Dockerfile](Dockerfile) and [Docker image](https://hub.docker.com/r/wanpinglee/sve/) are provided.
 ```
 cd SVE
 docker build .
