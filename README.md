@@ -27,7 +27,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ROOTSYS/lib
 ### For SVE
 
 ```bash
-git clone --recursive https://github.com/wanpinglee/SVE.git
+git clone --recursive https://github.com/TheJacksonLaboratory/SVE.git
 cd SVE
 make
 ```
@@ -42,6 +42,21 @@ Or, you can install FusorSV by setup.py
 cd SVE/scripts/FusorSV/
 python setup.py build_ext --inplace
 tar -zxvf data.tar.gz
+```
+
+### Docker
+Alternatively, [Dockerfile](Dockerfile) and Docker image(https://hub.docker.com/r/wanpinglee/sve/) are provided.
+```
+cd SVE
+docker build .
+```
+Pull docker image from [the repository](https://hub.docker.com/r/wanpinglee/sve/).
+```
+docker pull wanpinglee/sve
+```
+SVE is built on /tools/SVE. Check the help by
+```
+/tools/SVE/bin/sve
 ```
 
 ## Usage
@@ -102,20 +117,7 @@ According to S0.vcf, a new model will be generated and VCFs will be merged by th
 python scripts/FusorSV/FusorSV.py -L DEFAULT -r <FASTA> -i <vcfFiles> -p <THREADS> -o <OUT_DIR>
 ```
 
-## Docker
-[Dockerfile](Dockerfile) is provided for docker users.
-```
-cd SVE
-docker build .
-```
-Or pull docker image from [our repository](https://hub.docker.com/r/wanpinglee/sve/).
-```
-docker pull wanpinglee/sve
-```
-SVE is built on /tools/SVE. Check the help by
-```
-/tools/SVE/bin/sve
-```
+
 
 ## License
 The project is licensed under the GPL-3.0 License. Please see [LICENSE](LICENSE) for details.
