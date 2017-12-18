@@ -13,7 +13,7 @@ FusorSV is also embedded that is a data mining approach to assess performance an
 ## Requirements
 * python 2.7, HTSeq, numpy, scipy, subprocess32, bx-python, CrossMap and mygene
 * gcc 4.8 or greater
-* cmake (https://cmake.org/)
+* [cmake](https://cmake.org/) 3.0 or greater
 * Root (https://root.cern.ch/)
 * R 3.3 or greater. You may type "make R-install" to install R-3.3.3.
 	
@@ -46,7 +46,7 @@ tar -zxvf data.tar.gz
 ```
 
 ### From Docker
-Alternatively, [Dockerfile](Dockerfile) and [Docker image](https://hub.docker.com/r/wanpinglee/sve/) are provided.
+Alternatively, [Dockerfile](Dockerfile) and [Docker image](https://hub.docker.com/r/wanpinglee/sve/) are provided. Please notice that sudo may be required for docker usages depending on your machine setting.
 ```
 cd SVE
 docker build .
@@ -108,14 +108,14 @@ Example input vcf files can be organized as follows. Please note that vcfFiles i
 * vcfFiles/sample2/sample2_S4.vcf
 
 ```
-python scripts/FusorSV/FusorSV.py -f scripts/FusorSV/data/models/default.pickle -L DEFAULT -r <FASTA> -i <vcfFiles> -p <THREADS> -o <OUT_DIR>
+python scripts/FusorSV/FusorSV.py -f scripts/FusorSV/data/models/default.pickle -L DEFAULT -r <FASTA> -i <vcfFiles>/ -p <THREADS> -o <OUT_DIR>
 ```
 
 #### Using self-training model (if S0.vcf is provided)
 According to S0.vcf, a new model will be generated and VCFs will be merged by the new model.
 
 ```
-python scripts/FusorSV/FusorSV.py -L DEFAULT -r <FASTA> -i <vcfFiles> -p <THREADS> -o <OUT_DIR>
+python scripts/FusorSV/FusorSV.py -L DEFAULT -r <FASTA> -i <vcfFiles>/ -p <THREADS> -o <OUT_DIR>
 ```
 
 
