@@ -14,7 +14,7 @@ FusorSV is also embedded that is a data mining approach to assess performance an
 * python 2.7, HTSeq, numpy, scipy, subprocess32, bx-python, CrossMap and mygene
 * gcc 4.8 or greater
 * [cmake](https://cmake.org/) 3.0 or greater
-* Root (https://root.cern.ch/)
+* [Root](https://root.cern.ch/)
 * R 3.3 or greater. You may type "make R-install" to install R-3.3.3.
 	
 Please set ROOT enviorment.
