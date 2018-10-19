@@ -101,9 +101,9 @@ def get_local_path(local_path):
     return path+local_path
    
 def get_coordinate_offsets(json_name):
-    path = os.path.dirname(os.path.abspath(__file__))+'/data/'
+    # path = os.path.dirname(os.path.abspath(__file__))+'/data/'
     info,O = {},{}
-    with open(path+json_name,'r') as f:
+    with open(json_name,'r') as f:
         info = json.load(f)
     for i in info:
         O[str(i)] = info[i]
@@ -147,9 +147,9 @@ def get_chrom_dict(json_name):
 #input is json data store for svmask regions and  offset map O
 #output is a sorted by ref start pos list of list to filter on
 def get_mask_regions(json_name,O,complement=False):
-    path = os.path.dirname(os.path.abspath(__file__))+'/data/'
+    # path = os.path.dirname(os.path.abspath(__file__))+'/data/'
     M = {}
-    with open(path+json_name,'r') as f:
+    with open(json_name,'r') as f:
         M = json.load(f) #load the svmask per sequence
     N = []    
     for k in M:
