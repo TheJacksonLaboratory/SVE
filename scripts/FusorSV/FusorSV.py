@@ -119,10 +119,10 @@ if args.stage_exclude_list is not None:
     try:
         stage_exclude_list = [int(i) for i in args.stage_exclude_list.rsplit(',')]
     except Exception as E:
-        print('error parsing comma seperated list, using defaults')
-        print('defaults stage exclude list is: %s'%stage_exclude_list)
+        print('error parsing stage exclude list, using defaults')
+        print('defaults stage exclude list: %s'%stage_exclude_list)
 else:
-    print('using default stage id exclude list:%s'%stage_exclude_list)
+    print('using default stage id exclude list: %s'%stage_exclude_list)
 
 result_list = [] #async queue to put results for || stages
 def collect_results(result):
