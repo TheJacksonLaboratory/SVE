@@ -2,47 +2,6 @@ import re
 import numpy as np
 import fusion_utils as fu
 
-#raw VCF reader that provides similar VCF reading function as HTSeq
-#VCF_CHR=0,VCF_POS=1,VCF_ID=2,VCF_REF=3,VCF_ALT=4,VCF_QUAL=5,VCF_FILT=6,VCF_INFO=7,VCF_FORMAT=8,VCF_SAMPLE=9
-# def VCF_Reader(vcf_path):
-# 
-#     # DEBUG
-#     # print "Reading VCF: "+str(vcf_path)
-# 
-#     data,header,raw,i = [],[],[],0
-#     with open(vcf_path,'r') as f:
-#         for line in f:
-#             if line.startswith('#'):
-#                 header += [line.split('\n')[0].split('\t')]
-#             else:
-#                 raw += [line.split('\n')[0].split('\t')]
-#                 data += [VariantCall(raw[i])]
-#                 
-#                 # DEBUG
-#                 # print str(data)
-#                 
-#                 i += 1
-#     return data
-# 
-# class VariantCall:
-#     def __init__(self,row):
-#         r = row + ['' for i in range(10-len(row))]
-#         self.chrom      = r[0]
-#         self.pos        = int(r[1])
-#         self.id         = r[2]
-#         self.ref        = r[3]
-#         self.alt        = r[4]
-#         self.qual       = r[5]
-#         self.filter     = r[6]
-#         self.info       = r[7]
-#         self.format     = r[8]
-#         self.gt         = r[9:]
-#     def __enter__(self):
-#         return self
-# 
-#     def __exit__(self,type,value,traceback):
-#         return 0
-
 class SVU:
     def __init__(self,vc=None,offset_map=None,ref_path=None,bam_path=None,conf_split=None):
         #parse the less complex fields first
@@ -51,13 +10,10 @@ class SVU:
                               'DEL':2,'DEL:ME''DEL:ME:ALU':2,'DEL:ME:L1':2,
                               'DUP':3,'DUP:TANDEM':3,'ITX':3,
                               'CNV':4,'INV':5,'CTX':6,'TRA':6,'BND':7}
-        # DEBUG
-        # print "Breakpoint 1"
-        
         self.ref_path = ref_path #can repair the ref consensus string
         self.bam_path = bam_path #can repair the alt consensus string
         self.parse_chrom(vc.chrom)      #string value, trim chrom or chr to chr1->1
-        self.pos    = int(vc.pos.pos)            #uint here; changed from vc.pos.pos
+        self.pos    = vc.pos.pos        #uint here
         self.id     = vc.id             #string
         self.repair_id()
         self.ref    = vc.ref            #string
@@ -66,8 +22,6 @@ class SVU:
         self.qual   = vc.qual           #string initially
         self.filter = vc.filter.upper() #enforce uppercase
         self.info   = vc.info.upper()   #enforce uppercase
-#         self.format = vc.format
-#         self.gt     = vc.gt
         #more complex repairs and parsing to populate the object
         self.repair_info()              #clean out any wierd delimiters...
         self.parse_end()         #unint self.end 
@@ -103,7 +57,7 @@ class SVU:
         chrom_tag = chrom.split('CHROM')[-1]
         chrom_tag = chrom_tag.split('CHR')[-1]
         chrom_tag = chrom_tag.split('chrom')[-1]
-        # chrom_tag = chrom_tag.split('chr')[-1]
+        chrom_tag = chrom_tag.split('chr')[-1]
         self.chrom = chrom_tag
         #need to fix this alt chrom later x chrom, y chrom
         self.alt_chrom = chrom_tag #did this out of the TRA,BND or INFO tags
@@ -131,13 +85,10 @@ class SVU:
         try:
             svtype = int(self.valid_svtypes[self.get_info_v('SVTYPE')])
         except Exception: #look at ref and alt
-            try:
-                svtype = int(self.valid_svtypes[self.get_info_v('MERGE_TYPE')])
-            except Exception:
-                n,m = len(self.ref),len(self.alt) #dig out from GATK small callers...
-                if   n > m:  svtype = self.valid_svtypes['DEL']
-                elif n < m:  svtype = self.valid_svtypes['INS']
-                elif n == m: svtype = self.valid_svtypes['SUB']
+            n,m = len(self.ref),len(self.alt) #dig out from GATK small callers...
+            if   n > m:  svtype = self.valid_svtypes['DEL']
+            elif n < m:  svtype = self.valid_svtypes['INS']
+            elif n == m: svtype = self.valid_svtypes['SUB']
         self.svtype = svtype
         
     #get the svlen from the info field or digging back into the ref->alt strings
