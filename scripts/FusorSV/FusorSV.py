@@ -109,7 +109,7 @@ else:
 stage_exclude_list = [1,36] #default exclude list
 if args.stage_exclude_list is not None:
     try:
-        stage_exclude_list = [ord(i) for i in args.stage_exclude_list.rsplit(',')]
+        stage_exclude_list = [int(i) for i in args.stage_exclude_list.rsplit(',')]
     except Exception as E:
         print('error parsing comma seperated list, using defaults')
         print('defaults stage exclude list is: %s'%stage_exclude_list)
