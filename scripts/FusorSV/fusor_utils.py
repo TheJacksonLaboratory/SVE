@@ -38,9 +38,9 @@ def write_partitions_by_sample(sname_partition_path,P):
     return True
 
 #for a partition of type and bin, pool all samples and all callers
-def read_partitions_by_caller(partition_path,callers,exclude,t,b,verbose=False):
+def read_partitions_by_caller(partition_path,callers,t,b,verbose=False):
     P = {t:{b:{c:{} for c in callers}}}
-    for c in set(callers).difference(set(exclude)):
+    for c in set(callers):
         samples = glob.glob(partition_path+'*_S%s_T%s_B%s.pickle'%(c,t,b)) #keys are in the pickler
         for sample in samples:
             with open(sample, 'rb') as f:

@@ -109,6 +109,7 @@ else:
 stage_exclude_list = [1,36] #default exclude list
 if args.stage_exclude_list is not None:
     try:
+        # obtain all integer caller ids to exclude
         stage_exclude_list = [int(i) for i in args.stage_exclude_list.rsplit(',')]
     except Exception as E:
         print('error parsing stage id exclude list')
@@ -123,6 +124,10 @@ if args.stage_exclude_list is not None:
             break
 else:
     print('using default stage id exclude list: %s'%stage_exclude_list)
+
+# remove all excluded callers from the "callers" dictionary
+for c in stage_exclude_list:
+    del callers[c]
 
 result_list = [] #async queue to put results for || stages
 def collect_results(result):
@@ -152,10 +157,10 @@ def merge_partitions(callers,t,b):
 #[2] Pool Partitions--------------------------------------------------------------------
 
 #[3a] Fit the Model Partition----------------------------------------------------------------------------
-def prior_model_partition(snames,t,b,k,callers,caller_exclude,min_g,brkpt_smoothing):
+def prior_model_partition(snames,t,b,k,callers,min_g,brkpt_smoothing):
     print('starting model partition:\tt=%s\tb=%s'%(t,b))
     start = time.time()
-    P = fusor.read_partitions_by_caller(out_dir+'/svul/',callers,caller_exclude,t,b,False) 
+    P = fusor.read_partitions_by_caller(out_dir+'/svul/',callers,t,b,False) 
     #P,snames = fusor.pre_cluster_samples(P,r=0.9),['CLUSTER']                       #optional preclustering 
     T = fusor.target_by_sample(P,k)                                          #extract the partitioned target
     J = fusor.all_samples_all_pairs_magnitudes(P,snames)                        #pool all feature magnitudes
@@ -178,13 +183,13 @@ def prior_model_partition(snames,t,b,k,callers,caller_exclude,min_g,brkpt_smooth
 #[3a] Fit the Model Partition----------------------------------------------------------------------------
 
 #[3b] Posterior Estimation Partition---------------------------------------------------------------------
-def post_model_partition(apply_fusion_model_path,snames,t,b,k,callers,caller_exclude,min_g):
+def post_model_partition(apply_fusion_model_path,snames,t,b,k,callers,min_g):
     print('starting posterior estimate on partition:\tt=%s\tb=%s'%(t,b))
     start = time.time()
     #[1] load prior model values----------------------------------------
     B,J,D,E,alpha,n,K = fusor.import_fusion_model(apply_fusion_model_path)      #import the existing model
     #[2] load new input data partitions
-    P = fusor.read_partitions_by_caller(out_dir+'/svul/',callers,caller_exclude,t,b,False)   #all samples
+    P = fusor.read_partitions_by_caller(out_dir+'/svul/',callers,t,b,False)   #all samples
     J_new = fusor.all_samples_all_pairs_magnitudes(P,snames)                 #pool all feature magnitudes
     #[3] construct the posterior estimator using:        the prior data, new data and imputed true row==k
     J_post = fusor.additive_magnitude_smoothing(J,J_new,k)        #k is used to swap a row J_prime into J
@@ -392,7 +397,7 @@ if __name__ == '__main__':
                     for b in range(len(B[t])-1):
                         p1.apply_async(prior_model_partition,
                                        args=([snames[i] for i in trn_ids],t,b,k,
-                                             callers,exclude_callers,min_g,False),
+                                             callers,min_g,False),
                                        callback=collect_results)
                         time.sleep(0.25)
                 p1.close()
@@ -423,7 +428,7 @@ if __name__ == '__main__':
                     for b in range(len(B[t])-1):
                         p1.apply_async(post_model_partition,
                                        args=(apply_fusion_model_path,snames,t,b,k,
-                                             callers,exclude_callers,min_g),
+                                             callers,min_g),
                                        callback=collect_results)
                         time.sleep(0.25)
                 p1.close()
