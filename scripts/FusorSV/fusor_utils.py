@@ -39,9 +39,11 @@ def write_partitions_by_sample(sname_partition_path,P):
 
 #for a partition of type and bin, pool all samples and all callers
 def read_partitions_by_caller(partition_path,callers,t,b,verbose=False):
-    P = {t:{b:{c:{} for c in callers}}}
+    P = {t:{b:{}}}
     for c in set(callers):
         samples = glob.glob(partition_path+'*_S%s_T%s_B%s.pickle'%(c,t,b)) #keys are in the pickler
+        if len(samples) > 0 and not P[t][b].has_key(c): # only add c as a key if it has partitions
+            P[t][b][c] = {}
         for sample in samples:
             with open(sample, 'rb') as f:
                 start = time.time()
@@ -51,6 +53,7 @@ def read_partitions_by_caller(partition_path,callers,t,b,verbose=False):
                 stop = time.time()
                 if verbose: print('finished loading %s in %s sec'%(sample,round(stop-start,2)))
             P[t][b][c][s] = copy.deepcopy(S[t][b][c][s])
+
     return P
 
 #for a partition get all the call sets aka the partition
@@ -164,14 +167,9 @@ def export_caller_by_type_and_bin(E,alpha,callers,types,bins,path):
     for t in E:
         b = sorted(E[t].keys())
         for i in range(len(E[t])):
-            written = {}
             for g in E[t][b[i]]:
                 if len(g)==1 and g[0] is not None:
                     s += '\t'.join([callers[g[0]],types[t],bins[t][i],str(E[t][b[i]][g])])+'\n'
-                    written[g[0]] = True
-            for c in callers:
-                if c not in written:
-                    s += '\t'.join([callers[c],types[t],bins[t][i],'0.0'])+'\n'
             s += '\t'.join(['alpha',types[t],bins[t][i],str(alpha[t][i])])+'\n'
     with open(path,'w') as f:
         f.write(s)

@@ -337,6 +337,22 @@ if __name__ == '__main__':
     partition_path = out_dir+'/svul/'
     total_partitions = len(glob.glob(partition_path+'*.pickle'))
 
+    scallers = {sample:{} for sample in samples} # the callers that have valid VCFs and will be used for each sample
+    for sample in samples:
+        scallers[sample][f_id] = callers[f_id] # add FusorSV as a caller, since FusorSV data is always wanted
+        vcfs = glob.glob(sample+'/*vcf')
+        for vcf in vcfs:
+            # add the caller ID of the VCF to the sample's used callers
+            s_id = su.id_trim(vcf) # get caller ID from VCF
+            if not s_id in exclude_callers: # don't use excluded callers
+                if s_id in callers: # make sure the ID is a valid caller
+                    scallers[sample][s_id] = callers[s_id]
+                else:
+                    print("Warning: sample '%s' has unknown VCF caller ID '%s'"%(sample, s_id))
+        # give a warning if there are no VCFs with valid caller IDs in the sample
+        if not len(scallers[sample]) > 1:
+            print("Warning: sample '%s' does not contain a VCF for any valid callers"%sample)
+
 #    sname = samples[0][samples[0].rfind('/')+1:]                      #extract sample identifier
 #    print('reading sample %s'%sname)
 #    sname_partition_path = out_dir+'/svul/'+sname                            #build path
@@ -459,7 +475,7 @@ if __name__ == '__main__':
         p1 = mp.Pool(processes=max(1,cpus/2))
         for sample in [samples[i] for i in tst_ids]:
             p1.apply_async(apply_model_to_samples,
-                           args=(sample,ref_path,chroms,types,bins,callers,O,
+                           args=(sample,ref_path,chroms,types,bins,scallers[sample],O,
                                  model_path,apply_fusion_model_path,k,f_id,
                                  over_m,0.5,args.brkpt_smoothing,True,True,6),
                            callback=collect_results)
