@@ -555,7 +555,7 @@ if __name__ == '__main__':
         return_list = []
         for sample in [samples[i] for i in tst_ids]:
             return_list.append(p1.apply_async(apply_model_to_samples,
-                           args=(sample,ref_path,chroms,types,bins,callers,O,
+                           args=(sample,ref_path,chroms,types,bins,scallers[sample],O,
                                  model_path,apply_fusion_model_path,k,f_id,
                                  over_m,0.5,args.brkpt_smoothing,True,True,6),
                            callback=collect_results))
