@@ -481,7 +481,7 @@ if __name__ == '__main__':
                     for b in range(len(B[t])-1):
                         return_list.append(p1.apply_async(prior_model_partition,
                                        args=([snames[i] for i in trn_ids],t,b,k,
-                                             callers,exclude_callers,min_g,False),
+                                             callers,min_g,False),
                                        callback=collect_results))
                         time.sleep(0.25)
                 p1.close()
@@ -518,7 +518,7 @@ if __name__ == '__main__':
                     for b in range(len(B[t])-1):
                         return_list.append(p1.apply_async(post_model_partition,
                                        args=(apply_fusion_model_path,snames,t,b,k,
-                                             callers,exclude_callers,min_g),
+                                             callers,min_g),
                                        callback=collect_results))
                         time.sleep(0.25)
                 p1.close()
