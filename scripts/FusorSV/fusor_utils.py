@@ -222,10 +222,25 @@ def slice_samples(L,exclude=[]):
     all_types    = list(all_types)      
     #target_types = list(set([j for x in [s[1][k].keys() for s in L] for j in x])) #target types
     Q = {}
+    
+    # DEBUG
+#     index = 0
+#     print "types list: "+str(all_types)
+    
     for t in all_types:
         Q[t] = {}
         for i in range(len(L)): #L[i][0] is sname, L[i][1] is the data
+        
+            # DEBUG
+#             if index < 10:
+#                 print "Breakpoint 1: "+str(L[i][0])+" "+str(L[i][1])
+        
             if not L[i][0] in exclude: 
+                
+                # DEBUG
+#                 if index < 10:
+#                     print "Breakpoint 2"
+                
                 for c in L[i][1]:
                     if Q[t].has_key(c):
                         if L[i][1][c].has_key(t):
@@ -233,6 +248,18 @@ def slice_samples(L,exclude=[]):
                     else:
                         if L[i][1][c].has_key(t):
                             Q[t][c] = {L[i][0]:L[i][1][c][t]}
+                
+            # DEBUG            
+            # index += 1
+                            
+        # DEBUG
+#         print "Q:"
+#         for key, value in Q.iteritems():
+#             print str(key)+"; "+str(value)
+#             index += 1
+#             if index > 10:
+#                 break
+                
     return Q
 
 #cluster the calls from several samples worth of SVUL
@@ -1251,25 +1278,33 @@ def pileup_group_by_sample(P,E,true_key=(0,),average=0):
     for t in P:
         A[t] = {}
         for b in P[t]: #select the best groups for each type and bin or use average
-            A[t][b] = {}
-            G = set([i if len(i)<=1 else () for i in E[t][b]]).difference(set([()])) #best group using E[t][b]
-            #swap out P[t][b][c][s] => P[t][b][s][c]
-            #S = list(set([i for j in [P[t][b][c].keys() for c in P[t][b]] for i in j]))
-            Q = {}
-            for c in P[t][b]:
-                for s in P[t][b][c]:
-                    if Q.has_key(s): Q[s][(c,)] = P[t][b][c][s] #the svult
-                    else:            Q[s] = {(c,):P[t][b][c][s]}
-            #swap out P[t][b][c][s] => P[t][b][s][c]       
-            for s in Q.keys(): #now apply to each sample, if calls are avaible, otherwise use the average
-                GS = copy.deepcopy(G)             #don't use the target in this calculation      
-                if GS.issuperset(set([(None,)])): GS = set(Q[s]).difference((set([true_key,()])))
-                GS = list(GS)
-                C = {}
-                for i in GS:
-                    if Q[s].has_key(i): C[i] = copy.deepcopy(Q[s][i])
-                X,W,c_i,i_c = weight_graph(C)
-                A[t][b][s] = apply_weight_graph(X,W,c_i,i_c,E[t][b],average)
+        
+            # DEBUG
+#             print "T: "+str(t)
+#             print "B: "+str(b)
+            
+            if b in E[t]:
+                A[t][b] = {}
+                G = set([i if len(i)<=1 else () for i in E[t][b]]).difference(set([()])) #best group using E[t][b]
+                #swap out P[t][b][c][s] => P[t][b][s][c]
+                #S = list(set([i for j in [P[t][b][c].keys() for c in P[t][b]] for i in j]))
+                Q = {}
+                for c in P[t][b]:
+                    for s in P[t][b][c]:
+                        if Q.has_key(s): Q[s][(c,)] = P[t][b][c][s] #the svult
+                        else:            Q[s] = {(c,):P[t][b][c][s]}
+                #swap out P[t][b][c][s] => P[t][b][s][c]       
+                for s in Q.keys(): #now apply to each sample, if calls are avaible, otherwise use the average
+                    GS = copy.deepcopy(G)             #don't use the target in this calculation      
+                    if GS.issuperset(set([(None,)])): GS = set(Q[s]).difference((set([true_key,()])))
+                    GS = list(GS)
+                    C = {}
+                    for i in GS:
+                        if Q[s].has_key(i): C[i] = copy.deepcopy(Q[s][i])
+                    X,W,c_i,i_c = weight_graph(C)
+                    A[t][b][s] = apply_weight_graph(X,W,c_i,i_c,E[t][b],average)
+            else:
+                A[t][b][s] = []
     return A
 
 #setup partitioned target by sample
