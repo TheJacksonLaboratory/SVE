@@ -133,10 +133,6 @@ if args.stage_exclude_list is not None:
 else:
     print('using default stage id exclude list: %s'%stage_exclude_list)
 
-# remove all excluded callers from the "callers" dictionary
-for c in stage_exclude_list:
-    del callers[c]
-
 result_list = [] #async queue to put results for || stages
 def collect_results(result):
     result_list.append(result)
@@ -395,6 +391,10 @@ if __name__ == '__main__':
     bins  = {t:su.pretty_ranges(B[t],'') for t in B}
     partition_path = out_dir+'/svul/'
     total_partitions = len(glob.glob(partition_path+'*.pickle'))
+
+    # remove all excluded callers from the "callers" dictionary
+    for c in stage_exclude_list:
+        del callers[c]
 
     scallers = {sample:{} for sample in samples} # the callers that have valid VCFs and will be used for each sample
     for sample in samples:
