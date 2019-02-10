@@ -334,6 +334,11 @@ if __name__ == '__main__':
     if not os.path.exists(out_dir+'/visual/'):        os.makedirs(out_dir+'/visual/')
     if not os.path.exists(out_dir+'/visual/bed/'):    os.makedirs(out_dir+'/visual/bed/')
     # if not os.path.exists(out_dir+'/ref/'):          os.makedirs(out_dir+'/ref/')
+
+    # validate fasta file exists (if provided)
+    if (not ref_path == '') and (not os.path.isfile(ref_path)):
+        print("Error: reference fasta '%s' not found"%ref_path)
+
     #will need file preparation documentation or use the full SVE to do this...
     files = glob.glob(in_dir+'*') #get all sample directories
     file_exclude = [] #27 samples exclude these folders
