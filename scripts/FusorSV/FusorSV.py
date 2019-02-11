@@ -73,8 +73,7 @@ else:
 if args.ref_path is not None:
     ref_path = args.ref_path
 else:
-    ref_path = ''
-    print('ref_path not provided, will not be able to write a vcf and g1k file')
+    raise IOError('No reference fasta specified (use "-r" to specify)');
 write_stats   = True   #new default
 write_vcf_g1k = True   #new default
 write_model   = True   #new default
@@ -117,12 +116,21 @@ else:
 stage_exclude_list = [1,36] #default exclude list
 if args.stage_exclude_list is not None:
     try:
-        stage_exclude_list = [ord(i) for i in args.stage_exclude_list.rsplit(',')]
+        # obtain all integer caller ids to exclude
+        stage_exclude_list = [int(i) for i in args.stage_exclude_list.rsplit(',')]
     except Exception as E:
-        print('error parsing comma seperated list, using defaults')
-        print('defaults stage exclude list is: %s'%stage_exclude_list)
+        print('error parsing stage id exclude list')
+        print('using default stage id exclude list: %s'%stage_exclude_list)
+
+    # make sure all excluded ids are valid callers
+    for c in stage_exclude_list:
+        if not c in callers:
+            stage_exclude_list = [1, 36]
+            print('invalid caller id in stage id exclude list: %d'%c)
+            print('using default stage id exclude list: %s'%stage_exclude_list)
+            break
 else:
-    print('using default stage id exclude list:%s'%stage_exclude_list)
+    print('using default stage id exclude list: %s'%stage_exclude_list)
 
 result_list = [] #async queue to put results for || stages
 def collect_results(result):
@@ -195,10 +203,10 @@ def merge_partitions(callers,t,b):
 #[2] Pool Partitions--------------------------------------------------------------------
 
 #[3a] Fit the Model Partition----------------------------------------------------------------------------
-def prior_model_partition(snames,t,b,k,callers,caller_exclude,min_g,brkpt_smoothing):
+def prior_model_partition(snames,t,b,k,callers,min_g,brkpt_smoothing):
     print('starting model partition:\tt=%s\tb=%s'%(t,b))
     start = time.time()
-    P = fusor.read_partitions_by_caller(out_dir+'/svul/',callers,caller_exclude,t,b,False) 
+    P = fusor.read_partitions_by_caller(out_dir+'/svul/',callers,t,b,False) 
     #P,snames = fusor.pre_cluster_samples(P,r=0.9),['CLUSTER']                       #optional preclustering 
     T = fusor.target_by_sample(P,k)                                          #extract the partitioned target
     J = fusor.all_samples_all_pairs_magnitudes(P,snames)                        #pool all feature magnitudes
@@ -221,13 +229,13 @@ def prior_model_partition(snames,t,b,k,callers,caller_exclude,min_g,brkpt_smooth
 #[3a] Fit the Model Partition----------------------------------------------------------------------------
 
 #[3b] Posterior Estimation Partition---------------------------------------------------------------------
-def post_model_partition(apply_fusion_model_path,snames,t,b,k,callers,caller_exclude,min_g):
+def post_model_partition(apply_fusion_model_path,snames,t,b,k,callers,min_g):
     print('starting posterior estimate on partition:\tt=%s\tb=%s'%(t,b))
     start = time.time()
     #[1] load prior model values----------------------------------------
     B,J,D,E,alpha,n,K = fusor.import_fusion_model(apply_fusion_model_path)      #import the existing model
     #[2] load new input data partitions
-    P = fusor.read_partitions_by_caller(out_dir+'/svul/',callers,caller_exclude,t,b,False)   #all samples
+    P = fusor.read_partitions_by_caller(out_dir+'/svul/',callers,t,b,False)   #all samples
     J_new = fusor.all_samples_all_pairs_magnitudes(P,snames)                 #pool all feature magnitudes
     #[3] construct the posterior estimator using:        the prior data, new data and imputed true row==k
     J_post = fusor.additive_magnitude_smoothing(J,J_new,k)        #k is used to swap a row J_prime into J
@@ -334,6 +342,11 @@ if __name__ == '__main__':
     if not os.path.exists(out_dir+'/visual/'):        os.makedirs(out_dir+'/visual/')
     if not os.path.exists(out_dir+'/visual/bed/'):    os.makedirs(out_dir+'/visual/bed/')
     # if not os.path.exists(out_dir+'/ref/'):          os.makedirs(out_dir+'/ref/')
+
+    # validate fasta file exists
+    if not os.path.isfile(ref_path):
+        raise IOError("Reference fasta '%s' cannot be found"%ref_path)
+
     #will need file preparation documentation or use the full SVE to do this...
     files = glob.glob(in_dir+'*') #get all sample directories
     file_exclude = [] #27 samples exclude these folders
@@ -382,6 +395,26 @@ if __name__ == '__main__':
     bins  = {t:su.pretty_ranges(B[t],'') for t in B}
     partition_path = out_dir+'/svul/'
     total_partitions = len(glob.glob(partition_path+'*.pickle'))
+
+    # remove all excluded callers from the "callers" dictionary
+    for c in stage_exclude_list:
+        del callers[c]
+
+    scallers = {sample:{} for sample in samples} # the callers that have valid VCFs and will be used for each sample
+    for sample in samples:
+        scallers[sample][f_id] = callers[f_id] # add FusorSV as a caller, since FusorSV data is always wanted
+        vcfs = glob.glob(sample+'/*vcf')
+        for vcf in vcfs:
+            # add the caller ID of the VCF to the sample's used callers
+            s_id = su.id_trim(vcf) # get caller ID from VCF
+            if not s_id in exclude_callers: # don't use excluded callers
+                if s_id in callers: # make sure the ID is a valid caller
+                    scallers[sample][s_id] = callers[s_id]
+                else:
+                    print("Warning: sample '%s' has unknown VCF caller ID '%s'"%(sample, s_id))
+        # give a warning if there are no VCFs with valid caller IDs in the sample
+        if not len(scallers[sample]) > 1:
+            print("Warning: sample '%s' does not contain a VCF for any valid callers"%sample)
 
 #    sname = samples[0][samples[0].rfind('/')+1:]                      #extract sample identifier
 #    print('reading sample %s'%sname)
@@ -452,7 +485,7 @@ if __name__ == '__main__':
                     for b in range(len(B[t])-1):
                         return_list.append(p1.apply_async(prior_model_partition,
                                        args=([snames[i] for i in trn_ids],t,b,k,
-                                             callers,exclude_callers,min_g,False),
+                                             callers,min_g,False),
                                        callback=collect_results))
                         time.sleep(0.25)
                 p1.close()
@@ -489,7 +522,7 @@ if __name__ == '__main__':
                     for b in range(len(B[t])-1):
                         return_list.append(p1.apply_async(post_model_partition,
                                        args=(apply_fusion_model_path,snames,t,b,k,
-                                             callers,exclude_callers,min_g),
+                                             callers,min_g),
                                        callback=collect_results))
                         time.sleep(0.25)
                 p1.close()
@@ -526,7 +559,7 @@ if __name__ == '__main__':
         return_list = []
         for sample in [samples[i] for i in tst_ids]:
             return_list.append(p1.apply_async(apply_model_to_samples,
-                           args=(sample,ref_path,chroms,types,bins,callers,O,
+                           args=(sample,ref_path,chroms,types,bins,scallers[sample],O,
                                  model_path,apply_fusion_model_path,k,f_id,
                                  over_m,0.5,args.brkpt_smoothing,True,True,6),
                            callback=collect_results))
