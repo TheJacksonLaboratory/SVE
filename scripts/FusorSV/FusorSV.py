@@ -73,8 +73,7 @@ else:
 if args.ref_path is not None:
     ref_path = args.ref_path
 else:
-    ref_path = ''
-    print('ref_path not provided, will not be able to write a vcf and g1k file')
+    raise IOError('No reference fasta specified (use "-r" to specify)');
 write_stats   = True   #new default
 write_vcf_g1k = True   #new default
 write_model   = True   #new default
@@ -334,6 +333,11 @@ if __name__ == '__main__':
     if not os.path.exists(out_dir+'/visual/'):        os.makedirs(out_dir+'/visual/')
     if not os.path.exists(out_dir+'/visual/bed/'):    os.makedirs(out_dir+'/visual/bed/')
     # if not os.path.exists(out_dir+'/ref/'):          os.makedirs(out_dir+'/ref/')
+
+    # validate fasta file exists
+    if not os.path.isfile(ref_path):
+        raise IOError("Reference fasta '%s' cannot be found"%ref_path)
+
     #will need file preparation documentation or use the full SVE to do this...
     files = glob.glob(in_dir+'*') #get all sample directories
     file_exclude = [] #27 samples exclude these folders
