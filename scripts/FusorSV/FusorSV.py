@@ -336,7 +336,7 @@ if __name__ == '__main__':
 
     # validate fasta file exists
     if not os.path.isfile(ref_path):
-        raise IOError("Reference fasta '%s' cannot be found."%ref_path)
+        raise IOError("Reference fasta '%s' cannot be found"%ref_path)
 
     #will need file preparation documentation or use the full SVE to do this...
     files = glob.glob(in_dir+'*') #get all sample directories
