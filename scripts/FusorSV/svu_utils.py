@@ -24,7 +24,7 @@ def pretty_ranges(B,units):
         x,m = [b,0],0
         if x[0]/1000>0:
             while x[0]/1000>0:
-                x[1] = x[0]%1000 
+                x[1] = x[0]%1000
                 x[0],m = x[0]/1000,m+1
             d = ''
             if x[1]>0: d = '.'+str(x[1])[:1]
@@ -35,7 +35,7 @@ def pretty_ranges(B,units):
     for i in range(len(s)-1):
         t += [s[i]+'-'+s[i+1]]
     return t
-    
+
 #first beta vcf attempt, uses the sorting order of chroms
 #CHROM, POS, ID, REF, ALT, QUAL, FILTER INFO
 #QUAL is Phred-scale quality score for the assertion made in ALT 10log(prob(call in ALT is wrong))
@@ -80,7 +80,7 @@ def svult_to_bed(S,O,bed_path,cid,rgb=[255,255,255]):
         csv_w = csv.writer(bed,delimiter='\t')
         #csv_w.writerow(fields)
         for row in data:
-            csv_w.writerow(row)     
+            csv_w.writerow(row)
 
 #bed file generator for the base call set C
 def s2bed(S,O,bed_base_path):
@@ -135,12 +135,12 @@ def genome_to_vcf(D,ref_seq,types,chroms,callers,out_path,sname,
             if D[i][0] in chroms:
                 idx = D[i][9] #{11:set([2])} //can we dig out the origunal ID field to attach here?
                 for k in idx: idx[k] = list(idx[k])
-                
+
                 target = 1
                 if target_key in idx:
                     target = 0
                     idx.pop(target_key)
-                
+
                 hist[D[i][8]][target] += [D[i][3]]
 
                 svmethod = str(D[i][9]).replace(' ','')
@@ -167,20 +167,20 @@ def genome_to_vcf(D,ref_seq,types,chroms,callers,out_path,sname,
         with open(out_path,'w') as f: #looks good can just write now and run with the vcf validator tool
             f.write(vcf)
         return hist
-        
+
 #from tigra readme DOCS, tab-seperated
-#CHR     
-#START_OUTER     
-#START_INNER     
-#END_INNER       
-#END_OUTER       
-#TYPE_OF_EVENT   
-#SIZE_PREDICTION 
-#MAPPING_ALGORITHM       
-#SEQUENCING_TECHNOLOGY   
-#SAMPLEs 
-#TYPE_OF_COMPUTATIONAL_APPROACH  
-#GROUP   
+#CHR
+#START_OUTER
+#START_INNER
+#END_INNER
+#END_OUTER
+#TYPE_OF_EVENT
+#SIZE_PREDICTION
+#MAPPING_ALGORITHM
+#SEQUENCING_TECHNOLOGY
+#SAMPLEs
+#TYPE_OF_COMPUTATIONAL_APPROACH
+#GROUP
 #OPTIONAL_ID
 #1       829757  829757  829865  829865  DEL       116     MAQ     SLX     NA19238,NA19240    RP      WashU
 def genome_to_g1k(D,types,chroms,sname,out_path,target_key=None,ex_flt=0.0,
@@ -211,7 +211,7 @@ def svult_to_glt(S,O):
     L = {O[k]:k for k in O}    #offsets as keys
     B,G = sorted(L.keys()),{}  #sort the offsets
     for t in S:
-        C = []             
+        C = []
         for i in range(len(S[t])):
             #find each chrom bin and subtract offset
             x1,x2,y   = S[t][i][0],S[t][i][1],S[t][i][3]
@@ -234,7 +234,7 @@ def svua_to_svul(S):
     for i in range(len(S)):
         C += [list(S[i])+[{}]]
     return C
-    
+
 def svul_to_svua(C):
     if len(C) > 0:
         S = np.zeros((len(C),4),dtype='u4')
@@ -259,7 +259,7 @@ def tigra_ids(Q,sname,idx=6,f_id=-1,t_id=38):
 def info_to_idx(info):
     svmethod = info.split('SVMETHOD=')[-1].split(';')[0]
     raw = svmethod.split(',')
-    idx,prev = {},0    
+    idx,prev = {},0
     for i in range(len(raw)):
         if raw[i].find(':')>0:
             split = raw[i].split(':')
@@ -277,7 +277,7 @@ def idx_to_str(idx):
 
 def get_info_v(info,k,d=';'):
     #match the key in start position, or ; delimited or with a whitespace in front
-    p = '\A'+k+'=|['+d+']'+k+'=|[\s]'+k+'='      
+    p = '\A'+k+'=|['+d+']'+k+'=|[\s]'+k+'='
     m = re.search(p,info)
     if m is None: v = ''
     else:         v = info[m.end():].split(d)[0]
@@ -337,7 +337,7 @@ def delly_vcf_reader(vcf_glob,out_vcf,reference,samples=['HG00513','HG00733','NA
         for line in f:
             if line.startswith('#'):
                 header += [line.split('\n')[0].split('\t')]
-    snames = header[-1][VCF_FORMAT+1:]                      
+    snames = header[-1][VCF_FORMAT+1:]
     #now sort and cluster calls for genotyping
     data = coordinate_sort(data)
     return True
@@ -358,8 +358,8 @@ def slice_merged(flat_data):
             if l>b[0] and l<=b[1]:
                 sliced_data[t][b] += 1
     return sliced_data
-        
-    
+
+
 def g1kP3_vcf_multi_sample_merge(vcf_glob,out_vcf,reference,overlap=0.5,
                                  VCF_CHR=0,VCF_POS=1,VCF_ID=2,VCF_REF=3,VCF_ALT=4,
                                  VCF_QUAL=5,VCF_FILT=6,VCF_INFO=7,VCF_FORMAT=8,VCF_SAMPLE=9):
@@ -382,7 +382,7 @@ def g1kP3_vcf_multi_sample_merge(vcf_glob,out_vcf,reference,overlap=0.5,
         for line in f:
             if line.startswith('#'):
                 header += [line.split('\n')[0].split('\t')]
-    header[-1]  = '\t'.join(header[-1][0:9]+['FORMAT']+snames) #fix up the sample colums                        
+    header[-1]  = '\t'.join(header[-1][0:9]+['FORMAT']+snames) #fix up the sample colums
     raw = []
     for i in range(0,len(data),2):
         raw += [data[i]]
@@ -397,14 +397,14 @@ def g1kP3_vcf_multi_sample_merge(vcf_glob,out_vcf,reference,overlap=0.5,
     with open(out_vcf,'w') as f: #looks good can just write now and run with the vcf validator tool
         f.write(vcf)
         return True
-    return False                                   
+    return False
 
 #downstream analysis check of lifted coordinates
 def fusorSV_liftover(vcf_path,ref_path,chain_path,
                      CHR=0,POS=1,ID=2,REF=3,ALT=4,QUAL=5,FILT=6,INFO=7,FORMAT=8,SAMPLE=9,
                      add_chr=True):
     if add_chr: chrom = 'chr'
-    else:       chrom = ''        
+    else:       chrom = ''
     I,header,data,err = {},[],[],[]
     with open(vcf_path,'r') as f:
         for line in f:
@@ -457,7 +457,7 @@ def add_chrom(data,CHR=0):
         if row[CHR] in [str(x) for x in range(23)]+['Y','X','MT']:
             row[CHR] = 'chr'+row[CHR]
     return data
-    
+
 #cluster a set of fusorSV per sample VCF files
 def fusorSV_vcf_multi_sample_merge(vcf_glob,out_vcf,reference,overlap=0.5,add_chr=True,
                                    VCF_CHR=0,VCF_POS=1,VCF_ID=2,VCF_REF=3,VCF_ALT=4,
@@ -479,14 +479,14 @@ def fusorSV_vcf_multi_sample_merge(vcf_glob,out_vcf,reference,overlap=0.5,add_ch
         for line in f:
             if line.startswith('#'):
                 header += [line.split('\n')[0].split('\t')]
-    header[-1]  = '\t'.join(header[-1][0:9]+snames) #fix up the sample colums                        
+    header[-1]  = '\t'.join(header[-1][0:9]+snames) #fix up the sample colums
 
     #cluster calls for genotyping
     cluster = coordinate_cluster(data,overlap)
     flat_data = clusters_to_flattened_str(cluster,snames,reference)
     if add_chr: flat_data = add_chrom(flat_data)
     #remove_C = ['C_12596', 'C_20039', 'C_17709', 'C_5949', 'C_6014', 'C_21055', 'C_17312', 'C_9188', 'C_2567', 'C_18819', 'C_18814']
-    #remove_S = list(set(snames).difference(set(['NA19017','NA12878','HG00419','NA19238','NA19239','NA19625','NA18525']))) 
+    #remove_S = list(set(snames).difference(set(['NA19017','NA12878','HG00419','NA19238','NA19239','NA19625','NA18525'])))
     #flat_data = filter_fusorSV_vcf_multi_sample_merge(flat_data,remove_C,remove_S)
     #write the header and flat data to a new vcf file
     vcf = '\n'.join([''.join(h) for h in header])+'\n'
@@ -516,7 +516,7 @@ def fusorSV_multi_sample_merge_query(fusorSV_vcf_dir,sample_id_validation):
         if line.startswith('#'):
             header += [line]
             header[-1] = header[-1].replace('\n','')
-        else:                    
+        else:
             merged_data += [line.split('\t')]
             merged_data[-1][-1] = merged_data[-1][-1].replace('\n','')
     header_key,i = header[-1].split('\t'),0
@@ -546,7 +546,7 @@ def fusorSV_bed_gene_converter(refseq_bed,gene_counts,REFSEQ_ID=3):
         f.write(s[:-2])
         return True
     return False
-    
+
 def fusorSV_multi_sample_merge_query_write(query_data,header,out_vcf):
     s = '\n'.join(header)+'\n'
     s += '\n'.join(['\t'.join(i) for i in query_data])+'\n'
@@ -554,7 +554,7 @@ def fusorSV_multi_sample_merge_query_write(query_data,header,out_vcf):
         f.write(s)
         return True
     return False
-    
+
 #using string INFO field: IE 'DEL', 'DUP', ect
 def query_svtype(data,svtype,INFO=7):
     result = []
@@ -562,7 +562,7 @@ def query_svtype(data,svtype,INFO=7):
         if info_to_svtype(row[INFO])==svtype:
             result += [row]
     return result
-    
+
 #get the frequency out of genotyped rows
 def query_frequency(data,c,freq,GT=9):
     result = []
@@ -647,7 +647,7 @@ def query_caller_number(data,c='<',x=3,agree=True,INFO=7):
             elif c=='>=' and any([len(S[k])>=x for k in S]) and any([len(S[k])<x for k in S]):
                 results += [row]
     return results
-    
+
 #for a list of samples return the calls that they are genotyped possitive
 def query_sample_presence(data,s_ids,INFO=7):
     result = []
@@ -672,7 +672,7 @@ def svmethod_to_sample(svmethod):
     for j in S:
         S[j] = tuple(sorted(S[j]))
     return S
-    
+
 #given a a list of FusorSV rows, do a downstream analysis
 #on the files where all group frequencies are returned for each sample
 def get_svmethod_gfreq(data,INFO=7):
@@ -684,8 +684,8 @@ def get_svmethod_gfreq(data,INFO=7):
             for j in i:
                 if G.has_key(j): G[j] += 1
                 else:            G[j]  = 1
-    return G       
-    
+    return G
+
 def get_row_freq(row,INFO=7):
     svmethods,S = info_to_svmethod(row[INFO]).split('|'),{}
     C = {int(i.split(':')[0]):{j.split('_')[-1]:int(j.split('_')[0]) for j in i.split(':')[-1].split(',')} for i in svmethods}
@@ -693,7 +693,7 @@ def get_row_freq(row,INFO=7):
         for s in C[c]:
             if not S.has_key(s):
                 S[s]  = {c:[C[c][s]]}
-            else: 
+            else:
                 if not S[s].has_key(c):
                     S[s][c]  = [C[c][s]]
                 else:
@@ -714,8 +714,8 @@ def get_group_validation_frequency(data,samples,INFO=7):
                 if not F.has_key(g):
                     F[g] = {}
     return F
-        
- 
+
+
 #custom search tool
 #Cluster Type SVEX TARGET SVMETHOD fusroSV_id
 def three_list_fusorSV_id_search(id_path,repaired_vcf,flat_data):
@@ -737,7 +737,7 @@ def three_list_fusorSV_id_search(id_path,repaired_vcf,flat_data):
             filtered += [e]
         else:
             removed += [e]
-            
+
     ids,N = [e[2] for e in data2],{}
     for i in ids:
         for row in flat_data:
@@ -749,11 +749,11 @@ def three_list_fusorSV_id_search(id_path,repaired_vcf,flat_data):
 
 #sort rows by chrom, type, start, length
 def coordinate_sort_type(data,MAX=100,CHR=0,TYPE=6,R0=1,LEN=3):
-    return sorted(data,key=lambda x: (x[TYPE],x[CHR].zfill(MAX),x[R0],x[LEN]))            
+    return sorted(data,key=lambda x: (x[TYPE],x[CHR].zfill(MAX),x[R0],x[LEN]))
 
 def coordinate_sort_pos(data,MAX=100,CHR=0,TYPE=6,R0=1,LEN=3):
-    return sorted(data,key=lambda x: (x[CHR].zfill(MAX),x[R0],x[LEN])) 
-    
+    return sorted(data,key=lambda x: (x[CHR].zfill(MAX),x[R0],x[LEN]))
+
 def coordinate_overlap(a,b,r0=1,r1=2,chr1=0,svtype=6): #add s1, s2 later
     if a[svtype]!=b[svtype] or a[chr1]!=b[chr1]:
         x = 0.0
@@ -769,8 +769,8 @@ def coordinate_partition_type(data,TYPE=6):
     T = {t:[] for t in types}
     for row in data:
         T[row[TYPE]] += [row]
-    return T 
-    
+    return T
+
 #fast LR overlap clustering
 #for each contig and for each svtype
 #for every two rows in a cluster, they have at least >= overlap amount
@@ -792,13 +792,13 @@ def coordinate_cluster(data,overlap=0.5,MAX=100):
             F[i] = C[t][j]
             i += 1
     return F
-    
+
 #recursive overlap clustering, following 1000 genomes phase 3 supplements
 def coordinate_cluster_g1k_p3_style(data,overlap=0.5):
     C = {}
     #will use a helper function to pass in C and overlap only
     return C
-    
+
 def clusters_to_flattened_str(cluster,snames,reference,average=True,
                               CHR=0,POS=1,END=2,ID=4,REF=5,ALT=6,QUAL=7,
                               FILT=8,INFO=9,FORMAT=10,SAMPLE=11,
@@ -841,9 +841,9 @@ def cluster_to_samples(snames,f_ids):
             samples += '0/1'+'\t'
         else:
             samples += '0/0'+'\t'
-    return samples[:-1]   
+    return samples[:-1]
 
-#verage up and update the row            
+#verage up and update the row
 def cluster_info_update(info,svlen,end,svex,svmethod,targets,
                         fusorSV_ids=None,
                         remove_destination_coordinates=True):
@@ -865,15 +865,15 @@ def cluster_info_update(info,svlen,end,svex,svmethod,targets,
     if fusorSV_ids is not None: #fusorSV_ids here
         info = l+'FUSORSVID='+','.join(fusorSV_ids)+';'+'TARGET='+','.join(targets)
     else:
-        info = l+'TARGET='+','.join(targets)    
+        info = l+'TARGET='+','.join(targets)
     return info
-            
+
 
 def cluster_fusorSV_id_to_sample(fusorSV_id):
     return fusorSV_id.rsplit('_')[-1]
 
 #downstream analysis check of lifted coordinates
-def fusorSV_fix_merged_samples(vcf_in_path,vcf_out_path):       
+def fusorSV_fix_merged_samples(vcf_in_path,vcf_out_path):
     header,data = [],[]
     with open(vcf_in_path,'r') as f:
         for line in f:
@@ -916,7 +916,7 @@ def fusorSV_support_ids(vcf_path,ID=2,INFO=7,s_id=[38]):
             idx = info_to_idx(row[INFO])
             for s in s_id:
                 if idx.has_key(s):
-                    I[s][fusorSV_id] = {k:{} for k in idx[s]}      
+                    I[s][fusorSV_id] = {k:{} for k in idx[s]}
         except Exception:
             err += [row]
             pass
@@ -931,7 +931,7 @@ def support_id_map(M,V,ID=2,s_id=[],callers=None):
                 k = tuple(V[s][j].svu[0])
                 if U[s].has_key(k): U[s][k] += [j]
                 else:               U[s][k]  = [j]
-            K[s] = {tuple(U[s][k]):list(k) for k in U[s]}    
+            K[s] = {tuple(U[s][k]):list(k) for k in U[s]}
     for s in M:
         for i in M[s]:
             for j in M[s][i]:
@@ -967,7 +967,7 @@ def support_id_search(SM,fusorSV_vcf,ID=2,INFO=7):
                     if IS.has_key(fusorSV_id):
                         IS[fusorSV_id] += [SM[s][fusorSV_id][k] for k in idx[s]]
                     else:
-                        IS[fusorSV_id]  = [SM[s][fusorSV_id][k] for k in idx[s]] 
+                        IS[fusorSV_id]  = [SM[s][fusorSV_id][k] for k in idx[s]]
         except Exception:
             err += [row]
             pass
@@ -982,10 +982,10 @@ def write_support_id_vcf(IS,header,support_vcf_path):
         f.write(S)
         return True
     return False
-    
+
 #replace original vcf id field with the fusorSV supporting ids instead
-#replace ALT with the ALT contig with the longest tigraSV CTG if one exists    
-        
+#replace ALT with the ALT contig with the longest tigraSV CTG if one exists
+
 #given V and fusorSV idex into it, look back and merge
 #INFO;CTG= fields to retrieve the CTG ids to look into the fasta file in tigra_Y
 def tigra_id_to_ctg_map(M,V,t_id=38):
@@ -1003,7 +1003,7 @@ def tigra_id_to_ctg_map(M,V,t_id=38):
                     if j in k: #pull out the tigra CTG from the info field
                         M[s][i][j] = {V[t_id][x].info.split('CTG=')[-1].split(';')[0]:'' for x in k}
     return M
-    
+
 #given a tigra ctg map M, a coordinate offset map O and the fasta file ctg_fasta
 #dig out the contig sequences in relation to the chrom start/stop position
 #and do something with them (DP sliding alignment with affine gap?)
@@ -1046,11 +1046,12 @@ def write_tigra_ctg_map(M,tigra_tsv_path,t_id=38):
 def construct_svult(vcr,chroms,offset_map,s_id,flt=0,upper=int(500E3)):
     sx,vc_i,vx,k,j = {},{},[],[],0 #filtered container, and j is the originating row
     for vc in vcr: #iterate on the variant call record
+        print SVU(vc,offset_map),
         vx += [SVU(vc,offset_map)]
         if vx[-1].chrom in chroms and vx[-1].filter >= flt and vx[-1].svlen < upper:
             sx[tuple(vx[-1].svu[0])] = j
             #if len(vx[-1].svu)>1:
-            #   sx[tuple(vx[-1].svu[1])] = j 
+            #   sx[tuple(vx[-1].svu[1])] = j
         j += 1
     svua = np.zeros((len(sx),7),dtype='u4')
     k = sorted(sx.keys()) #sorted svua key (x1,x2,t,y1,y2,wx,wy):j for row
@@ -1074,19 +1075,45 @@ def print_svult(C):
         for i in C[t]:
             print('%s\t%s\t%s\t%s\t%s\t%s\t%s'%(str(i[0]),str(i[1]),str(i[2]),
                                                 str(i[3]),str(i[4]),str(i[5]),str(i[6])))
-            
+
 #given a bash type wildcard glob path, reads the vcf as svult
 #do a flt param map for each caller id =>{s_id:flt_val}
-def vcf_glob_to_svultd(path_glob,chroms,offset_map,flt=0,flt_exclude=[]):        
+def vcf_glob_to_svultd(path_glob,chroms,offset_map,flt=0,flt_exclude=[]):
     vcfs,S,V = glob.glob(path_glob),{},{}
     for vcf in vcfs:
-        vcr = ht.VCF_Reader(vcf)
-        s_id = id_trim(vcf)
-        if s_id in flt_exclude:
-            S[s_id],V[s_id] = construct_svult(vcr,chroms,offset_map,s_id,-1)
-        else:
-            S[s_id],V[s_id] = construct_svult(vcr,chroms,offset_map,s_id,flt)
+        check_multi = is_multi(vcf)
+        if check_multi == False:
+            vcr = ht.VCF_Reader(vcf)
+            s_id = id_trim(vcf)
+            if s_id in flt_exclude:
+                S[s_id],V[s_id] = construct_svult(vcr,chroms,offset_map,s_id,-1)
+            else:
+                S[s_id],V[s_id] = construct_svult(vcr,chroms,offset_map,s_id,flt)
+        #else statement here
+
     return S,V
+
+def is_multi(vcf_file):
+    vcf_f = open(vcf_file, 'r')
+    for line in vcf_f:
+        if line[0] == '#' and line[1] == 'C':
+            line_split = line.split("\t")
+            if len(line_split) == 8 or len(line_split) == 9:
+                return False
+            else:
+                return True
+
+def get_multisample_names(vcf_file):
+    vcf_f = open(vcf_file, 'r')
+    exclude = ['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT']
+    sample_list = []
+    for line in vcf_f:
+        if line[0] == '#' and line[1] == 'C':
+            #headers
+            split_headers = line.split("\t")
+            for sample in split_headers:
+                if sample not in exclude:
+                    sample_list += sample
 
 #given a vcf with SVCP naming convention, trim to an int value
 def id_trim(s):
@@ -1095,10 +1122,10 @@ def id_trim(s):
         i = int(s.rsplit('/')[-1].rsplit('_S')[-1].split('.')[0])
     except Exception:
         print('not _S*.vcf named...')
-    return i 
+    return i
 
 #ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-                    
+
 #input is a set of call sets S and list of list ref regions R
 #ouput is a new set of sets T that does not overlap with any of Rs elements
 def filter_call_sets(S,R,exclude=[]):
@@ -1133,8 +1160,8 @@ def filter_regions2(C,R):
     elif n>1 and m>1:  upper = max(C[-1][1],R[-1][1])
     C += [[upper+2,upper+2,0,[],0,0,{}],[upper+4,upper+4,0,[],0,0,{}]] #pad out the end of C
     R += [[upper+2,upper+2,0,[],0,0,{}],[upper+4,upper+4,0,[],0,0,{}]] #pad out the end of R
-    
-    while i+j < n+m:  #pivioting dual ordinal indecies scan left to right on C1, C2        
+
+    while i+j < n+m:  #pivioting dual ordinal indecies scan left to right on C1, C2
         a = long(C[i][0])-long(R[j][0])
         b = long(C[i][0])-long(R[j][1])
         c = long(C[i][1])-long(R[j][0])
@@ -1143,17 +1170,17 @@ def filter_regions2(C,R):
             #print('equal to\ti=%s\tj=%s'%(i,j))
             if D[-1]!=i: D+=[i]
             i += 1
-            j += 1 
+            j += 1
         elif  c<0:               #[1] C[i] disjoint of left of R[j]
             #print('disjoint left\ti=%s\tj=%s'%(i,j))
-            i += 1    
+            i += 1
         elif  b>0:               #[6] C[i] disjoint right of R[j]
-            #print('disjoint right\ti=%s\tj=%s'%(i,j))        
-            j += 1 
+            #print('disjoint right\ti=%s\tj=%s'%(i,j))
+            j += 1
         elif  a<0 and d<0:       #[2] C[i] right overlap to R[j] left no envelopment
             #print('right overlap\ti=%s\tj=%s'%(i,j))
-            if D[-1]!=i: D+=[i]      
-            i += 1 
+            if D[-1]!=i: D+=[i]
+            i += 1
         elif  a>0 and d>0:       #[4] C[i] left overlap of R[j] right no envelopment
             #print('left overlap\ti=%s\tj=%s'%(i,j))
             if D[-1]!=i: D+=[i]
@@ -1165,10 +1192,9 @@ def filter_regions2(C,R):
         elif  a>=0 and d<=0:     #[5] C[i] enveloped by R[j]
             #print('being eveloped\ti=%s\tj=%s'%(i,j))
             if D[-1]!=i: D+=[i]
-            i += 1 
+            i += 1
         if i>=n: i,j = n,j+1 #sticky indecies wait for eachother
         if j>=m: j,i = m,i+1 #sticky indecies wait for eachother
-    while len(C) > 0 and C[-1][0] > upper:  C.pop()    
+    while len(C) > 0 and C[-1][0] > upper:  C.pop()
     while len(R) > 0 and R[-1][0] > upper:  R.pop()
     return [C[i] for i in sorted(set(range(len(C))).difference(set(D[1:])))]
-
