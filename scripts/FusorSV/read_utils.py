@@ -109,6 +109,16 @@ def get_coordinate_offsets(json_name):
         O[str(i)] = info[i]
     return O
 
+def get_chroms(json_name):
+    # path = os.path.dirname(os.path.abspath(__file__))+'/data/'
+    chroms = []
+    with open(json_name,'r') as f:
+        info = json.load(f)
+    for i in info:
+        print(i)
+        chroms.append(str(i))
+    return sorted(chroms)
+
 def get_stage_map(json_name):
     raw = {}
     with open(json_name,'r') as f:
