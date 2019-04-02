@@ -29,12 +29,13 @@ class ParseParameters(object):
 Command:\talign\tFASTQ->BAM
         \trealign\tBAM->BAM
         \thg38fix\tBAM->BAM
-	\tcall\tBAM(s)->VCF
+	    \tcall\tBAM(s)->VCF
+        \tsvtyper\tVCF->VCF
 ''')
         parser.add_argument('command', help='Subcommand to run')
         # parse_args defaults to [1:] for args, but you need to
         # exclude the rest of the args too, or validation will fail
-        sub_commands = ['align', 'realign', 'hg38fix', 'call']
+        sub_commands = ['align', 'realign', 'hg38fix', 'call', 'svtyper']
         args = parser.parse_args(sys.argv[1:2])
         if not args.command in sub_commands:
             print args.command + ' is not a recognized command.\n'
@@ -50,7 +51,8 @@ Command:\talign\tFASTQ->BAM
             getattr(self, 'fix_parse')(args.command, parser1, paras)
         elif args.command in sub_commands[3]:
             getattr(self, 'aln_parse')(args.command, parser1, paras)
-
+        elif args.command in sub_commands[4]:
+            getattr(self, 'run_svtyper')(args.command, parser1, paras)
     ##### sub commands #####
     def align(self):
         parser = argparse.ArgumentParser(usage = "sve align [options] <-r FILE> <FASTQ1 [FASTQ2]>")
@@ -82,6 +84,15 @@ Command:\talign\tFASTQ->BAM
         parser.add_argument('-v', dest='vcf', type=str, metavar='STR', help='the input vcf\t[NULL]')
         parser.add_argument('BAM', nargs='+', help='input BAM [null]')
         return parser
+
+    def svtyper(self):
+        parser = argparse.ArgumentParser(usage = "sve svtyper <INPUT VCF> <BAM> <JSON> <OUTPUT VCF>")
+        parser.add_argument('input_file')#, dest='input_file', type=str, metavar='STR')
+        parser.add_argument('bam_file')#, dest='bam_file', type=str)
+        parser.add_argument('json_file')#, dest='json_file', type=str)
+        parser.add_argument('out_vcf')#, dest='out_vcf', type=str)
+        #parser.add_argument('-T', dest='fasta_file', type=str)
+        return parser
     ##### end sub commands #####
 
     def aln_common(self, parser):
@@ -94,9 +105,33 @@ Command:\talign\tFASTQ->BAM
         if len(sys.argv[2:]) == 0:
             parser.print_help()
             exit()
-        global args 
+        global args
         args = parser.parse_args(sys.argv[2:])
         return args
+
+    def run_svtyper(self, command, parser, paras):
+        self.load_args(parser)
+        paras['command'] = command
+        if args.input_file is not None:
+            paras['input_file'] = args.input_file
+        else:
+            print parser.print_help()
+            exit()
+        if args.bam_file  is not None:
+            paras['bam_file'] = args.bam_file
+        else:
+            print parser.print_help()
+            exit()
+        if args.json_file is not None:
+            paras['json_file'] = args.json_file
+        else:
+            print parser.print_help()
+            exit()
+        if args.out_vcf is not None:
+            paras['out_vcf'] = args.out_vcf
+        else:
+            print parser.print_help()
+            exit()
 
     def fix_parse(self, command, parser, paras):
         self.load_args(parser)
@@ -104,7 +139,7 @@ Command:\talign\tFASTQ->BAM
 
         ### BAM
         paras['BAM'] = args.BAM
-        if not os.path.isfile(paras['BAM'][0]): 
+        if not os.path.isfile(paras['BAM'][0]):
             print "ERROR: Cannot open BAM file: " + paras['BAM'][0]
             exit()
 
@@ -163,7 +198,7 @@ Command:\talign\tFASTQ->BAM
             if len(paras['BAM']) > 1:
                 print "ERROR: Please give only one BAM; " + len(paras['BAM']) + "are given."
                 exit()
-            if not os.path.isfile(paras['BAM'][0]): 
+            if not os.path.isfile(paras['BAM'][0]):
                 print "ERROR: Cannot open BAM file: " + paras['BAM'][0]
                 exit()
 
@@ -184,7 +219,6 @@ Command:\talign\tFASTQ->BAM
                 if not os.path.isfile(bam):
                     print "ERROR: Cannot open BAM file: " + bam
                     exit()
-            
 
         ### Align and Call: for algorithm
         if paras['command'] in ['align', 'call']:
