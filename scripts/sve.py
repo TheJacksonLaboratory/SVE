@@ -108,3 +108,7 @@ elif paras['command'] == "call":
         call_params['genome'] = paras['genome']
         st = stage.Stage(paras['algorithm'],dbc)
         st.run(run_id, call_params)
+
+elif paras['command'] == "svtyper":
+    subprocess.call(["./svtyper-gcp.sh", paras['input_file'], paras['bam_file'], paras['json_file'], paras['out_vcf']])
+    print "Success"
