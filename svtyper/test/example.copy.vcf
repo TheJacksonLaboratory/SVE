@@ -1,5 +1,5 @@
 ##fileformat=VCFv4.1
-##fileDate=20190330
+##fileDate=20190402
 ##reference=/shared/genomes/b37/full/human_g1k_v37.fasta
 ##INFO=<ID=TOOL,Number=1,Type=String,Description="Tool used to generate variant call">
 ##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
