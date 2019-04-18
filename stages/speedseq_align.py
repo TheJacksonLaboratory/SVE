@@ -27,8 +27,11 @@ class speedseq_align(stage_wrapper.Stage_Wrapper):
         #[1b]
         out_ext = self.split_out_exts()[0]
         #add tigra.ctg.fa bam by allowing a single '.fa' input key
-        if len(inputs['.fq']) == 2:   csl = su.get_common_string_left(inputs['.fq'])
-        else:                         csl = inputs['.fq'][0]
+	if inputs['out_file']:
+		csl = inputs['out_file']
+	else:
+        	if len(inputs['.fq']) == 2:   csl = su.get_common_string_left(inputs['.fq'])
+        	else:                         csl = inputs['.fq'][0]
         stripped_name = self.strip_path(csl)
         if (stripped_name[-1:] == '_' or stripped_name[-1:] == '.'): stripped_name = stripped_name[:-1]
         out_dir = inputs['out_dir']

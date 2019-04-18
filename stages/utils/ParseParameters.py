@@ -57,6 +57,7 @@ Command:\talign\tFASTQ->BAM
         self.aln_common(parser)
         parser.add_argument('-a', dest='algorithm', type=str, metavar='STR', choices=['bwa_aln', 'bwa_mem', 'speed_seq'], default='speed_seq', help='the method used for alignment\t[speed_seq]')
         parser.add_argument('-R', dest='RG',type=str, metavar='STR', help='read group header line such as "@RG\\tID:id\\tSM:sampleName\\tLB:lib\\tPL:ILLUMINA"[null]')
+	parser.add_argument('-f', dest='out_file', type=str, metavar='STR', help='the base name of the output BAM\t[out_bam]')
         parser.add_argument('FASTQ',nargs='+', help='input FASTQs')
         return parser
 
@@ -156,6 +157,9 @@ Command:\talign\tFASTQ->BAM
                 if not os.path.isfile(r):
                     print "ERROR: Cannot open FASTQ file: " + r
                     exit()
+			
+	    if args.out_file is not None:
+	        paras['out_file'] = args.out_file
 
         ### Realign and Call: for bam input
         if paras['command'] in ['realign']:

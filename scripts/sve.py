@@ -44,7 +44,7 @@ if paras['command'] == "align":
         st.run(run_id, {'.fa':[paras['ref']]})
     # Align
     a_start = time.time()
-    aligner_params = {'.fa':paras['ref'],'.fq':paras['FASTQ'],'out_dir':paras['out_dir'],'threads':paras['threads'],'mem':paras['mem'],'RG':paras['RG']}
+    aligner_params = {'.fa':paras['ref'],'.fq':paras['FASTQ'],'out_dir':paras['out_dir'],'out_file':paras['out_file'],'threads':paras['threads'],'mem':paras['mem'],'RG':paras['RG']}
     if paras['algorithm'] == 'bwa_mem':
         st = stage.Stage('fq_to_bam_piped',dbc)
         # outs will receive ".sorted.bam"
