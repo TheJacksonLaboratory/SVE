@@ -56,7 +56,11 @@ Command:\talign\tFASTQ->BAM
     ##### sub commands #####
     def align(self):
         parser = argparse.ArgumentParser(usage = "sve align [options] <-r FILE> <FASTQ1 [FASTQ2]>")
-        self.aln_common(parser)
+        #self.aln_common(parser)
+        parser.add_argument('-r', dest='ref', type=str, metavar='FILE', help='FASTA reference file\t[null]')
+        parser.add_argument('-o', dest='out_file', type=str, metavar='STR')
+        parser.add_argument('-t', dest='threads',type=int, metavar='INT', help='number of threads per CPU\t[4]')
+        parser.add_argument('-M', dest='mem',type=int, metavar='INT', help='ram in GB to use for per cpu/thread unit\t[8]')
         parser.add_argument('-a', dest='algorithm', type=str, metavar='STR', choices=['bwa_aln', 'bwa_mem', 'speed_seq'], default='speed_seq', help='the method used for alignment\t[speed_seq]')
         parser.add_argument('-R', dest='RG',type=str, metavar='STR', help='read group header line such as "@RG\\tID:id\\tSM:sampleName\\tLB:lib\\tPL:ILLUMINA"[null]')
         parser.add_argument('FASTQ',nargs='+', help='input FASTQs')
@@ -86,12 +90,12 @@ Command:\talign\tFASTQ->BAM
         return parser
 
     def genotype(self):
-        parser = argparse.ArgumentParser(usage = "sve genotype <INPUT VCF> <BAM> <JSON> <OUTPUT VCF>")
+        parser = argparse.ArgumentParser(usage = "sve genotype <INPUT VCF> <BAM> <JSON> <OUTPUT VCF> <FASTA FILE>")
         parser.add_argument('input_file')#, dest='input_file', type=str, metavar='STR')
         parser.add_argument('bam_file')#, dest='bam_file', type=str)
         parser.add_argument('json_file')#, dest='json_file', type=str)
         parser.add_argument('out_vcf')#, dest='out_vcf', type=str)
-        #parser.add_argument('-T', dest='fasta_file', type=str)
+        parser.add_argument('fasta_file')
         return parser
     ##### end sub commands #####
 
@@ -129,6 +133,11 @@ Command:\talign\tFASTQ->BAM
             exit(1)
         if args.out_vcf is not None:
             paras['out_vcf'] = args.out_vcf
+        else:
+            print parser.print_help()
+            exit(1)
+        if args.fasta_file is not None:
+            paras['fasta_file'] = args.fasta_file
         else:
             print parser.print_help()
             exit(1)
@@ -183,6 +192,7 @@ Command:\talign\tFASTQ->BAM
         ### Align
         if paras['command'] in ['align']:
             paras['FASTQ'] = args.FASTQ
+            paras['out_file'] = args.out_file
             if len(paras['FASTQ']) > 2:
                 print "ERROR: At most two FASTQs"
                 exit(1)
