@@ -12,6 +12,8 @@ import svu_utils as su
 import read_utils as ru
 import fusor_utils as fusor
 import sys
+import Queue
+import traceback
 
 des = """
 FusorSV - SV call (VCF4.0+) fusion framework
@@ -135,63 +137,77 @@ else:
 result_list = [] #async queue to put results for || stages
 def collect_results(result):
     result_list.append(result)
+    
+# This is a data structure we set up to catch exception information from child threads
+manager = mp.Manager()
+exception_bucket = manager.Queue()
 
 #[1] File Partitioning------------------------------------------------------------------  
 #read and convert to SVULTB                                     all SV caller VCF inputs
 #saving each partition to a seperate pickle file               || by sample << partition
 def partition_call_sets(sample,k,O,R,B,chroms,flt,flt_exclude,caller_exclude):
-    sname = sample[sample.rfind('/')+1:]                      #extract sample identifier
-    print('reading sample %s'%sname)
-    sname_partition_path = out_dir+'/svul/'+sname                            #build path
-    S,V = su.vcf_glob_to_svultd(sample+'/*vcf',chroms,O,flt=flt,flt_exclude=flt_exclude)
-    # S = su.filter_call_sets2(S,R,exclude=flt_exclude)                    #filter svmasks
-    
-    # DEBUG
-#     index = 0
-#     print "Svult A:"
-#     for key, value in S.iteritems():
-#         print str(key)+"; "+str(value)
-#         index += 1
-#         if index > 10:
-#             break
-            
-    S = su.filter_call_sets2(S,R,exclude=flt_exclude)                    #filter svmasks
-#         
-#     except Exception as ex:
-#         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-#         message = template.format(type(ex).__name__, ex.args)
-#         print message
-#         print traceback.format_exc()
-#     
-    # DEBUG
-#     index = 0
-#     print "Svult B:"
-#     for key, value in S.iteritems():
-#         print str(key)+"; "+str(value)
-#         index += 1
-#         if index > 10:
-#             break
-    
-    # try:
-    Q = fusor.slice_samples([[sname,S]])                                         #legacy
-    
-    # DEBUG
-#     index = 0
-#     print "Q:"
-#     for key, value in Q.iteritems():
-#         print str(key)+"; "+str(value)
-#         index += 1
-#         if index > 10:
-#             break
-	
-    P = fusor.partition_sliced_samples(Q,B,exclude=caller_exclude)            #partition
-    success = fusor.write_partitions_by_sample(sname_partition_path,P)    #write to disk
-#     except Exception as ex:
-#         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-#         message = template.format(type(ex).__name__, ex.args)
-#         print message
-#         print traceback.format_exc()
-    return [sname,success]                                   #report back to async queue
+    # print "neb" # DEBUG
+    try:
+        sname = sample[sample.rfind('/')+1:]                      #extract sample identifier
+        print('reading sample %s'%sname)
+        sname_partition_path = out_dir+'/svul/'+sname                            #build path
+        S,V = su.vcf_glob_to_svultd(sample+'/*vcf',chroms,O,flt=flt,flt_exclude=flt_exclude)
+        # S = su.filter_call_sets2(S,R,exclude=flt_exclude)                    #filter svmasks
+        
+        # DEBUG
+    #     index = 0
+    #     print "Svult A:"
+    #     for key, value in S.iteritems():
+    #         print str(key)+"; "+str(value)
+    #         index += 1
+    #         if index > 10:
+    #             break
+                
+        S = su.filter_call_sets2(S,R,exclude=flt_exclude)                    #filter svmasks
+    #         
+    #     except Exception as ex:
+    #         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+    #         message = template.format(type(ex).__name__, ex.args)
+    #         print message
+    #         print traceback.format_exc()
+    #     
+        # DEBUG
+    #     index = 0
+    #     print "Svult B:"
+    #     for key, value in S.iteritems():
+    #         print str(key)+"; "+str(value)
+    #         index += 1
+    #         if index > 10:
+    #             break
+        
+        # try:
+        Q = fusor.slice_samples([[sname,S]])                                         #legacy
+        
+        # DEBUG
+    #     index = 0
+    #     print "Q:"
+    #     for key, value in Q.iteritems():
+    #         print str(key)+"; "+str(value)
+    #         index += 1
+    #         if index > 10:
+    #             break
+        
+        P = fusor.partition_sliced_samples(Q,B,exclude=caller_exclude)            #partition
+        success = fusor.write_partitions_by_sample(sname_partition_path,P)    #write to disk
+    #     except Exception as ex:
+    #         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+    #         message = template.format(type(ex).__name__, ex.args)
+    #         print message
+    #         print traceback.format_exc()
+        return [sname,success]                                   #report back to async queue
+    except:
+        # print "Found the error" # DEBUG
+        # print str(exception_bucket.qsize()) # DEBUG
+        exc_type, exc_obj, exc_trace = sys.exc_info()
+        # exception_bucket.put(exc_type)
+        # exception_bucket.put(exc_obj)
+        exception_bucket.put(traceback.format_exc(exc_trace))
+        # print str(exception_bucket.qsize()) # DEBUG
 #[1] File Partitioning------------------------------------------------------------------
 
 #[2] Pool Partitions--------------------------------------------------------------------
@@ -204,49 +220,57 @@ def merge_partitions(callers,t,b):
 
 #[3a] Fit the Model Partition----------------------------------------------------------------------------
 def prior_model_partition(snames,t,b,k,callers,min_g,brkpt_smoothing):
-    print('starting model partition:\tt=%s\tb=%s'%(t,b))
-    start = time.time()
-    P = fusor.read_partitions_by_caller(out_dir+'/svul/',callers,t,b,False) 
-    #P,snames = fusor.pre_cluster_samples(P,r=0.9),['CLUSTER']                       #optional preclustering 
-    T = fusor.target_by_sample(P,k)                                          #extract the partitioned target
-    J = fusor.all_samples_all_pairs_magnitudes(P,snames)                        #pool all feature magnitudes
-    K = fusor.all_samples_all_callers_bkpts(P,snames)                                  #pool all breakpoints
-    D,NN = fusor.pooled_distance(J)                       #this is done inside the all_group_weights as well
-    W = fusor.all_group_weights(J,k,mode='j')                             #pooled D,NN and all group weights
-    E = fusor.select_groups(W,min_g)                                      #gamma is a group selection cutoff
-    A = fusor.pileup_group_by_sample(P,E,(k,))                              #now its just one partition here
-    if brkpt_smoothing:
-        print('optimizing model partition with brkpt smoothing:\tt=%s\tb=%s'%(t,b))  
-        alpha = fusor.target_filter_cutoff_exhaustive_brkpt(A,P,T,E,K)
-        stop = time.time()
-        print('fusion model partition:\tt=%s\tb=%s\t%s sec\tcappa=%s'%(t,b,round(stop-start,2),alpha[t][b]))
-    else:
-        print('optimizing model partition:\tt=%s\tb=%s'%(t,b))   
-        alpha = fusor.target_filter_cutoff_exhaustive(A,E,T)                        #optimal cutoff location 
-        stop = time.time()
-        print('fusion model partition:\tt=%s\tb=%s\t%s sec\talpha=%s'%(t,b,round(stop-start,2),alpha[t][b]))
-    return [(t,b),J,D,E,alpha,K]
+    try:
+        print('starting model partition:\tt=%s\tb=%s'%(t,b))
+        start = time.time()
+        P = fusor.read_partitions_by_caller(out_dir+'/svul/',callers,t,b,False) 
+        #P,snames = fusor.pre_cluster_samples(P,r=0.9),['CLUSTER']                       #optional preclustering 
+        T = fusor.target_by_sample(P,k)                                          #extract the partitioned target
+        J = fusor.all_samples_all_pairs_magnitudes(P,snames)                        #pool all feature magnitudes
+        K = fusor.all_samples_all_callers_bkpts(P,snames)                                  #pool all breakpoints
+        D,NN = fusor.pooled_distance(J)                       #this is done inside the all_group_weights as well
+        W = fusor.all_group_weights(J,k,mode='j')                             #pooled D,NN and all group weights
+        E = fusor.select_groups(W,min_g)                                      #gamma is a group selection cutoff
+        A = fusor.pileup_group_by_sample(P,E,(k,))                              #now its just one partition here
+        if brkpt_smoothing:
+            print('optimizing model partition with brkpt smoothing:\tt=%s\tb=%s'%(t,b))  
+            alpha = fusor.target_filter_cutoff_exhaustive_brkpt(A,P,T,E,K)
+            stop = time.time()
+            print('fusion model partition:\tt=%s\tb=%s\t%s sec\tcappa=%s'%(t,b,round(stop-start,2),alpha[t][b]))
+        else:
+            print('optimizing model partition:\tt=%s\tb=%s'%(t,b))   
+            alpha = fusor.target_filter_cutoff_exhaustive(A,E,T)                        #optimal cutoff location 
+            stop = time.time()
+            print('fusion model partition:\tt=%s\tb=%s\t%s sec\talpha=%s'%(t,b,round(stop-start,2),alpha[t][b]))
+        return [(t,b),J,D,E,alpha,K]
+    except:
+        exc_type, exc_obj, exc_trace = sys.exc_info()
+        exception_bucket.put(traceback.format_exc(exc_trace))
 #[3a] Fit the Model Partition----------------------------------------------------------------------------
 
 #[3b] Posterior Estimation Partition---------------------------------------------------------------------
 def post_model_partition(apply_fusion_model_path,snames,t,b,k,callers,min_g):
-    print('starting posterior estimate on partition:\tt=%s\tb=%s'%(t,b))
-    start = time.time()
-    #[1] load prior model values----------------------------------------
-    B,J,D,E,alpha,n,K = fusor.import_fusion_model(apply_fusion_model_path)      #import the existing model
-    #[2] load new input data partitions
-    P = fusor.read_partitions_by_caller(out_dir+'/svul/',callers,t,b,False)   #all samples
-    J_new = fusor.all_samples_all_pairs_magnitudes(P,snames)                 #pool all feature magnitudes
-    #[3] construct the posterior estimator using:        the prior data, new data and imputed true row==k
-    J_post = fusor.additive_magnitude_smoothing(J,J_new,k)        #k is used to swap a row J_prime into J
-    D_post,NN_post = fusor.pooled_distance(J_post)                      #get the new data distance matrix
-    W_post = fusor.all_group_weights(J_post,k,mode='j')  #calculate the pooled D,NN and all group weights
-    E_post = fusor.select_groups(W_post,min_g)                         #gamma is a group selection cutoff 
-    alpha_post = fusor.post_filter_cutoff(E,E_post,alpha)                       #updated filter estimates
-    stop = time.time()
-    print('posterior estimate on partition:\tt=%s\tb=%s\t%s sec\talpha=%s'%(t,b,round(stop-start,2),
-                                                                            alpha_post[t][b]))
-    return [(t,b),J_post,D_post,E_post,alpha_post,K]
+    try:
+        print('starting posterior estimate on partition:\tt=%s\tb=%s'%(t,b))
+        start = time.time()
+        #[1] load prior model values----------------------------------------
+        B,J,D,E,alpha,n,K = fusor.import_fusion_model(apply_fusion_model_path)      #import the existing model
+        #[2] load new input data partitions
+        P = fusor.read_partitions_by_caller(out_dir+'/svul/',callers,t,b,False)   #all samples
+        J_new = fusor.all_samples_all_pairs_magnitudes(P,snames)                 #pool all feature magnitudes
+        #[3] construct the posterior estimator using:        the prior data, new data and imputed true row==k
+        J_post = fusor.additive_magnitude_smoothing(J,J_new,k)        #k is used to swap a row J_prime into J
+        D_post,NN_post = fusor.pooled_distance(J_post)                      #get the new data distance matrix
+        W_post = fusor.all_group_weights(J_post,k,mode='j')  #calculate the pooled D,NN and all group weights
+        E_post = fusor.select_groups(W_post,min_g)                         #gamma is a group selection cutoff 
+        alpha_post = fusor.post_filter_cutoff(E,E_post,alpha)                       #updated filter estimates
+        stop = time.time()
+        print('posterior estimate on partition:\tt=%s\tb=%s\t%s sec\talpha=%s'%(t,b,round(stop-start,2),
+                                                                                alpha_post[t][b]))
+        return [(t,b),J_post,D_post,E_post,alpha_post,K]
+    except:
+        exc_type, exc_obj, exc_trace = sys.exc_info()
+        exception_bucket.put(traceback.format_exc(exc_trace))
 #[3b] Posterior Estimation Partition--------------------------------------------------------------------
 
 #[4] Apply Model To Samples--------------------------------------------------------------------------------
@@ -254,80 +278,84 @@ def post_model_partition(apply_fusion_model_path,snames,t,b,k,callers,min_g):
 def apply_model_to_samples(sample,ref_path,chroms,types,bins,callers,O,
                            model_path,apply_fusion_model_path,k,f_id,
                            over_m,r=0.5,smoothing=False,detail=False,verbose=False,IDX=6):
-    sname = sample[sample.rfind('/')+1:]                                          #extract sample identifier
-    print('starting fusorSV discovery on sample %s'%sname)
-    ref_seq = {'.'.join(ref_path.rsplit('/')[-1].rsplit('.')[0:-1]):ru.read_fasta(ref_path,True)}      #~3GB
-    hist,C = {},{}
-    cross_fold_stats,detailed_stats = {c:{} for c in callers},{}                         #each single caller
-    for t in types:
-        for c in cross_fold_stats:
-            if not t in cross_fold_stats[c]: cross_fold_stats[c][t] = []
-    B,J,J_post,D,D_post,alpha,alpha_post,K,n,n_post = {},{},{},{},{},{},{},{},0,0
-    #[1] apply the model here------------------------------------------------------------------------------
-    if apply_fusion_model_path is None:#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-        if verbose: print('loading base fusion model partitions for %s'%sname)
-        B,J,D,E,alpha,n,K = fusor.import_fusion_model(model_path)                    #import the base model
-        P = fusor.read_partitions_by_sample(partition_path,sname)            #read all partitions for sname
-        Q = fusor.unpartition_sliced_samples(P)                              #unpartition for merging later
-        if verbose: print('projection of all call sets on %s'%sname)
-        A = fusor.pileup_group_by_sample(P,E,(k,))                    #projection of all calls for a sample
-        F = fusor.filter_pileup_by_sample(A,alpha,leave_in=False)   #filter using optimal cutof in the mode
-        if smoothing:
-            #now do breakpoint smoothing algorithm---------------------------------------------------------
-            F = fusor.best_smooth_brkpt_samples(F,K,P)
-            #now do breakpoint smoothing algorithm---------------------------------------------------------
-        fusor.merge_filtered_samples(Q,F,f_id,snames,[],over_m)
-    else:#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::                                                           
-        if verbose: print('loading base and posterior estimate partitions for %s'%sname)        
-        B,J,D,E,alpha,n,K = fusor.import_fusion_model(apply_fusion_model_path)          #import prior model
-        B,J_post,D_post,E_post,alpha_post,n_post,K = fusor.import_fusion_model(model_path) #import new data
-        P = fusor.read_partitions_by_sample(partition_path,sname)            #read all partitions for sname
-        Q = fusor.unpartition_sliced_samples(P)                              #unpartition for merging later
-        A = fusor.pileup_group_by_sample(P,E,(k,))                    #projection of all calls for a sample                    
-        F = fusor.filter_pileup_by_sample(A,alpha,E_post,leave_in=False)         #filter cutoff in the mode
-        if smoothing:
-            #now do breakpoint smoothing algorithm---------------------------------------------------------
-            F = fusor.best_smooth_brkpt_samples(F,K,P)
-            #now do breakpoint smoothing algorithm---------------------------------------------------------
-        fusor.merge_filtered_samples(Q,F,f_id,snames,[],over_m)      #expectation priorty merge back result
-    #[2] do some scoring and write out the sample results, returning for global performance----------------
-    start = time.time()
-    for t in Q:                                  #give the metrics for each sample and write out the result
-        for c in set(cross_fold_stats).difference(set([f_id,k])):
-            if verbose: print('%s%s'%(callers[c],''.join(['-' for i in range(80)])))   #other callers first
-            cross_fold_stats[c][t] += [fusor.pretty_stats(Q,types,t,k,c,sname,r,verbose)]
-        if verbose: print('fusorSV%s'%(''.join(['-' for i in range(80)])))                    #then fusorSV
-        cross_fold_stats[f_id][t] += [fusor.pretty_stats(Q,types,t,k,f_id,sname,r,verbose)]
-        C[t] = []
-        if Q[t].has_key(f_id) and Q[t][f_id].has_key(sname):
-            C[t] = Q[t][f_id][sname]
-            for i in cross_fold_stats[f_id][t][-1][6]:
-                C[t][i][IDX][k] = [-1]                             #flag the idx with the target key and -1
-    if verbose: print('writing VCF for %s'%sname)
-    G = su.svult_to_genome(C,O)                                               #start conversion back to VCF
-    hist[sname] = su.genome_to_vcf(G,ref_seq,types,chroms,callers,
-                                   out_dir+'/vcf/'+sname+'_S'+str(f_id)+'.vcf',sname,target_key=k)     #VCF
-    if detail:
-        for c in callers:
-            detailed_stats[c] = {}
-            for t in types:
-                detailed_stats[c][t] = {}
+    try:
+        sname = sample[sample.rfind('/')+1:]                                          #extract sample identifier
+        print('starting fusorSV discovery on sample %s'%sname)
+        ref_seq = {'.'.join(ref_path.rsplit('/')[-1].rsplit('.')[0:-1]):ru.read_fasta(ref_path,True)}      #~3GB
+        hist,C = {},{}
+        cross_fold_stats,detailed_stats = {c:{} for c in callers},{}                         #each single caller
+        for t in types:
+            for c in cross_fold_stats:
+                if not t in cross_fold_stats[c]: cross_fold_stats[c][t] = []
+        B,J,J_post,D,D_post,alpha,alpha_post,K,n,n_post = {},{},{},{},{},{},{},{},0,0
+        #[1] apply the model here------------------------------------------------------------------------------
+        if apply_fusion_model_path is None:#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+            if verbose: print('loading base fusion model partitions for %s'%sname)
+            B,J,D,E,alpha,n,K = fusor.import_fusion_model(model_path)                    #import the base model
+            P = fusor.read_partitions_by_sample(partition_path,sname)            #read all partitions for sname
+            Q = fusor.unpartition_sliced_samples(P)                              #unpartition for merging later
+            if verbose: print('projection of all call sets on %s'%sname)
+            A = fusor.pileup_group_by_sample(P,E,(k,))                    #projection of all calls for a sample
+            F = fusor.filter_pileup_by_sample(A,alpha,leave_in=False)   #filter using optimal cutof in the mode
+            if smoothing:
+                #now do breakpoint smoothing algorithm---------------------------------------------------------
+                F = fusor.best_smooth_brkpt_samples(F,K,P)
+                #now do breakpoint smoothing algorithm---------------------------------------------------------
+            fusor.merge_filtered_samples(Q,F,f_id,snames,[],over_m)
+        else:#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::                                                           
+            if verbose: print('loading base and posterior estimate partitions for %s'%sname)        
+            B,J,D,E,alpha,n,K = fusor.import_fusion_model(apply_fusion_model_path)          #import prior model
+            B,J_post,D_post,E_post,alpha_post,n_post,K = fusor.import_fusion_model(model_path) #import new data
+            P = fusor.read_partitions_by_sample(partition_path,sname)            #read all partitions for sname
+            Q = fusor.unpartition_sliced_samples(P)                              #unpartition for merging later
+            A = fusor.pileup_group_by_sample(P,E,(k,))                    #projection of all calls for a sample                    
+            F = fusor.filter_pileup_by_sample(A,alpha,E_post,leave_in=False)         #filter cutoff in the mode
+            if smoothing:
+                #now do breakpoint smoothing algorithm---------------------------------------------------------
+                F = fusor.best_smooth_brkpt_samples(F,K,P)
+                #now do breakpoint smoothing algorithm---------------------------------------------------------
+            fusor.merge_filtered_samples(Q,F,f_id,snames,[],over_m)      #expectation priorty merge back result
+        #[2] do some scoring and write out the sample results, returning for global performance----------------
+        start = time.time()
+        for t in Q:                                  #give the metrics for each sample and write out the result
+            for c in set(cross_fold_stats).difference(set([f_id,k])):
+                if verbose: print('%s%s'%(callers[c],''.join(['-' for i in range(80)])))   #other callers first
+                cross_fold_stats[c][t] += [fusor.pretty_stats(Q,types,t,k,c,sname,r,verbose)]
+            if verbose: print('fusorSV%s'%(''.join(['-' for i in range(80)])))                    #then fusorSV
+            cross_fold_stats[f_id][t] += [fusor.pretty_stats(Q,types,t,k,f_id,sname,r,verbose)]
+            C[t] = []
+            if Q[t].has_key(f_id) and Q[t][f_id].has_key(sname):
+                C[t] = Q[t][f_id][sname]
+                for i in cross_fold_stats[f_id][t][-1][6]:
+                    C[t][i][IDX][k] = [-1]                             #flag the idx with the target key and -1
+        if verbose: print('writing VCF for %s'%sname)
+        G = su.svult_to_genome(C,O)                                               #start conversion back to VCF
+        hist[sname] = su.genome_to_vcf(G,ref_seq,types,chroms,callers,
+                                       out_dir+'/vcf/'+sname+'_S'+str(f_id)+'.vcf',sname,target_key=k)     #VCF
+        if detail:
+            for c in callers:
+                detailed_stats[c] = {}
+                for t in types:
+                    detailed_stats[c][t] = {}
+                    for i in range(len(B[t])-1):
+                        detailed_stats[c][t][bins[t][i]] = []      
+            for t in Q:
+                for c in set(detailed_stats.keys()).difference(set([f_id,k])):            #do the other callers
+                    if verbose: print('%s%s'%(callers[c],''.join(['-' for x in range(80)])))
+                    T = fusor.pretty_bin_stats(Q,types,t,B,bins,k,c,sname,r,verbose)
+                    for i in range(len(B[t])-1):
+                        detailed_stats[c][t][bins[t][i]] = [T[bins[t][i]]]
+                if verbose: print('fusorSV%s'%(''.join(['-' for i in range(80)])))
+                T = fusor.pretty_bin_stats(Q,types,t,B,bins,k,f_id,sname,r,verbose)                 #no fusorSV
                 for i in range(len(B[t])-1):
-                    detailed_stats[c][t][bins[t][i]] = []      
-        for t in Q:
-            for c in set(detailed_stats.keys()).difference(set([f_id,k])):            #do the other callers
-                if verbose: print('%s%s'%(callers[c],''.join(['-' for x in range(80)])))
-                T = fusor.pretty_bin_stats(Q,types,t,B,bins,k,c,sname,r,verbose)
-                for i in range(len(B[t])-1):
-                    detailed_stats[c][t][bins[t][i]] = [T[bins[t][i]]]
-            if verbose: print('fusorSV%s'%(''.join(['-' for i in range(80)])))
-            T = fusor.pretty_bin_stats(Q,types,t,B,bins,k,f_id,sname,r,verbose)                 #no fusorSV
-            for i in range(len(B[t])-1):
-                detailed_stats[f_id][t][bins[t][i]] = [T[bins[t][i]]]
-    
-    stop = time.time()
-    if verbose: print('scoring completed for %s in %s sec'%(sname,round(stop-start,2)))
-    return [sname,cross_fold_stats,hist,detailed_stats]
+                    detailed_stats[f_id][t][bins[t][i]] = [T[bins[t][i]]]
+        
+        stop = time.time()
+        if verbose: print('scoring completed for %s in %s sec'%(sname,round(stop-start,2)))
+        return [sname,cross_fold_stats,hist,detailed_stats]
+    except:
+        exc_type, exc_obj, exc_trace = sys.exc_info()
+        exception_bucket.put(traceback.format_exc(exc_trace))
 #[4] Apply Model To Samples--------------------------------------------------------------------------------                 
 
 if __name__ == '__main__':
@@ -425,7 +453,6 @@ if __name__ == '__main__':
 #    P = fusor.partition_sliced_samples(Q,B,exclude=[])            #partition
 #    success = fusor.write_partitions_by_sample(sname_partition_path,P)
     
-    
     #||||||||||||||||||||||||||||||||||||||BY SAMPLE|||||||||||||||||||||||||||||||||||||||||||||
 
     #[1] read, parse, structure, select, partition and write out data for each sample if not done
@@ -443,10 +470,18 @@ if __name__ == '__main__':
         p1.close()
         p1.join()
         # Check for exceptions in the threads
-        for retval in return_list:
-            if not retval.successful():
-                sys.stderr.write("ERROR: Partition thread crash")
-            	sys.exit(1)
+        if not exception_bucket.empty():
+            # exc_type = exception_bucket.get(block=False)
+            # exc_obj = exception_bucket.get(block=False)
+            exc_trace = exception_bucket.get(block=False)
+            # print "Neb2" # DEBUG
+            # print exc_type, exc_obj
+            print exc_trace
+            sys.exit(1)
+        # for retval in return_list:
+        #     if not retval.successful():
+        #         sys.stderr.write("ERROR: Partition thread crash")
+        #     	sys.exit(1)
         L = []
         for i in result_list:
             if i is not None: L+=[i]
@@ -491,10 +526,14 @@ if __name__ == '__main__':
                 p1.close()
                 p1.join()
                 # Check for exceptions in the threads
-                for retval in return_list:
-                    if not retval.successful():
-                        sys.stderr.write("ERROR: Prior model thread crash")
-            	        sys.exit(1)
+                if not exception_bucket.empty():
+                    exc_trace = exception_bucket.get(block=False)
+                    print exc_trace
+                    sys.exit(1)
+            #     for retval in return_list:
+            #         if not retval.successful():
+            #             sys.stderr.write("ERROR: Prior model thread crash")
+            # 	        sys.exit(1)
                 L = []
                 for i in result_list:
                     if i is not None: L+=[i]
@@ -528,10 +567,14 @@ if __name__ == '__main__':
                 p1.close()
                 p1.join()
                 # Check for exceptions in the threads
-                for retval in return_list:
-                    if not retval.successful():
-                        sys.stderr.write("ERROR: Post model thread crash")
-            	        sys.exit(1)
+                if not exception_bucket.empty():
+                    exc_trace = exception_bucket.get(block=False)
+                    print exc_trace
+                    sys.exit(1)
+            #     for retval in return_list:
+            #         if not retval.successful():
+            #             sys.stderr.write("ERROR: Post model thread crash")
+            # 	        sys.exit(1)
                 L = []
                 for i in result_list:
                     if i is not None: L+=[i]
@@ -568,10 +611,14 @@ if __name__ == '__main__':
         p1.close()
         p1.join()
         # Check for exceptions in the threads
-        for retval in return_list:
-            if not retval.successful():
-                sys.stderr.write("ERROR: Apply model to samples thread crash")
-            	sys.exit(1)
+        if not exception_bucket.empty():
+            exc_trace = exception_bucket.get(block=False)
+            print exc_trace
+            sys.exit(1)
+        # for retval in return_list:
+        #     if not retval.successful():
+        #         sys.stderr.write("ERROR: Apply model to samples thread crash")
+        #     	sys.exit(1)
         L = []
         for i in result_list:
             if i is not None: L+=[i]
