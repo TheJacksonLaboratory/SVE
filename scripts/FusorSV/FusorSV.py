@@ -445,7 +445,7 @@ if __name__ == '__main__':
         # Check for exceptions in the threads
         for retval in return_list:
             if not retval.successful():
-                sys.stderr.write("Partition thread crash")
+                sys.stderr.write("ERROR: Partition thread crash")
             	sys.exit(1)
         L = []
         for i in result_list:
@@ -493,7 +493,7 @@ if __name__ == '__main__':
                 # Check for exceptions in the threads
                 for retval in return_list:
                     if not retval.successful():
-                        sys.stderr.write("Prior model thread crash")
+                        sys.stderr.write("ERROR: Prior model thread crash")
             	        sys.exit(1)
                 L = []
                 for i in result_list:
@@ -530,7 +530,7 @@ if __name__ == '__main__':
                 # Check for exceptions in the threads
                 for retval in return_list:
                     if not retval.successful():
-                        sys.stderr.write("Post model thread crash")
+                        sys.stderr.write("ERROR: Post model thread crash")
             	        sys.exit(1)
                 L = []
                 for i in result_list:
@@ -570,7 +570,7 @@ if __name__ == '__main__':
         # Check for exceptions in the threads
         for retval in return_list:
             if not retval.successful():
-                sys.stderr.write("Apply model to samples thread crash")
+                sys.stderr.write("ERROR: Apply model to samples thread crash")
             	sys.exit(1)
         L = []
         for i in result_list:

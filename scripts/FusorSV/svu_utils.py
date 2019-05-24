@@ -1043,10 +1043,10 @@ def write_tigra_ctg_map(M,tigra_tsv_path,t_id=38):
 
 #TO DO this will need to be updated once the final data structure is set
 #construct a filtered SVD of FLTR==PASS
-def construct_svult(vcr,chroms,offset_map,s_id,flt=0,upper=int(500E3)):
+def construct_svult(vcr,chroms,offset_map,s_id,vcf,flt=0,upper=int(500E3)):
     sx,vc_i,vx,k,j = {},{},[],[],0 #filtered container, and j is the originating row
     for vc in vcr: #iterate on the variant call record
-        vx += [SVU(vc,offset_map)]
+        vx += [SVU(vc,offset_map,vcf)]
         if vx[-1].chrom in chroms and vx[-1].filter >= flt and vx[-1].svlen < upper:
             sx[tuple(vx[-1].svu[0])] = j
             #if len(vx[-1].svu)>1:
@@ -1083,9 +1083,9 @@ def vcf_glob_to_svultd(path_glob,chroms,offset_map,flt=0,flt_exclude=[]):
         vcr = ht.VCF_Reader(vcf)
         s_id = id_trim(vcf)
         if s_id in flt_exclude:
-            S[s_id],V[s_id] = construct_svult(vcr,chroms,offset_map,s_id,-1)
+            S[s_id],V[s_id] = construct_svult(vcr,chroms,offset_map,s_id,vcf,-1)
         else:
-            S[s_id],V[s_id] = construct_svult(vcr,chroms,offset_map,s_id,flt)
+            S[s_id],V[s_id] = construct_svult(vcr,chroms,offset_map,s_id,vcf,flt)
     return S,V
 
 #given a vcf with SVCP naming convention, trim to an int value

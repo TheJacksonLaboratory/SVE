@@ -1,6 +1,8 @@
 import re
 import numpy as np
 import fusion_utils as fu
+import sys
+import traceback
 
 #raw VCF reader that provides similar VCF reading function as HTSeq
 #VCF_CHR=0,VCF_POS=1,VCF_ID=2,VCF_REF=3,VCF_ALT=4,VCF_QUAL=5,VCF_FILT=6,VCF_INFO=7,VCF_FORMAT=8,VCF_SAMPLE=9
@@ -44,7 +46,7 @@ import fusion_utils as fu
 #         return 0
 
 class SVU:
-    def __init__(self,vc=None,offset_map=None,ref_path=None,bam_path=None,conf_split=None):
+    def __init__(self,vc=None,offset_map=None,vcf=None,ref_path=None,bam_path=None,conf_split=None):
         #parse the less complex fields first
         self.valid_svtypes = {'SUB':0,'RPL':0,
                               'INS':1,'INS:MEI':1,'INS:ME:ALU':1,'INS:ME:L1':1,
@@ -56,7 +58,7 @@ class SVU:
         
         self.ref_path = ref_path #can repair the ref consensus string
         self.bam_path = bam_path #can repair the alt consensus string
-        self.parse_chrom(vc.chrom)      #string value, trim chrom or chr to chr1->1
+        self.parse_chrom(vc.chrom,offset_map,vcf)      #string value, trim chrom or chr to chr1->1
         self.pos    = int(vc.pos.pos)            #uint here; changed from vc.pos.pos
         self.id     = vc.id             #string
         self.repair_id()
@@ -99,11 +101,18 @@ class SVU:
         return v
     
     #TO DO parsing Cx and Cy into this form
-    def parse_chrom(self,chrom):
+    def parse_chrom(self,chrom,offset_map,vcf):
         chrom_tag = chrom.split('CHROM')[-1]
         chrom_tag = chrom_tag.split('CHR')[-1]
         chrom_tag = chrom_tag.split('chrom')[-1]
         # chrom_tag = chrom_tag.split('chr')[-1]
+        
+        # Check that the chromosome of this variant is in the list of reference chromosomes
+        if chrom_tag not in offset_map.keys():
+            # sys.stderr.write("VCF % has variant with chromosome % that does not appear in the specified reference genome")
+            traceback.print_exc()
+            raise KeyError("VCF \""+vcf+"\" has variant with chromosome \""+chrom_tag+"\" that does not appear in the specified reference genome")
+        
         self.chrom = chrom_tag
         #need to fix this alt chrom later x chrom, y chrom
         self.alt_chrom = chrom_tag #did this out of the TRA,BND or INFO tags
